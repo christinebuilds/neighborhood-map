@@ -463,7 +463,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-16 08:22 PT";
+var BUILD = "2026-11-16 10:14 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -555,7 +555,28 @@ var BUILD = "2026-11-16 08:22 PT";
     g.on("mouseout", function () { g.setStyle({ fillOpacity: 0.3 }); });
     g.addTo(hist);
   });
+  setTimeout(raiseDrains, 0);
   }
+  // Drains share one canvas with the past-storm shapes and the flood zone, and on a canvas the shape drawn last
+  // takes the tap. Whenever those shapes are (re)added, e.g. when switching back to this tab, put the drains back on top.
+  function raiseDrains() {
+    [drainsPri, drainsAll].forEach(function (g) { if (map.hasLayer(g)) g.eachLayer(function (l) { if (l.bringToFront) l.bringToFront(); }); });
+  }
+  hist.on("add", function () { setTimeout(raiseDrains, 0); });
+  // Belt and braces: if a tap opens a past-storm or flood-zone card right on top of a drain, open the drain instead.
+  map.on("popupopen", function (e) {
+    var src = e.popup._source, z = typeof zoneLayer !== "undefined" ? zoneLayer : null;
+    var inHist = src === hist || hist.hasLayer(src);
+    if (!inHist) hist.eachLayer(function (g) { if (g.hasLayer && g.hasLayer(src)) inHist = true; });
+    if (!src || !(inHist || (z && (src === z || z.hasLayer(src))))) return;
+    var at = map.latLngToContainerPoint(e.popup.getLatLng()), best = null, bd = 18;
+    drains.forEach(function (d) {
+      if (!d.m || !map.hasLayer(d.m)) return;
+      var q = map.latLngToContainerPoint(d.m.getLatLng()), dd = Math.hypot(q.x - at.x, q.y - at.y);
+      if (dd < bd) { bd = dd; best = d; }
+    });
+    if (best) setTimeout(function () { map.closePopup(); best.m.openPopup(); }, 0);
+  });
   map.fitBounds(CITY.bounds);
 
   // ---- Layer 2: reported now (the city's 311 open data). Solid dots.
@@ -798,6 +819,7 @@ var BUILD = "2026-11-16 08:22 PT";
   // ================= City 100-year storm flood zone (SFPUC, via DataSF) =================
   var zonePolys = [], zoneReady = false;
   var zoneLayer = L.geoJSON(null, { renderer: canvas, style: { color: "#5e35b1", weight: 1, fillColor: "#5e35b1", fillOpacity: 0.2 }, interactive: true });
+  zoneLayer.on("add", function () { setTimeout(raiseDrains, 0); });
   if (ZN) zoneLayer.bindPopup('<span class="tag" style="background:#ede7f6;color:#4527a0">CITY MODEL · OFFICIAL</span><br><b>' + esc(ZN.title) + "</b><br>" + esc(ZN.popup) +
     (/^https:\/\//.test(ZN.url || "") ? '<br><a href="' + esc(ZN.url) + '" target="_blank" rel="noopener">' + esc(ZN.url_label) + "</a>" : ""), { maxWidth: 270 });
   function indexZone(gj) {
