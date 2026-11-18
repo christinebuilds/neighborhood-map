@@ -209,6 +209,33 @@ button.act[aria-pressed="true"] { background: #1d6a4f; border-color: #1d6a4f; co
 .pctop { display: flex; gap: 9px; align-items: flex-start; padding-right: 20px; }
 .pcimg { width: 66px; height: 66px; flex: 0 0 66px; object-fit: cover; border-radius: 9px; background: #e8eef0; }
 .pcimg[hidden] { display: none; }
+.pcimgb { position: relative; flex: 0 0 66px; width: 66px; height: 66px; padding: 0; border: 0; background: none; border-radius: 9px; cursor: zoom-in; }
+.pcimgb[hidden] { display: none; }
+.pcimgb .pcimg { display: block; }
+.pcimgb::after { content: "⤢"; position: absolute; right: 3px; bottom: 3px; width: 18px; height: 18px; border-radius: 50%; background: rgba(22,37,45,.75); color: #fff; font-size: 12px; line-height: 18px; text-align: center; pointer-events: none; }
+.pcimgb:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+/* ---- full-screen photo viewer ---- */
+#photoView { position: fixed; inset: 0; z-index: 3200; background: #0b1216; color: #fff; display: flex; flex-direction: column; }
+#photoView[hidden] { display: none; }
+@media (prefers-reduced-motion: no-preference) { #photoView { animation: pvIn .15s ease-out both; } }
+@keyframes pvIn { from { opacity: 0; } to { opacity: 1; } }
+#pvTop { display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: max(6px, env(safe-area-inset-top)) 6px 0 16px; }
+#pvCount { flex: 1 1 auto; font-size: 13px; color: #c9d4d8; }
+#pvClose { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.55); background: rgba(0,0,0,.4); color: #fff; font-size: 28px; line-height: 1; cursor: pointer; }
+#pvStage { flex: 1 1 auto; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; padding: 6px 8px; touch-action: pan-y; }
+#pvImg { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; }
+#pvImg[hidden] { display: none; }
+#pvLoad { position: absolute; font-size: 15px; color: #c9d4d8; }
+#pvLoad[hidden] { display: none; }
+.pvnav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.55); background: rgba(0,0,0,.5); color: #fff; font-size: 28px; line-height: 1; cursor: pointer; }
+.pvnav[hidden] { display: none; }
+#pvPrev { left: 6px; } #pvNext { right: 6px; }
+#pvInfo { padding: 8px 16px max(14px, env(safe-area-inset-bottom)); max-width: 640px; width: 100%; box-sizing: border-box; margin: 0 auto; }
+#pvName { display: block; font-size: 17px; line-height: 1.3; }
+#pvSci { font-style: italic; }
+#pvSub, #pvCredit { margin: 2px 0 0; font-size: 13px; color: #c9d4d8; }
+#pvCredit { font-size: 12px; }
+#pvWalk { margin-top: 10px; font-size: 15px; font-weight: 600; padding: 10px 18px; min-height: 44px; border-radius: 99px; border: 0; background: #fff; color: var(--ink); cursor: pointer; }
 .pcb { min-width: 0; }
 .pcb b { display: block; font-size: 14px; line-height: 1.25; }
 .pcs { display: block; font-size: 12px; color: #53686f; margin-top: 2px; }
@@ -332,7 +359,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
   <div id="layerPanel" hidden>
     <label><input type="checkbox" id="tRadar">Rain radar (live)</label>
     <div id="ctl" class="only-nature">
-      <label><input type="checkbox" id="tWild" checked><span class="kb" style="border-color:#d0581c">🐦</span>Wildlife</label>
+      <label><input type="checkbox" id="tWild" checked><span class="kb" style="border-color:#2b6cb0">🐦</span>Wildlife</label>
       <label><input type="checkbox" id="tTree" checked><span class="nsw" style="background:#3f9a56"></span>Trees</label>
     </div>
     <div id="bar" class="only-flood">
@@ -464,12 +491,28 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
   <p class="small" style="margin:0">Not an official service. Emergency: 9-1-1. Weather: National Weather Service and Open-Meteo. Radar: NWS via Iowa Environmental Mesonet. Sightings and photos: <a href="https://www.inaturalist.org">iNaturalist</a>, with credit to each photographer. Trees, drains, 311 and flood zone: city open data. Walking directions: Valhalla on OpenStreetMap data. Address search: OpenStreetMap.</p>
 </main>
 
+<div id="photoView" hidden role="dialog" aria-modal="true" aria-labelledby="pvName">
+  <div id="pvTop"><span id="pvCount"></span><button type="button" id="pvClose" aria-label="Close photo">×</button></div>
+  <div id="pvStage">
+    <p id="pvLoad">Loading photo…</p>
+    <img id="pvImg" alt="" hidden>
+    <button type="button" class="pvnav" id="pvPrev" aria-label="Previous photo" hidden>‹</button>
+    <button type="button" class="pvnav" id="pvNext" aria-label="Next photo" hidden>›</button>
+  </div>
+  <div id="pvInfo">
+    <b id="pvName"></b>
+    <p id="pvSub"><span id="pvSci"></span><span id="pvWhen"></span></p>
+    <p id="pvCredit"></p>
+    <button type="button" id="pvWalk">Walk here</button>
+  </div>
+</div>
+
 <script src="vendor/leaflet.js"></script>
 <script>
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-16 10:46 PT";
+var BUILD = "2026-11-16 11:17 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -572,6 +615,7 @@ var BUILD = "2026-11-16 10:46 PT";
   // Belt and braces: if a tap opens a past-storm or flood-zone card right on top of a drain, open the drain instead.
   map.on("popupopen", function (e) {
     var src = e.popup._source, z = typeof zoneLayer !== "undefined" ? zoneLayer : null;
+    if (!src) return;   // a card opened by code (a tree) has no source layer
     var inHist = src === hist || hist.hasLayer(src);
     if (!inHist) hist.eachLayer(function (g) { if (g.hasLayer && g.hasLayer(src)) inHist = true; });
     if (!src || !(inHist || (z && (src === z || z.hasLayer(src))))) return;
@@ -1574,7 +1618,7 @@ var BUILD = "2026-11-16 10:46 PT";
   var INAT = "https://api.inaturalist.org/v1";
   var OPEN_LIC = ["cc0", "cc-by", "cc-by-nc", "cc-by-sa", "cc-by-nc-sa", "cc-by-nd", "cc-by-nc-nd"];
   var GROUPS = {
-    Aves: ["Bird", "#d0581c"], Insecta: ["Insect", "#7b4bb8"], Arachnida: ["Spider or relative", "#7b4bb8"], Mollusca: ["Snail, slug or shellfish", "#7b4bb8"],
+    Aves: ["Bird", "#2b6cb0"], Insecta: ["Insect", "#7b4bb8"], Arachnida: ["Spider or relative", "#7b4bb8"], Mollusca: ["Snail, slug or shellfish", "#7b4bb8"],
     Animalia: ["Small animal", "#7b4bb8"], Plantae: ["Plant", "#8aa21c"], Fungi: ["Fungus", "#8a5a2b"], Mammalia: ["Mammal", "#c43b78"],
     Reptilia: ["Reptile", "#c43b78"], Amphibia: ["Amphibian", "#c43b78"], Actinopterygii: ["Fish", "#7b4bb8"]
   };
@@ -1604,11 +1648,13 @@ var BUILD = "2026-11-16 10:46 PT";
   function cardPopup(o) {
     var el = document.createElement("div"); el.className = "pc";
     var top = document.createElement("div"); top.className = "pctop";
-    var img = document.createElement("img"); img.className = "pcimg"; img.hidden = true; img.alt = "";
+    var img = document.createElement("img"); img.className = "pcimg"; img.alt = "";
+    var ib = document.createElement("button"); ib.type = "button"; ib.className = "pcimgb"; ib.hidden = true; ib.appendChild(img);
+    ib.addEventListener("click", function () { if (el.photos && el.photos.length) openViewer({ name: o.name, sci: o.sci, when: o.when, ll: o.ll, photos: el.photos, from: ib }); });
     var body = document.createElement("div"); body.className = "pcb";
     var b = document.createElement("b"); b.textContent = o.emoji + " " + o.name;
     var s = document.createElement("span"); s.className = "pcs"; s.textContent = o.sub;
-    body.appendChild(b); body.appendChild(s); top.appendChild(img); top.appendChild(body); el.appendChild(top);
+    body.appendChild(b); body.appendChild(s); top.appendChild(ib); top.appendChild(body); el.appendChild(top);
     var row = document.createElement("div"); row.className = "pcrow";
     var go = document.createElement("button"); go.type = "button"; go.className = "pbtn"; go.textContent = "Walk here";
     go.addEventListener("click", function () { map.closePopup(); walkTo(o.ll, o.name); });
@@ -1621,10 +1667,86 @@ var BUILD = "2026-11-16 10:46 PT";
       if (map._popup) map._popup.update();
     });
     row.appendChild(go); row.appendChild(more); el.appendChild(row); el.appendChild(x);
-    el.setThumb = function (src, credit) { if (!src) return; img.src = src; img.alt = "Photo of " + o.name + ". " + credit; img.title = credit; img.hidden = false; el.credit = credit; };
-    if (o.thumb) el.setThumb(o.thumb.src, o.thumb.credit);
+    // big: the larger photo for the viewer. Tapping the thumbnail opens it full screen.
+    el.setThumb = function (src, credit, big) {
+      if (!src) return; img.src = src; img.alt = "Photo of " + o.name + ". " + credit; img.title = credit; ib.hidden = false; el.credit = credit;
+      ib.setAttribute("aria-label", "Open bigger photo of " + o.name);
+      if (!el.photos) el.photos = [{ src: src, big: big || bigUrl(src), credit: credit }];
+    };
+    if (o.photos && o.photos.length) el.photos = o.photos;
+    if (o.thumb) el.setThumb(o.thumb.src, o.thumb.credit, o.thumb.big);
     return el;
   }
+  // iNaturalist photo sizes: square, thumb, small, medium, large. The viewer asks for large.
+  function bigUrl(u) { return String(u || "").replace(/\/(square|thumb|small|medium)\.(jpe?g|png|gif)/i, "/large.$2"); }
+
+  // ---------- full-screen photo viewer (#photoView) ----------
+  // v: { name, sci, when, ll, photos: [{src, big, credit}], from: the thumbnail to return focus to }
+  var pv = document.getElementById("photoView"), pvImg = document.getElementById("pvImg"), pvLoad = document.getElementById("pvLoad");
+  var pvCur = null, pvI = 0, pvPushed = false, pvAfter = null, pvSwiped = false;
+  function pvShow(i) {
+    var ps = pvCur.photos, p = ps[i]; pvI = i;
+    pvImg.hidden = true; pvLoad.hidden = false; pvLoad.textContent = "Loading photo…";
+    pvImg.onload = function () { pvLoad.hidden = true; pvImg.hidden = false; };
+    pvImg.onerror = function () {
+      if (pvImg.dataset.fallback !== "1" && p.src && pvImg.src !== p.src) { pvImg.dataset.fallback = "1"; pvImg.src = p.src; return; }
+      pvLoad.textContent = "Photo didn't load. Try again in a few minutes.";
+    };
+    pvImg.dataset.fallback = "";
+    pvImg.alt = "Photo of " + pvCur.name + ". " + p.credit;
+    pvImg.src = p.big || p.src;
+    document.getElementById("pvCredit").textContent = p.credit;
+    document.getElementById("pvCount").textContent = ps.length > 1 ? "Photo " + (i + 1) + " of " + ps.length : "";
+    document.getElementById("pvPrev").hidden = document.getElementById("pvNext").hidden = ps.length < 2;
+  }
+  function openViewer(v) {
+    pvCur = v;
+    document.getElementById("pvName").textContent = v.name;
+    document.getElementById("pvSci").textContent = v.sci && v.sci !== v.name ? v.sci + " · " : "";
+    document.getElementById("pvWhen").textContent = v.when || "";
+    pv.hidden = false; document.body.style.overflow = "hidden";
+    pvShow(0);
+    try { history.pushState({ photoView: 1 }, ""); pvPushed = true; } catch (e) { pvPushed = false; }
+    document.getElementById("pvClose").focus();
+  }
+  function pvHide() {
+    if (pv.hidden) return;
+    pv.hidden = true; document.body.style.overflow = ""; pvImg.removeAttribute("src");
+    var from = pvCur && pvCur.from, after = pvAfter; pvAfter = null; pvCur = null;
+    if (after) after(); else if (from && from.isConnected) from.focus();
+  }
+  // Close, then run after(). With a history entry pushed, going back closes it, so the phone's back gesture works too.
+  function closeViewer(after) {
+    pvAfter = after || null;
+    if (pvPushed) { pvPushed = false; history.back(); setTimeout(pvHide, 400); } else pvHide();
+  }
+  window.addEventListener("popstate", function () { pvPushed = false; pvHide(); });
+  function pvStep(d) { if (pvCur && pvCur.photos.length > 1) pvShow((pvI + d + pvCur.photos.length) % pvCur.photos.length); }
+  document.getElementById("pvClose").addEventListener("click", function () { closeViewer(); });
+  document.getElementById("pvPrev").addEventListener("click", function () { pvStep(-1); });
+  document.getElementById("pvNext").addEventListener("click", function () { pvStep(1); });
+  document.getElementById("pvWalk").addEventListener("click", function () {
+    var v = pvCur; if (!v) return;
+    closeViewer(function () { map.closePopup(); walkTo(v.ll, v.name); });
+  });
+  pv.addEventListener("click", function (e) {   // a tap on the dark backdrop closes
+    if (pvSwiped) { pvSwiped = false; return; }
+    if (e.target === pv || e.target === document.getElementById("pvStage") || e.target === pvLoad) closeViewer();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (pv.hidden) return;
+    if (e.key === "Escape") { e.preventDefault(); closeViewer(); }
+    else if (e.key === "ArrowLeft") pvStep(-1);
+    else if (e.key === "ArrowRight") pvStep(1);
+  });
+  var pvX = null, pvY = null, stage = document.getElementById("pvStage");
+  stage.addEventListener("touchstart", function (e) { var t = e.touches[0]; pvX = t.clientX; pvY = t.clientY; }, { passive: true });
+  stage.addEventListener("touchend", function (e) {
+    if (pvX == null) return;
+    var t = e.changedTouches[0], dx = t.clientX - pvX, dy = t.clientY - pvY; pvX = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { pvSwiped = true; setTimeout(function () { pvSwiped = false; }, 400); pvStep(dx < 0 ? 1 : -1); }
+  });
+
   function line(box, text, cls) { if (!text) return; var p = document.createElement("p"); if (cls) p.className = cls; p.textContent = text; box.appendChild(p); }
 
   // ---------- wildlife ----------
@@ -1632,9 +1754,13 @@ var BUILD = "2026-11-16 10:46 PT";
   function obsName(o) { var t = o.taxon || {}; return t.preferred_common_name || o.species_guess || t.name || "Not yet identified"; }
   function obsGroup(o) { return GROUPS[(o.taxon || {}).iconic_taxon_name] || ["Wildlife", "#7b4bb8"]; }
   function wildPopup(o) {
-    var t = o.taxon || {}, g = obsGroup(o), ph = openPhoto((o.photos || [])[0]), name = obsName(o);
+    var t = o.taxon || {}, g = obsGroup(o), name = obsName(o);
+    // Only openly licensed photos, ever: all-rights-reserved photos are skipped.
+    var photos = (o.photos || []).filter(openPhoto).filter(function (p) { return /^https:\/\//.test(p.url || ""); })
+      .map(function (p) { return { src: p.url, big: bigUrl(p.url), credit: "Photo " + (p.attribution || "via iNaturalist") }; });
     var el = cardPopup({ emoji: EMOJI[t.iconic_taxon_name] || "🔎", name: name, sub: g[0] + " · seen " + shortDate(o.observed_on), ll: o.ll,
-      thumb: ph ? { src: ph.url, credit: "Photo " + (ph.attribution || "via iNaturalist") } : null,
+      sci: t.name, when: "Seen " + shortDate(o.observed_on), photos: photos,
+      thumb: photos[0] || null,
       more: function (box) {
         var about = document.createElement("p"); box.appendChild(about);
         if (t.id) taxonInfo("id:" + t.id, INAT + "/taxa/" + t.id).then(function (info) { about.textContent = info ? plain(info.wikipedia_summary, 140) : ""; if (map._popup) map._popup.update(); });
@@ -1649,7 +1775,7 @@ var BUILD = "2026-11-16 10:46 PT";
   // Badges and dots never take taps: a larger invisible circle on top carries the tap, so they stay easy to hit with a thumb.
   // Where sightings overlap, the newest is drawn on top and is the one a tap opens.
   var BADGE = { Aves: "🐦", Plantae: "🌿", Fungi: "🍄", Mammalia: "🐾", Reptilia: "🐾", Amphibia: "🐾" };   // everything else: 🦋
-  var KEYROWS = [["🐦", "#d0581c", "Bird"], ["🦋", "#7b4bb8", "Insect or spider"], ["🌿", "#8aa21c", "Plant"], ["🍄", "#8a5a2b", "Mushroom"], ["🐾", "#c43b78", "Mammal"]];
+  var KEYROWS = [["🐦", "#2b6cb0", "Bird"], ["🦋", "#7b4bb8", "Insect or spider"], ["🌿", "#8aa21c", "Plant"], ["🍄", "#8a5a2b", "Mushroom"], ["🐾", "#c43b78", "Mammal"]];
   function badgeOf(o) { return BADGE[(o.taxon || {}).iconic_taxon_name] || "🦋"; }
   function wildR() { var z = map.getZoom(); return z >= 18 ? 8 : z >= 17 ? 7 : z >= 16 ? 6 : 5; }
   function badgeSize() { var z = map.getZoom(); return z >= 17 ? 22 : z >= 16 ? 18 : 0; }
@@ -1846,7 +1972,7 @@ var BUILD = "2026-11-16 10:46 PT";
   }
   function treePopup(t) {
     var s = t.season, name = t.common || t.sci || "Tree";
-    var el = cardPopup({ emoji: s ? (s[1] === "flower" ? "🌸" : "🍂") : "🌳", name: name, ll: t.ll, thumb: null,
+    var el = cardPopup({ emoji: s ? (s[1] === "flower" ? "🌸" : "🍂") : "🌳", name: name, ll: t.ll, thumb: null, sci: t.sci, when: "Example photo",
       sub: "Street tree · " + (s ? s[3] + " now" : t.nat ? "California native" : t.street ? "on " + t.street : "city-planted"),
       more: function (box) {
         var about = document.createElement("p"); box.appendChild(about);
@@ -1859,7 +1985,7 @@ var BUILD = "2026-11-16 10:46 PT";
     info.then(function (i) {
       var ph = i && openPhoto(i.default_photo);
       if (i && !ph) (i.taxon_photos || []).some(function (tp) { ph = openPhoto(tp.photo); return !!ph; });
-      if (ph) { el.setThumb(ph.square_url || ph.url, "Example photo: " + (ph.attribution || "iNaturalist")); if (map._popup) map._popup.update(); }
+      if (ph) { el.photos = [{ src: ph.medium_url || ph.square_url || ph.url, big: ph.large_url || ph.medium_url || bigUrl(ph.url), credit: "Photo " + (ph.attribution || "via iNaturalist") }]; el.setThumb(ph.square_url || ph.url, "Example photo: " + (ph.attribution || "iNaturalist"), ph.large_url || ph.medium_url || bigUrl(ph.url)); if (map._popup) map._popup.update(); }
     });
     return el;
   }
