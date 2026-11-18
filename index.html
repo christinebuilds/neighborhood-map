@@ -557,7 +557,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-18 13:56 PT";
+var BUILD = "2026-11-18 14:05 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -1211,7 +1211,8 @@ var BUILD = "2026-11-18 13:56 PT";
   loc.addTo(map);
 
   // ---- Follow me: a live blue dot that keeps the map on you as you walk.
-  // The position stays in this browser. It is not stored or sent anywhere; drain reports still carry only the drain's spot.
+  // The position stays in this browser and is never stored. It is sent only if you plan a drive from where you are: the routing
+  // service then gets it as the start of the route. Drain reports still carry only the drain's spot.
   var fw = { id: null, on: false, center: false, ll: null, dot: null, ring: null, first: true, hideT: null, resume: false };
   function followBtn() {
     var b = document.getElementById("locBtn"); if (!b) return;
@@ -1482,7 +1483,7 @@ var BUILD = "2026-11-18 13:56 PT";
         for (var i = 0; i < S.length; i++) if (distM(S[i].ll, c) <= 40) { out.n311++; break; }
       });
     }
-    if (zoneReady) {
+    if (zoneReady && zonePolys.length) {        // an empty answer is not a checked route
       var m = 0;
       for (i = 0; i < S.length - 1; i++) if (inZone(S[i].ll)) m += S[i + 1].at - S[i].at;
       out.zoneFt = Math.round(m * 3.28084 / 10) * 10;
@@ -1504,7 +1505,8 @@ var BUILD = "2026-11-18 13:56 PT";
   }
   // One more try: also keep out of the city's flood zone, when that costs little (4 minutes or 0.8 miles at most).
   function driveZoneTry(res) {
-    if (!res || !zoneReady || !res.cm.zoneFt || res.cm.zoneFt < 30) return res;
+    if (!res || res.zoneTried || !zoneReady || !res.cm.zoneFt || res.cm.zoneFt < 30) return res;
+    res.zoneTried = true;
     var S = DG.sample(res.main.line, 10), left = 9500;
     var base = res.sent.map(function (it) { return { kind: it.kind, key: it.key, ring: it.ring }; });
     var zone = DG.blobs([res.main.line, res.usual.line], inZone, 40, 150).filter(function (ring) {
@@ -1552,10 +1554,15 @@ var BUILD = "2026-11-18 13:56 PT";
       });
     }).then(function (res) { return mine === drive.n ? driveZoneTry(res) : null; }).then(function (res) {
       if (!res || mine !== drive.n) return;
-      drive.res = res; drive.msg = ""; driveDraw(); driveShow();
+      drive.res = res; drive.msg = ""; drivePin(res); driveDraw(); driveShow();
       map.fitBounds(L.latLngBounds(res.main.line).pad(0.15));
       document.getElementById("map").scrollIntoView({ block: "start" });   // map on top, the drive card right under it
-      if (!zoneReady) zoneWaiters.push(function () { if (drive.res === res) { res.cm = driveCheck(res.main.line); driveShow(); } });
+      // The flood zone arrived after the route: check the route against it now, and make the same extra try.
+      if (!zoneReady) zoneWaiters.push(function () {
+        if (drive.res !== res) return;
+        res.cm = driveCheck(res.main.line); driveShow();
+        Promise.resolve(driveZoneTry(res)).then(function () { if (drive.res === res) { drivePin(res); driveDraw(); driveShow(); } });
+      });
     }).catch(function () { if (mine === drive.n) driveFail(); });
   }
   function driveDraw() {
@@ -1570,39 +1577,52 @@ var BUILD = "2026-11-18 13:56 PT";
     if (drive.open && drive.start) pin(drive.start, "Start");
     if (drive.open && drive.dest) pin(drive.dest, "End");
   }
-  // Points for another maps app: beside each place the route goes around, plus the turn onto and off each detour.
-  // They are sent as stops so that app stays on this route. Never inside a shape the route avoids.
-  function driveStops(r, max) {
-    if (!r.avoided) return [];
-    var S = DG.sample(r.main.line, 15), U = r.usual.line, cand = [], i;
-    function add(k, pri) { var p = S[Math.max(0, Math.min(S.length - 1, k))]; if (!r.sent.some(function (it) { return DG.inRing(p.ll, it.ring); })) cand.push({ ll: p.ll, at: p.at, pri: pri }); }
-    r.sent.forEach(function (it) {
-      if (!(r.cu[it.kind] || []).some(function (p) { return p.key === it.key; })) return;
-      var c = [0, 0]; it.ring.forEach(function (q) { c[0] += q[0] / it.ring.length; c[1] += q[1] / it.ring.length; });
-      var best = 0, bd = 1e9; for (var i = 0; i < S.length; i++) { var d = distM(S[i].ll, c); if (d < bd) { bd = d; best = i; } }
-      add(best, 0);
-    });
-    var a = -1;
-    for (i = 0; i <= S.length; i++) {
-      var off = i < S.length && DG.lineDist(S[i].ll, U) > 30;
-      if (off && a < 0) a = i;
-      if (!off && a >= 0) { add(Math.min(a + 4, i - 1), 1); add(Math.max(i - 5, a), 1); a = -1; }
+  function driveLeft(a, b) { return a.filter(function (p) { return !b.some(function (q) { return q.key === p.key; }); }); }
+  // Stops for another maps app, so that app stays on this route instead of cutting back through a flood spot.
+  // Worked out with the routing service: ask for a plain route through the stops so far, and wherever a stretch between two stops
+  // passes a place this route goes around, add a stop at the point of this route it strays furthest from. Never inside a shape the route avoids.
+  function drivePin(res) {
+    res.stops = []; res.pin = res.avoided ? "wait" : "none";
+    if (!res.avoided) return;
+    var S = DG.sample(res.main.line, 15), total = S[S.length - 1].at, tries = 0;
+    function done(ok) { if (drive.res === res) { res.pin = ok ? "ok" : "unsure"; driveShow(); } }
+    function step(legs) {
+      var ats = [0].concat(res.stops.map(function (x) { return x.at; }), [total]);
+      for (var i = 0; i < legs.length; i++) {
+        var c = driveCheck(legs[i]), bad = driveLeft(c.past, res.cm.past).concat(driveLeft(c.water, res.cm.water));
+        if (!bad.length) continue;
+        if (res.stops.length >= 6 || tries >= 7) return done(false);
+        var best = -1, bd = 0, leg = legs[i];
+        S.forEach(function (p, k) {      // the point of this route that the plain route strays furthest from
+          if (p.at <= ats[i] + 80 || p.at >= ats[i + 1] - 80 || res.sent.some(function (it) { return DG.inRing(p.ll, it.ring); })) return;
+          var d = DG.lineDist(p.ll, leg); if (d > bd) { bd = d; best = k; }
+        });
+        if (best < 0) return done(false);
+        res.stops.splice(i, 0, { ll: S[best].ll, at: S[best].at });
+        return ask();
+      }
+      done(true);
     }
-    cand.sort(function (x, y) { return x.pri - y.pri || x.at - y.at; });
-    var out = [];
-    cand.forEach(function (c) { if (out.length < max && !out.some(function (o) { return Math.abs(o.at - c.at) < 150; })) out.push(c); });
-    return out.sort(function (x, y) { return x.at - y.at; }).map(function (c) { return c.ll; });
+    function ask() {
+      tries++;
+      var locs = [drive.start].concat(res.stops, [drive.dest]).map(function (p) { return { lat: Math.round(p.ll[0] * 1e6) / 1e6, lon: Math.round(p.ll[1] * 1e6) / 1e6 }; });
+      NAT.fetchSoon(VALHALLA + "?json=" + encodeURIComponent(JSON.stringify({ locations: locs, costing: "auto", units: "miles" })), 12000).then(function (j) {
+        if (drive.res === res) step((j.trip.legs || []).map(function (leg) { return NAT.decode6(leg.shape); }));
+      }).catch(function () { done(false); });
+    }
+    step([res.usual.line]);
   }
   function driveLinks(r) {
     function p5(ll) { return ll[0].toFixed(5) + "," + ll[1].toFixed(5); }
     var from = drive.start.src === "tap" ? p5(drive.start.ll) : "";     // otherwise the other app starts from the phone's own location
-    var g = driveStops(r, 3), a = driveStops(r, 6);
+    var a = r.stops.map(function (x) { return x.ll; }), g = a;
+    if (g.length > 3) g = [a[0], a[Math.floor((a.length - 1) / 2)], a[a.length - 1]];     // Google takes three stops on a phone
     return {
       google: "https://www.google.com/maps/dir/?api=1" + (from ? "&origin=" + encodeURIComponent(from) : "") + "&destination=" + encodeURIComponent(p5(drive.dest.ll)) +
         (g.length ? "&waypoints=" + encodeURIComponent(g.map(p5).join("|")) : "") + "&travelmode=driving",
       apple: "https://maps.apple.com/directions?" + (from ? "source=" + from + "&" : "") + "destination=" + p5(drive.dest.ll) +
         a.map(function (q) { return "&waypoint=" + p5(q); }).join("") + "&mode=driving",
-      stops: g.length, own: !from
+      stops: a.length, cut: a.length > 3, own: !from
     };
   }
   function driveShow() {
@@ -1628,7 +1648,7 @@ var BUILD = "2026-11-18 13:56 PT";
       if (P.length && W.length) return pastN(P.length) + " (" + names(P) + ") and " + waterN(W.length);
       return P.length ? pastN(P.length) + ": " + names(P) : waterN(W.length);
     }
-    function left(a, b) { return a.filter(function (p) { return !b.some(function (q) { return q.key === p.key; }); }); }
+    var left = driveLeft;
     var cu = r.cu, cm = r.cm, min = Math.max(1, Math.round(r.main.minutes)), diff = min - Math.max(1, Math.round(r.usual.minutes));
     dEl("Head").textContent = "About " + min + " min · " + r.main.miles.toFixed(1) + " miles";
     var goneP = left(cu.past, cm.past), goneW = left(cu.water, cm.water), around = goneP.length || goneW.length, zf = cm.zoneFt;
@@ -1650,10 +1670,13 @@ var BUILD = "2026-11-18 13:56 PT";
     });
     if (cm.n311) fact(cm.n311 + (cm.n311 === 1 ? " open 311 flooding report is" : " open 311 flooding reports are") + " close to this route. 311 reports show up about a day late.");
     r.main.steps.forEach(function (s) { var li = document.createElement("li"); li.textContent = s.text + (s.miles >= 0.1 ? " (" + s.miles.toFixed(1) + " mi)" : ""); steps.appendChild(li); });
-    var k = driveLinks(r);
+    var k = driveLinks(r), wait = r.pin === "wait";
     dEl("G").href = k.google; dEl("A").href = k.apple;
-    dEl("MapsNote").textContent = (k.stops ? "Opens the other app and shares these points with Google or Apple. The points are added as stops so the app stays on this route. That app still picks its own roads between stops."
-      : "Opens the other app and shares your destination with Google or Apple. That app picks its own roads.") + (k.own ? " It starts from where your phone is." : "");
+    dEl("Maps").querySelector(".row").hidden = wait;      // no link to tap until its stops are worked out
+    dEl("MapsNote").textContent = wait ? "Getting the Google Maps and Apple Maps links ready…"
+      : (k.stops ? "Opens the other app and shares these points with Google or Apple. The points are added as stops so the app stays on this route. That app still picks its own roads between stops."
+        : "Opens the other app and shares your destination with Google or Apple. That app picks its own roads.") +
+      (r.pin === "unsure" ? " With these stops it may still pass a flood spot." : k.cut ? " Google Maps takes 3 stops, so there it may still pass a flood spot." : "") + (k.own ? " It starts from where your phone is." : "");
   }
 
   // ================= Modes: one map, two views =================
