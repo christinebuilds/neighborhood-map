@@ -120,6 +120,10 @@
       "url": "https://sf.connect.socrata.com/"
     }
   ],
+  "street_names": {
+    "dataset": "3psu-pn9h",
+    "note": "City street list, block by block (DataSF, Streets - Active and Retired). Plan a drive uses it to name a tapped spot by its cross streets. Needs fields streetname, f_st, t_st, line, layer, active."
+  },
   "street_trees": {
     "dataset": "tkzw-k3nq",
     "note": "SF street tree list (DataSF). Needs fields treeid, species ('Scientific :: Common'), onstreet, latitude, longitude."

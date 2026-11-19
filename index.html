@@ -595,7 +595,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-19 09:45 PT";
+var BUILD = "2026-11-19 10:07 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -1460,6 +1460,57 @@ var BUILD = "2026-11-19 09:45 PT";
     var p = NAT && NAT.place();
     return p ? { ll: [p.lat, p.lon], src: "saved", name: "your saved spot" + (p.name ? " (" + p.name + ")" : "") } : null;
   }
+  // ---- Names for the two ends: "17th St & Folsom St" in place of "the spot you tapped".
+  // Cross streets come from the city's own street list, on the open-data site this page already reads 311 reports and drains from.
+  // Privacy: only a spot tapped on the map, or a street typed into the search, is named this way. "Where you are now" and the saved
+  // spot are never looked up, so a person's own location goes nowhere new. The city site is asked for a fixed square of the street
+  // grid (a few blocks wide), not for the tapped point; the nearest corner is worked out here on the phone.
+  var SN = CITY.street_names || null, snCache = {};
+  var SN_SKIP = /^(START|END|MID BLOCK|COUNTY LINE|EASEMENT|UNNAMED)\b|^(NORTH|SOUTH|EAST|WEST|CHANNEL)$|:|\bRAMP\b|BOUND$/;   // the list's own notes, not street names
+  function stCase(s) {                                   // "03RD ST" -> "3rd St", "MCALLISTER ST" -> "McAllister St"
+    return String(s).replace(/\s+/g, " ").trim().toLowerCase().split(" ").map(function (w, i) {
+      if (/^\d/.test(w)) return w.replace(/^0+(?=\d)/, "");
+      if (/^(i-\d+|ti|ybi|ggp|us)$/.test(w)) return w.toUpperCase();
+      if (i && /^(of|the|del)$/.test(w)) return w;
+      return w.replace(/(^|-)([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); }).replace(/'([a-z])(?=[a-z])/g, function (m, b) { return "'" + b.toUpperCase(); })
+        .replace(/^Mc([a-z])/, function (m, b) { return "Mc" + b.toUpperCase(); })
+        .replace(/^O(farrell|shaughnessy|reilly)$/, function (m, b) { return "O'" + b.charAt(0).toUpperCase() + b.slice(1); });   // the list drops the apostrophe
+    }).join(" ");
+  }
+  function snStreets(ll) {                               // the street blocks in the grid square around a point, kept for this visit
+    var S = 0.002, PAD = 0.0013, la = Math.floor(ll[0] / S) * S, lo = Math.floor(ll[1] / S) * S, key = la.toFixed(3) + "," + lo.toFixed(3);
+    if (snCache[key]) return snCache[key];
+    var s = (la - PAD).toFixed(4), n = (la + S + PAD).toFixed(4), w = (lo - PAD).toFixed(4), e = (lo + S + PAD).toFixed(4);
+    var where = "active=true and layer not in ('FREEWAYS','PAPER','PAPER_FWYS','PAPER_WATER','PSEUDO') and intersects(line,'POLYGON((" +
+      [w + " " + s, e + " " + s, e + " " + n, w + " " + n, w + " " + s].join(",") + "))')";
+    return snCache[key] = NAT.fetchSoon(HOSTS[0] + "/resource/" + SN.dataset + ".json?$select=streetname,f_st,t_st,line&$limit=300&$where=" + encodeURIComponent(where), 7000).then(function (rows) {
+      return (Array.isArray(rows) ? rows : []).map(function (r) {
+        var c = r && r.line && r.line.type === "LineString" && r.line.coordinates;
+        return c && c.length > 1 && r.streetname && !SN_SKIP.test(r.streetname) ? { name: r.streetname, f: r.f_st || "", t: r.t_st || "", line: c.map(function (q) { return [q[1], q[0]]; }) } : null;
+      }).filter(Boolean);
+    }).catch(function (e) { delete snCache[key]; throw e; });
+  }
+  // At a corner: "17th St & Folsom St" (numbered street first, otherwise A to Z, so the same corner always reads the same).
+  // Along a block: "Folsom St near 17th St". No cross street to name: "a spot near Folsom St". Nothing close: no name.
+  function snName(ll, segs) {
+    var best = null, bd = 1e9;
+    segs.forEach(function (g) { var d = DG.lineDist(ll, g.line); if (d < bd) { bd = d; best = g; } });
+    if (!best || bd > 110) return "";
+    var st = stCase(best.name), ends = [{ x: best.f, d: distM(ll, best.line[0]) }, { x: best.t, d: distM(ll, best.line[best.line.length - 1]) }]
+      .filter(function (e) { return e.x && !SN_SKIP.test(e.x) && e.x !== best.name; }).sort(function (a, b) { return a.d - b.d; });
+    if (!ends.length || bd > 60 || ends[0].d > 250) return "a spot near " + st;   // off the street, or the cross street is too far to help
+    var x = stCase(ends[0].x);
+    if (ends[0].d > 35) return st + " near " + x;
+    return [st, x].sort(function (a, b) { return (/^\d/.test(b) - /^\d/.test(a)) || a.localeCompare(b, "en", { numeric: true }); }).join(" & ");
+  }
+  function driveName(p) {
+    if (!SN || !SN.dataset || !HOSTS.length || !NAT || !(p.src === "tap" || (p.src === "typed" && p.street))) return;   // never "live" or "saved"
+    snStreets(p.ll).then(function (segs) {
+      var n = snName(p.ll, segs); if (!n) return;
+      p.name = n;                                        // a point that has since been replaced keeps its name to itself
+      if (drive.start === p || drive.dest === p) driveFrom();
+    }).catch(function () {});                            // no name: the line keeps what it said
+  }
   function driveStopPick() { if (!drive.pick) return; drive.pick = ""; pickMsg.hidden = true; pickMsg.textContent = ""; driveShow(); }
   function drivePick(which, stay) {
     setPicking(false); map.closePopup(); drive.pick = which;
@@ -1474,9 +1525,9 @@ var BUILD = "2026-11-19 09:45 PT";
     ev.stopPropagation(); ev.preventDefault();
     var q = map.mouseEventToLatLng(ev), ll = [q.lat, q.lng], which = drive.pick;
     drive.pick = ""; pickMsg.hidden = true; pickMsg.textContent = ""; map.closePopup();
-    if (which === "start") drive.start = { ll: ll, src: "tap", name: "the spot you tapped" };
-    else drive.dest = { ll: ll, src: "tap", name: "the spot you tapped" };
-    driveNext();
+    var p = { ll: ll, src: "tap", name: "the spot you tapped" };
+    if (which === "start") drive.start = p; else drive.dest = p;
+    driveNext(); driveName(p);                           // the route never waits for the name
   }, true);
   function driveNext() {
     if (drive.start && drive.dest) { driveRoute(); return; }
@@ -1509,7 +1560,7 @@ var BUILD = "2026-11-19 09:45 PT";
     NAT.geocode(q).then(function (r) {
       if (mine !== drive.n) return;
       if (!r) { drive.msg = "Couldn't find that in " + CITY.name + ". Try cross streets, like \"24th and Folsom\", or tap the map."; driveShow(); return; }
-      dEl("To").blur(); drive.dest = { ll: r.ll, src: "typed", name: q }; drive.msg = ""; driveNext();
+      dEl("To").blur(); drive.dest = { ll: r.ll, src: "typed", name: r.name || q, street: !!r.street }; drive.msg = ""; driveNext(); driveName(drive.dest);
     }).catch(function () { if (mine !== drive.n) return; drive.msg = "Address search isn't answering right now. Tap the map where you're going instead."; driveShow(); });
   });
   function driveAsk(excl) {
@@ -1694,6 +1745,10 @@ var BUILD = "2026-11-19 09:45 PT";
       stops: a.length, cut: a.length > 3, own: !from
     };
   }
+  function driveFrom() {
+    var edit = drive.edit || !drive.res;
+    dEl("FromTxt").textContent = !drive.start ? "Start: tap the map where you start." : edit || !drive.dest ? "From " + drive.start.name + "." : "From " + drive.start.name + " to " + drive.dest.name + ".";
+  }
   function driveShow() {
     var r = drive.res, edit = drive.edit || !r, facts = dEl("Facts"), steps = dEl("StepList");
     dEl("Opts").hidden = !drive.open; dEl("Card").hidden = !(drive.open && r);
@@ -1701,7 +1756,7 @@ var BUILD = "2026-11-19 09:45 PT";
     bReport.hidden = !!drive.pick;                       // one long label at a time in the button row
     bDrive.hidden = picking;
     if (!drive.open) return;
-    dEl("FromTxt").textContent = !drive.start ? "Start: tap the map where you start." : edit || !drive.dest ? "From " + drive.start.name + "." : "From " + drive.start.name + " to " + drive.dest.name + ".";
+    driveFrom();
     dEl("FromBtn").textContent = !edit ? "Change" : drive.pick === "start" ? "Cancel" : "Change start";
     dEl("Form").hidden = !edit; dEl("Or").hidden = !edit;
     dEl("ToBtn").textContent = drive.pick === "dest" ? "Cancel" : "tap the map where you're going";
@@ -3035,12 +3090,24 @@ var BUILD = "2026-11-19 09:45 PT";
   });
   document.addEventListener("visibilitychange", function () { if (!document.hidden) checkPerm(); });
   checkPerm();
-  // One address search for the box at the top and for Plan a drive. Gives { ll, r } or null when nothing in the city matched.
+  // A short name for what the address search found: the place's name, or "250 10th St", never the long comma list.
+  // street: the search found a whole street, so Plan a drive may add the cross street.
+  function shortPlace(r) {
+    var a = r.address || {}, hw = (r.category || r["class"]) === "highway";
+    var AB = { Street: "St", Avenue: "Ave", Boulevard: "Blvd", Drive: "Dr", Place: "Pl", Court: "Ct", Road: "Rd", Lane: "Ln", Terrace: "Ter", Highway: "Hwy" };
+    function ab(s) { return String(s).replace(/ (Street|Avenue|Boulevard|Drive|Place|Court|Road|Lane|Terrace|Highway)(?=$| & | and )/g, function (m, w) { return " " + AB[w]; }); }
+    if (r.name) return { name: hw ? ab(r.name) : String(r.name), street: hw && r.name === a.road };
+    if (a.road) return { name: (a.house_number ? a.house_number + " " : "") + ab(a.road), street: false };
+    return { name: "", street: false };
+  }
+  // One address search for the box at the top and for Plan a drive. Gives { ll, r, name, street } or null when nothing in the city matched.
   function geocode(q) {
     var vb = [B[0][1], B[1][0], B[1][1], B[0][0]].join(",");
     return fetchJson("https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=us&bounded=1&viewbox=" + vb + "&q=" + encodeURIComponent(q.replace(/\s*&\s*/g, " and "))).then(function (rows) {
       var r = rows[0], ll = r && [parseFloat(r.lat), parseFloat(r.lon)];
-      return r && inCity(ll) ? { ll: ll, r: r } : null;
+      if (!r || !inCity(ll)) return null;
+      var sp = shortPlace(r);
+      return { ll: ll, r: r, name: sp.name, street: sp.street };
     });
   }
   document.getElementById("find").addEventListener("submit", function (e) {
