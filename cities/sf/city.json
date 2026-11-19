@@ -109,6 +109,7 @@
     }
   },
   "flood_water_note": {
+    "short": "Stay out of flood water. It can carry bacteria.",
     "text": "Flood water can carry bacteria and other contaminants washed off the street. Stay out of it, keep children and pets away, and wash with soap and water if you touch it.",
     "source": "SFPUC",
     "url": "https://www.sfpuc.gov/learning/emergency-preparedness/resources-get-you-rain-ready"
