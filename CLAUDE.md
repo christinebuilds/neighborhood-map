@@ -47,6 +47,7 @@ node tools/validate.mjs          # must pass before every PR
 
 - No names of private people and no home addresses in data files, issues, screenshots or test fixtures. Use cross streets.
 - **A person's location stays on their device.** The page keeps the chosen spot in this browser only (`localStorage`, keys starting `fm_`). Never send or store someone's own location or address in Supabase or any new service. A neighbor report carries only the spot being reported (a drain or a street spot the neighbor chose), never where the person is or lives. Public weather lookups already receive rounded coordinates; don't add new places that receive them without asking first.
+- Plan a drive: the routing and address-search services receive the start and destination (as the walk planner already does). "Open in Google Maps" and "Open in Apple Maps" are plain links: Google or Apple receives the destination and a few route points only when the person taps one, and nothing before that. Christine approved those two links; don't add other hand-offs without asking.
 - Don't add analytics, trackers, ads or third-party scripts.
 - Photos: keep the existing shrink step that drops location data from the file before upload.
 
