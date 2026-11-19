@@ -2,14 +2,15 @@
 
 This file is for Claude Code, Cursor, Copilot and any other AI coding agent working on My Neighborhood Map. People are welcome to follow it too. `AGENTS.md` points here.
 
-The live site is https://christinebuilds.github.io/neighborhood-map/. Neighbors use it on their phones, often in a storm. Small, careful changes beat big clever ones.
+The live site is https://sfcommunitymap.org/. Neighbors use it on their phones, often in a storm. Small, careful changes beat big clever ones.
 
 ## How the project is built
 
 - **No build step.** Plain HTML, CSS and JavaScript with Leaflet in `vendor/`. Do not add npm packages, bundlers, frameworks, TypeScript or a `package.json` to the site. Test-only tools (Playwright) stay on your own computer.
 - `index.html` is the whole app: one `<style>` block, the page markup, then one `<script>`. Inside the script, `start(CITY)` runs the flood layers and `nature(FL)` runs trees, wildlife, the weather strip and the walk planner.
 - City settings live in `cities/sf/city.json` and `cities/sf/past-storms.json`. Change a link, phone number or note there, not in `index.html`.
-- Publishing: `.github/workflows/publish.yml` copies a fixed list of files to the `gh-pages` branch. If you add a file the page needs, add it to that `cp` line.
+- Publishing: `.github/workflows/publish.yml` copies a fixed list of files to the `gh-pages` branch. If you add a file the page needs, add it to that `cp` line. The `CNAME` file on that line keeps the site on its own address (`sfcommunitymap.org`); do not remove it.
+- Write links between the site's own files as relative paths (`assets/...`, `./`, `../` from the short-address folders), never starting with `/`, so the site works at any address.
 - When you change a page, update `version.txt` (format `2026-11-13 13:48 PT`, Pacific time) so phones offer the update.
 - San Francisco is the only city. Other cities are on hold; do not add city folders.
 

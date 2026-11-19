@@ -12,8 +12,8 @@ Hi neighbors! I made a little map for our part of SF: trees, birds, walks and fl
 
 It's a beta made by a neighbor, not the city. For emergencies, call 911. Tap "Beta" at the top to tell me what works and what doesn't.
 
-https://christinebuilds.github.io/neighborhood-map/
+https://sfcommunitymap.org/
 
 ## One line for a group chat
 
-I made a neighborhood map (trees, birds, walks, flood help) and it's in beta, so tap "Beta" to send feedback: https://christinebuilds.github.io/neighborhood-map/
+I made a neighborhood map (trees, birds, walks, flood help) and it's in beta, so tap "Beta" to send feedback: https://sfcommunitymap.org/
