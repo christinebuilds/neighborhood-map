@@ -36,6 +36,7 @@
       "kind": "service_subtype",
       "details": "service_details",
       "address": "address",
+      "neighborhood": "analysis_neighborhood",
       "lat": "lat",
       "lon": "long",
       "as_of": "data_as_of"
