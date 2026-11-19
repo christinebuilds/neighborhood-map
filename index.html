@@ -567,7 +567,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
   </div>
   <p class="small only-flood" id="cityLinks" style="margin:0"></p>
   <p class="credit">Made with <span role="img" aria-label="love">💚</span> by <a href="https://github.com/christinebuilds/neighborhood-map">christinebuilds</a></p>
-  <p class="small" style="margin:0">This map is open source. Ideas, fixes and new cities are welcome — <a href="https://github.com/christinebuilds/neighborhood-map/blob/main/CONTRIBUTING.md">see how to contribute</a>.</p>
+  <p class="small" style="margin:0"><b>Free and open source. Built by a neighbor for the community.</b> Ideas, fixes and new cities are welcome — <a href="https://github.com/christinebuilds/neighborhood-map/blob/main/CONTRIBUTING.md">see how to contribute</a>.</p>
   <p class="small" style="margin:0">Made by neighbors, not the city. <button type="button" class="linkish fbbtn" id="fbOpen"><span aria-hidden="true">💬</span> Report a problem or share an idea</button>. The page remembers your spot in this browser only.</p>
   <p class="small" style="margin:0">My Neighborhood Map. Version: <span id="ver"></span>. <a href="flood.html">About the flood map</a>.</p>
   <p class="small" style="margin:0">Not an official service. Emergency: 9-1-1. Weather: National Weather Service and Open-Meteo. Radar: NWS via Iowa Environmental Mesonet. Sightings and photos: <a href="https://www.inaturalist.org">iNaturalist</a>, with credit to each photographer. Trees, drains, 311 and flood zone: city open data. Walking and driving directions: Valhalla on OpenStreetMap data. Address search: OpenStreetMap.</p>
@@ -594,7 +594,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-19 09:22 PT";
+var BUILD = "2026-11-19 09:36 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
