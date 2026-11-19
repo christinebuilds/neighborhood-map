@@ -1,4 +1,4 @@
-// Draws the link-preview card and the home-screen icons into assets/.
+// Draws the link-preview cards (preview.png for the map, preview-flood.png for flood.html) and the home-screen icons into assets/.
 // Run with: NODE_PATH=<where playwright is installed> node tools/make-assets.mjs
 // Everything here is drawn with plain shapes: no map tiles, no photos.
 import { writeFileSync } from "node:fs";
@@ -42,10 +42,54 @@ p{margin:20px 0 0;font-size:29px;line-height:1.35;color:#2f4d5c}
 <span class="beta">Beta</span></div>
 </body></html>`;
 
+// The flood page's own card: a raindrop, blue, storm drains, a dashed past-flood shape and a route bending around it.
+// Shared on storm days, so it must not look like the nature card. Nothing here should look official (no seal, no agency colors).
+const drop = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a6f9e"/><stop offset="1" stop-color="#16425f"/></linearGradient></defs>
+  <rect width="512" height="512" rx="112" fill="url(#b)"/>
+  <path d="M256 84 C256 84 132 240 132 316 A124 124 0 0 0 380 316 C380 240 256 84 256 84 Z" fill="#bfe3fa" stroke="#fff" stroke-width="14"/>
+  <ellipse cx="212" cy="318" rx="18" ry="34" fill="#fff" opacity=".85"/>
+</svg>`;
+const floodCard = `<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:1200px;height:630px;overflow:hidden;font-family:"DejaVu Sans",system-ui,sans-serif}
+body{background:linear-gradient(135deg,#dcebf7 0%,#c3dbee 100%);position:relative}
+svg.bg{position:absolute;inset:0}
+.txt{position:absolute;left:64px;top:50px;width:700px}
+.top{display:flex;align-items:center;gap:24px}
+.mark{width:112px;height:112px}
+.beta{font-size:34px;font-weight:700;color:#fff;background:#2a6f9e;border-radius:99px;padding:8px 26px}
+h1{margin:22px 0 0;font-size:92px;line-height:1.02;color:#10293b;letter-spacing:-2px;white-space:nowrap}
+p{margin:22px 0 0;font-size:43px;line-height:1.24;color:#1d3f57;font-weight:700}
+p.by{margin-top:18px;font-weight:400;color:#10293b}
+</style></head><body>
+<svg class="bg" width="1200" height="630" viewBox="0 0 1200 630">
+  <g stroke="#a9cbe6" stroke-width="7" stroke-linecap="round" opacity=".7">
+    <path d="M820 20 l-16 44"/><path d="M905 70 l-16 44"/><path d="M1010 14 l-16 44"/><path d="M1100 80 l-16 44"/><path d="M1165 20 l-16 44"/>
+    <path d="M790 560 l-16 44"/><path d="M1160 540 l-16 44"/>
+  </g>
+  <g stroke="#ffffff" stroke-width="26" fill="none" stroke-linecap="round">
+    <path d="M800 170 L1220 170"/><path d="M800 330 L1220 330"/><path d="M800 490 L1220 490"/>
+    <path d="M860 110 L860 650"/><path d="M1000 110 L1000 650"/><path d="M1140 110 L1140 650"/>
+  </g>
+  <path d="M946 250 L1054 250 L1054 410 L946 410 Z" fill="rgba(192,57,43,.28)" stroke="#c0392b" stroke-width="7" stroke-dasharray="20 12" stroke-linejoin="round"/>
+  <path d="M1000 600 L1000 140" stroke="#5c6f7a" stroke-width="7" stroke-dasharray="2 16" stroke-linecap="round" fill="none"/>
+  <path d="M1000 600 L1000 490 L1140 490 L1140 170 L1000 170 L1000 130" stroke="#fff" stroke-width="24" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1000 600 L1000 490 L1140 490 L1140 170 L1000 170 L1000 130" stroke="#16252d" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="1000" cy="600" r="15" fill="#16252d" stroke="#fff" stroke-width="6"/><circle cx="1000" cy="130" r="15" fill="#16252d" stroke="#fff" stroke-width="6"/>
+  <circle cx="860" cy="330" r="15" fill="#d81b60" stroke="#222" stroke-width="5"/><circle cx="860" cy="490" r="15" fill="#f9a825" stroke="#222" stroke-width="5"/><circle cx="1140" cy="558" r="15" fill="#2e7d32" stroke="#222" stroke-width="5"/>
+</svg>
+<div class="txt"><div class="top"><img class="mark" src="data:image/svg+xml;base64,${Buffer.from(drop).toString("base64")}"><span class="beta">Beta</span></div>
+<h1>SF Flood Map</h1>
+<p>Storm drains, flood spots<br>and a way to drive<br>around them</p>
+<p class="by">By neighbors, not the city</p></div>
+</body></html>`;
+
 const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
 await p.setContent(card); await p.waitForTimeout(200);
 await p.screenshot({ path: out("preview.png").pathname });
+await p.setContent(floodCard); await p.waitForTimeout(200);
+await p.screenshot({ path: out("preview-flood.png").pathname });
 for (const [n, rounded] of [[180, false], [192, true], [512, true], [32, true]]) {
   await p.setViewportSize({ width: n, height: n });
   await p.setContent(`<html><body style="margin:0;background:${rounded ? "transparent" : "#2f7d5b"}"><img style="display:block;width:${n}px;height:${n}px" src="data:image/svg+xml;base64,${Buffer.from(mark(rounded)).toString("base64")}"></body></html>`);
