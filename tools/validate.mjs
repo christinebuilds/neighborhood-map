@@ -31,6 +31,15 @@ for (const id of readdirSync(new URL("../cities/", import.meta.url))) {
     if (!isStr(n.text, 400)) fail(wc, "each rain note needs text of 400 characters or fewer");
     if (n.url !== undefined && !https(n.url)) fail(wc, "rain note url must be https://");
   }
+  // rain_so_far: the amounts (in inches) at which "Rain so far" calls the rain heavy, and a storm to compare with
+  const rs = city.rain_so_far;
+  if (rs !== undefined) {
+    const num = (v) => typeof v === "number" && v > 0 && v < 30;
+    for (const k of ["hour_heavy_in", "hour_very_heavy_in", "day_soaking_in", "day_big_in"]) if (rs[k] !== undefined && !num(rs[k])) fail(wc, `rain_so_far.${k} must be a number of inches`);
+    if (rs.hour_heavy_in >= rs.hour_very_heavy_in) fail(wc, "rain_so_far.hour_heavy_in must be less than hour_very_heavy_in");
+    if (rs.day_soaking_in >= rs.day_big_in) fail(wc, "rain_so_far.day_soaking_in must be less than day_big_in");
+    if (rs.compare !== undefined && (!isStr(rs.compare.label, 40) || !num(rs.compare.inches))) fail(wc, "rain_so_far.compare needs a label and inches");
+  }
   const margin = 0.03;
   const inCity = (p) => pair(p) && boundsOk && p[0] >= bd[0][0] - margin && p[0] <= bd[1][0] + margin && p[1] >= bd[0][1] - margin && p[1] <= bd[1][1] + margin;
 
