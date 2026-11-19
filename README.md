@@ -6,7 +6,7 @@ My Neighborhood Map: an engine for neighborhood maps, one folder per city. San F
 
 <img src="docs/screenshot.png" alt="The map on a phone: weather for today, the Nature & walks and Storms & flooding tabs, and the Plan a walk button" width="300" align="right">
 
-New here? Welcome. You can help with or without code, and AI coding tools (Claude Code, Cursor and others) are welcome. Live map: **https://christinebuilds.github.io/neighborhood-map/**
+New here? Welcome. You can help with or without code, and AI coding tools (Claude Code, Cursor and others) are welcome. Live map: **https://sfcommunitymap.org/**
 
 **Run it on your computer** (no install, no build step):
 
@@ -23,7 +23,9 @@ Then open http://localhost:8931/ in your browser. Use your browser's phone view,
 | `index.html` | The whole map: styles, page and script in one file. Both tabs live here. |
 | `cities/sf/city.json` | San Francisco settings: map bounds, data feeds, phone numbers, links, rain notes. |
 | `cities/sf/past-storms.json` | Places that flooded in past storms, each with a source link. |
-| `flood.html` | Short "SF Flood Map" landing page to share. `today.html` and `walk.html` only redirect. |
+| `flood.html` | Short "About the flood map" page. `today.html` and `walk.html` only redirect. |
+| `flood/`, `walks/`, `drive/` | Short addresses to share: `/flood`, `/walks` and `/drive` open the map on the right tab. |
+| `CNAME` | The site's web address (`sfcommunitymap.org`) for GitHub Pages. |
 | `tools/validate.mjs` | Checks the city files. Run `node tools/validate.mjs` before every pull request. |
 | `supabase/migrations/` | Record of the database setup for neighbor reports. Only Christine applies changes. |
 | `assets/`, `manifest.webmanifest` | Icons and the link preview picture. |
@@ -47,9 +49,10 @@ This is not an official city service or a warning system. In an emergency call 9
 
 ## Pages and links
 
-- `index.html` is the map. `#flood` opens the Storms & flooding view, `#walk` starts planning a walk, `#feedback` opens the bug and idea form.
-- `flood.html` is a short landing page titled "SF Flood Map", the link to share for flooding.
+- `index.html` is the map. `#flood` opens the Storms & flooding view, `#drive` opens it with Plan a drive, `#nature` opens Nature & walks, `#walk` starts planning a walk, `#feedback` opens the bug and idea form.
+- `flood.html` is a short page titled "SF Flood Map" that says what the flood map is. The link to share for flooding is `sfcommunitymap.org/flood`.
 - `today.html` and `walk.html` only redirect to the map, so old links keep working.
+- Short addresses to share: `sfcommunitymap.org/flood` opens Storms & flooding, `/walks` opens Nature & walks, and `/drive` opens Plan a drive. Each is a tiny page that sends people to the map with `#flood`, `#nature` or `#drive` at the end of the address. `/flood` carries the flood map's own link preview.
 - `version.txt` holds the build time. The page shows it in the footer and offers to update when a newer one is published.
 
 ## Cities
