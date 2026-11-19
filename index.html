@@ -284,6 +284,21 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 .alertline[aria-expanded="true"] { white-space: normal; }
 .alertline[hidden] { display: none; }
 #live { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+/* Rain so far: how much has already fallen. Amber when it is heavy; the red box above is kept for official alerts. */
+#rainSoFar { margin: 6px 0 0; font-size: 13px; line-height: 1.35; color: var(--muted); }
+#rainSoFar[hidden] { display: none; }
+#rainSoFar p { margin: 0; }
+#rainSoFar .nb { white-space: nowrap; }
+#rsfLine b, #rsfSay { color: var(--ink); }
+#rsfSay { font-weight: 700; }
+#rsfSay span { font-weight: 400; }
+#rsfSay:empty { display: none; }
+#rsfNote { font-size: 12px; }
+#rsfNote svg { display: inline-block; vertical-align: -2px; margin-right: 6px; }
+#rainSoFar.lv1, #rainSoFar.lv2 { background: #fff4e0; border-left: 4px solid var(--one); border-radius: 6px; padding: 4px 8px; margin-left: -12px; margin-right: -8px; }
+#rainSoFar.lv1 #rsfLine, #rainSoFar.lv2 #rsfLine { color: var(--ink); font-weight: 600; }
+#rainSoFar.lv2 { border-left-color: var(--hot); }
+#rainSoFar.lv2 #rsfSay { color: #8a3b00; }
 #cTide[hidden] { display: none; }
 #cta { max-width: 900px; margin: 0 auto; padding: 10px 16px 10px; }
 .ctarow { display: flex; gap: 8px; align-items: stretch; }
@@ -371,6 +386,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
 <section id="day" aria-label="Weather today">
   <p class="words"><span id="now">Loading the weather…</span><span id="dayWords"></span></p>
   <div id="dayWrap"><div id="daySvg" tabindex="0" role="group" aria-label="Hour by hour. Swipe or use the arrow keys to see more hours."></div><span id="dayHint" aria-hidden="true" hidden></span></div>
+  <div id="rainSoFar" hidden><p id="rsfLine"></p><p id="rsfSay"></p><p id="rsfNote"></p></div>
   <div id="alerts"><button type="button" id="nAlert" class="alertline" aria-expanded="false" hidden></button></div>
   <p id="live" class="only-flood"><span id="cTide">Tide: loading…</span></p>
 </section>
@@ -578,7 +594,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-19 08:51 PT";
+var BUILD = "2026-11-19 08:56 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -1936,12 +1952,13 @@ var BUILD = "2026-11-19 08:51 PT";
       function (e) { clearTimeout(t); throw e; });
   }
   function wxKey(ll) { return ll[0].toFixed(2) + "," + ll[1].toFixed(2); }
-  function wxSave(w) { if (w.nws && w.rain) store("fm_wx", { k: wxKey(w.ll), at: Date.now(), nws: w.nws, rain: w.rain }); }
+  function wxSave(w) { if (w.nws && w.rain) store("fm_wx", { k: wxKey(w.ll), at: Date.now(), nws: w.nws, rain: w.rain, p24: !!w.p24, rainAt: w.rainAt || 0 }); }   // p24: the rain holds a full 24 past hours; rainAt: when that rain was fetched
   function loadWeather(ll) {
-    var mine = wx = { nws: null, rain: null, ll: ll, grace: false };
+    if (wx && wxKey(wx.ll) !== wxKey(ll)) rsfBox.hidden = true;   // a new spot: don't leave the old spot's rain showing
+    var mine = wx = { nws: null, rain: null, ll: ll, grace: false, past: null, p24: false, rainAt: 0 };   // past: the hourly rain "Rain so far" adds up; null = still loading, false = didn't load
     clearTimeout(wxTimer); wxTimer = setTimeout(function () { if (wx === mine) loadWeather(ll); }, 15 * 6e4);   // keep the numbers fresh
     var c = store("fm_wx");
-    if (c && c.k === wxKey(ll) && Date.now() - c.at < 45 * 6e4 && c.nws && c.rain) { mine.nws = c.nws; mine.rain = c.rain; drawDay(); mine.nws = null; mine.rain = null; mine.cached = c; }
+    if (c && c.k === wxKey(ll) && Date.now() - c.at < 45 * 6e4 && c.nws && c.rain) { mine.nws = c.nws; mine.rain = c.rain; drawDay(); mine.nws = null; mine.rain = null; mine.cached = c; if (c.p24) { mine.past = c.rain; mine.rainAt = c.rainAt || 0; drawRain(); } }
     setTimeout(function () { mine.grace = true; if (wx === mine) drawDay(); }, 2500);   // after 2.5 s, draw with whatever has arrived
     fetchSoon("https://api.weather.gov/points/" + ll[0].toFixed(4) + "," + ll[1].toFixed(4), 8000).then(function (j) { return fetchSoon(j.properties.forecastHourly, 8000); })
       .then(function (j) { mine.nws = (j.properties.periods || []).slice(0, 48); wxSave(mine); if (wx === mine) drawDay(); })
@@ -1951,10 +1968,72 @@ var BUILD = "2026-11-19 08:51 PT";
     }).catch(function () {});
     // Hourly amounts from Open-Meteo; if it is not answering, the chart shows the Weather Service's hourly chance instead.
     // Open-Meteo gives each hour's rain at the END of that hour ("sum of the preceding hour"), so the value stamped 3:00 is the rain from 2 to 3.
-    fetchSoon("https://api.open-meteo.com/v1/forecast?latitude=" + ll[0].toFixed(3) + "&longitude=" + ll[1].toFixed(3) + "&hourly=precipitation&past_hours=3&forecast_hours=44&precipitation_unit=inch&timezone=UTC", 8000).then(function (j) {
+    fetchSoon("https://api.open-meteo.com/v1/forecast?latitude=" + ll[0].toFixed(3) + "&longitude=" + ll[1].toFixed(3) + "&hourly=precipitation&past_hours=24&forecast_hours=44&precipitation_unit=inch&timezone=UTC", 8000).then(function (j) {
       var m = {}; j.hourly.time.forEach(function (x, i) { m[hourKey(x + "Z") - 1] = j.hourly.precipitation[i] || 0; });
-      mine.rain = m; wxSave(mine); if (wx === mine) drawDay();
-    }).catch(function () { mine.rain = mine.cached ? mine.cached.rain : false; if (wx === mine) drawDay(); });
+      mine.rain = mine.past = m; mine.p24 = true; mine.rainAt = Date.now(); wxSave(mine); if (wx === mine) { drawDay(); drawRain(); }
+    }).catch(function () {
+      mine.rain = mine.cached ? mine.cached.rain : false; mine.p24 = !!(mine.cached && mine.cached.p24); mine.past = mine.p24 ? mine.cached.rain : false; mine.rainAt = mine.p24 ? mine.cached.rainAt || 0 : 0;
+      if (wx === mine) { drawDay(); drawRain(); }
+    });
+  }
+  // ---------- rain so far: how much has already fallen near the chosen spot ----------
+  // The numbers are Open-Meteo's hourly amounts for the 24 hours before now: a weather-model estimate, not a rain gauge, and the note says so.
+  // Each window ends now. Open-Meteo works in whole clock hours, so the hour in progress counts for the part that has gone by,
+  // and the oldest hour for the part still inside the window. At 3:20 "last hour" is a third of 3-4 plus two thirds of 2-3.
+  // The words come from limits in city.json ("rain_so_far"), and are picked from the rounded numbers on screen so the two always agree:
+  //   last hour 0.3 in or more = heavy. That is the Weather Service's own line for "heavy" rain (more than 0.30 in an hour).
+  //   last hour 1 in or more = very heavy. The city's rain notes: "a burst of an inch or more in an hour" is when streets flooded.
+  //   last 24 hours 1 in or more = a soaking day. The rain notes: a storm of "an inch or more" left about 15 flooded spots.
+  //   last 24 hours 2 in or more = a big storm for this city. The map makers' judgement: under half of Dec 31, 2022 (the second-wettest day on record), well over a normal storm.
+  var rsfBox = document.getElementById("rainSoFar"), RS = CITY.rain_so_far || {};
+  function inches(v) { return v < 0.005 ? "0" : v < 0.1 ? v.toFixed(2) : v.toFixed(1); }
+  function rainOver(m, hours, now) {
+    var k0 = Math.floor(now / 36e5), f = now / 36e5 - k0, s = f * (m[k0] || 0) + (1 - f) * (m[k0 - hours] || 0);
+    for (var i = 1; i < hours; i++) s += m[k0 - i] || 0;
+    return s;
+  }
+  function drawRain() {
+    if (!wx || wx.past === null) return;   // still loading: leave what is showing
+    var line = document.getElementById("rsfLine"), say = document.getElementById("rsfSay"), note = document.getElementById("rsfNote");
+    line.textContent = ""; say.textContent = ""; note.textContent = ""; rsfBox.className = ""; rsfBox.hidden = false;
+    var now = Date.now(), m = wx.past;
+    // A saved copy is fine for 45 minutes. Older than that, its newest hours were only a forecast, so don't call them rain that fell.
+    if (!m || now - wx.rainAt > 45 * 6e4) { line.textContent = "Rain so far didn't load."; return; }
+    var t1 = inches(rainOver(m, 1, now)), t6 = inches(rainOver(m, 6, now)), t24 = inches(rainOver(m, 24, now));
+    var h = +t1, d = +t24;
+    if (!d && !+t6 && !h) { rsfBox.className = "only-flood"; line.textContent = "No rain in the last 24 hours (an estimate)."; return; }   // dry: one quiet line, on the storm tab only
+    note.textContent = "Estimate from weather models, not a rain gauge.";
+    var b = document.createElement("b"); b.textContent = "Rain so far:"; line.appendChild(b);
+    [[t1, "last hour"], [t6, "6 hrs"], [t24, "24 hrs"]].forEach(function (x, n) {
+      var sp = document.createElement("span"); sp.className = "nb"; sp.textContent = (+x[0] ? x[0] + " in " : "none in ") + x[1];
+      line.appendChild(document.createTextNode(n ? " · " : " ")); line.appendChild(sp);
+    });
+    var words = [], lv = 0;
+    if (RS.hour_very_heavy_in && h >= RS.hour_very_heavy_in) { words.push("Very heavy rain in the last hour: streets can flood fast."); lv = 2; }
+    else if (RS.hour_heavy_in && h >= RS.hour_heavy_in) { words.push("Heavy rain in the last hour."); lv = 1; }
+    if (RS.day_big_in && d >= RS.day_big_in) { words.push("A big storm for " + CITY.name + "."); lv = 2; }
+    else if (RS.day_soaking_in && d >= RS.day_soaking_in) { if (!lv) words.push("A soaking day."); lv = Math.max(lv, 1); }   // one label is enough when the last hour already has one
+    // Next to a storm people remember, once there is enough rain for that to mean something.
+    var C = RS.compare, r = C && C.inches > 0 && RS.day_soaking_in && d >= RS.day_soaking_in ? d / C.inches : 0;
+    say.textContent = words.join(" ");
+    if (r >= 0.2) {   // on the storm tab only, in plain weight
+      var cmp = document.createElement("span"); cmp.className = "only-flood";
+      cmp.textContent = " " + (r < 0.29 ? "About a quarter of" : r < 0.42 ? "About a third of" : r < 0.58 ? "About half of" : r < 0.71 ? "About two thirds of" : r < 0.88 ? "About three quarters of" : r < 1.15 ? "About as much as" : "More than")
+        + " the " + C.label + " storm (" + C.inches + " in that day).";
+      say.appendChild(cmp);
+    }
+    if (lv) rsfBox.className = "lv" + lv;
+    // Hour by hour, oldest on the left: the same blue bars as the chart above, very small.
+    var ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg"), k0 = Math.floor(now / 36e5), top = 0.1, i;
+    for (i = 1; i <= 24; i++) top = Math.max(top, m[k0 - i] || 0);
+    svg.setAttribute("width", 72); svg.setAttribute("height", 14); svg.setAttribute("viewBox", "0 0 72 14"); svg.setAttribute("aria-hidden", "true");
+    for (i = 24; i >= 1; i--) {
+      var v = m[k0 - i] || 0, bh = v >= 0.005 ? Math.max(2, v / top * 13) : 1, bar = document.createElementNS(ns, "rect");
+      bar.setAttribute("x", (24 - i) * 3); bar.setAttribute("y", 14 - bh); bar.setAttribute("width", 2); bar.setAttribute("height", bh); bar.setAttribute("rx", 0.5);
+      bar.setAttribute("fill", v >= 0.005 ? "#1565c0" : "#d3dde1"); bar.setAttribute("opacity", v >= 0.005 ? 0.85 : 1);
+      svg.appendChild(bar);
+    }
+    note.insertBefore(svg, note.firstChild);
   }
   var dayBox = document.getElementById("daySvg"), dayHint = document.getElementById("dayHint"), dayView = null;
   function userScrolled() { dayBox.__user = true; }

@@ -96,6 +96,16 @@
       "text": "The map makers' reading, not a forecast: steady rain over many hours means ponding in the red areas. A burst of an inch or more in an hour, or clogged drains, is when the New Year's Eve 2022 pattern repeats."
     }
   ],
+  "rain_so_far": {
+    "hour_heavy_in": 0.3,
+    "hour_very_heavy_in": 1,
+    "day_soaking_in": 1,
+    "day_big_in": 2,
+    "compare": {
+      "label": "Dec 31, 2022",
+      "inches": 5.46
+    }
+  },
   "links": [
     {
       "label": "SFPUC flood map for your block",
