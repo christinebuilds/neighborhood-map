@@ -370,6 +370,16 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 #driveBarMsg { font-weight: 600; margin: 0 0 8px; }
 #driveBar .foot { display: flex; align-items: flex-start; gap: 10px; }
 #driveStop { flex: 0 0 auto; min-height: 36px; }
+#bWaterHere { display: flex; align-items: center; gap: 6px; min-height: 46px; padding: 8px 14px 8px 11px; font: inherit; font-size: 15px; font-weight: 700; line-height: 1.2; border-radius: 99px; border: 2px solid #004d5a; background: #00bcd4; color: #00323b; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+#bWaterHere[hidden] { display: none; }
+#bWaterHere svg { flex: 0 0 auto; width: 15px; height: 20px; }
+#whBar { position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 1990; max-width: 480px; margin: 0 auto; background: #16252d; color: #fff; border-radius: 12px; padding: 8px 10px; font-size: 14px; line-height: 1.35; font-weight: 600; box-shadow: 0 2px 12px rgba(0,0,0,.4); }
+#whBar[hidden], #whBar [hidden] { display: none; }
+#whSent { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#whUndo { flex: 0 0 auto; min-height: 44px; font-size: 15px; font-weight: 700; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--ink); background: #fff; color: var(--ink); cursor: pointer; }
+#whSewRow { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-top: 6px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,.3); font-size: 15px; cursor: pointer; }
+#whSewRow input { width: 22px; height: 22px; flex: 0 0 auto; margin: 0; }
+#whMsg { margin: 0; padding: 4px 2px; }
 .floodkey { max-height: min(330px, 50vh); overflow-y: auto; }   /* stays inside the map on a phone */
 .lline { display: inline-block; width: 18px; height: 0; margin-right: 6px; vertical-align: 3px; border-top: 4px solid #16252d; }
 .lline.usual { border-top: 4px dotted #4a5a62; }
@@ -482,6 +492,11 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
   <p id="driveBarMsg" role="status" hidden></p>
   <button type="button" id="driveWater">Water here</button>
   <div class="foot"><p id="driveBarSafe">Driver: keep your eyes on the road. Ask a passenger to tap, or tap when stopped. <b>Never drive through water. Turn around.</b></p><button type="button" class="linkish" id="driveStop">Stop driving</button></div>
+</div>
+<div id="whBar" hidden>
+  <div id="whSent" hidden><span id="whTxt" role="status"></span><button type="button" id="whUndo">Undo</button></div>
+  <label id="whSewRow" hidden><input type="checkbox" id="whSewage"> Looks or smells like sewage</label>
+  <p id="whMsg" role="status" hidden></p>
 </div>
 <div id="seasonKey" class="only-nature" hidden></div>
 <div id="stat"><div class="msg only-flood" id="n311"></div><div class="msg only-flood" id="nDrain"></div><div class="msg only-flood" id="nRep"></div><div class="msg" id="tileMsg"></div><button type="button" id="nearDrain" class="only-flood" hidden></button></div>
@@ -624,7 +639,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-19 11:50 PT";
+var BUILD = "2026-11-19 12:19 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -1215,7 +1230,7 @@ var BUILD = "2026-11-19 11:50 PT";
             }, { maxWidth: 260 })
             .addTo(repLayer);
         });
-        waterNow = shown; repOk = true; driveAheadCheck();
+        waterNow = shown; repOk = true; driveAheadCheck(); whShow();
         document.getElementById("nRep").textContent = "Neighbor water reports, last " + WATER_HOURS + " hours: " + nW + ".";
         restyleDrains();
       }).catch(function (e) { document.getElementById("nRep").textContent = "Neighbor reports did not load (" + e.message + ")."; repOk = false; });
@@ -1437,8 +1452,8 @@ var BUILD = "2026-11-19 11:50 PT";
 
   // ---- Follow me: a live blue dot that keeps the map on you as you walk.
   // The position stays in this browser and is never stored. It is sent only if you plan a route from where you are: the routing
-  // service then gets it as the start of the route. While following a route a tap on Water here posts the spot you are at as the
-  // water's spot. Drain reports still carry only the drain's spot.
+  // service then gets it as the start of the route. A tap on Water here (the button on the map, or the big one while following a
+  // route) posts the spot you are at as the water's spot. Drain reports still carry only the drain's spot.
   var fw = { id: null, on: false, center: false, ll: null, dot: null, ring: null, first: true, hideT: null, resume: false };
   function followBtn() {
     var b = document.getElementById("locBtn"); if (!b) return;
@@ -1647,9 +1662,10 @@ var BUILD = "2026-11-19 11:50 PT";
   }
   // ---- Names for the two ends: "17th St & Folsom St" in place of "the spot you tapped".
   // Cross streets come from the city's own street list, on the open-data site this page already reads 311 reports and drains from.
-  // Privacy: only a spot tapped on the map, or a street typed into the search, is named this way. "Where you are now" and the saved
-  // spot are never looked up: a person's own location must not go to one more place. The city site is asked for a fixed square of
-  // the street grid (about 500 by 400 metres), never for the tapped point; the nearest corner is worked out here on the phone.
+  // Privacy: only a spot tapped on the map, a street typed into the search, or the spot of a Water here report the person has just
+  // asked to make public is named this way. A route's "where you are now" and the saved spot are never looked up: a person's own
+  // location must not go to one more place. The city site is asked for a fixed square of the street grid (about 500 by 400 metres),
+  // never for the point itself; the nearest corner is worked out here on the phone.
   var SN = CITY.street_names || null, snCache = {};
   var SN_SKIP = /^(START|END|MID BLOCK|COUNTY LINE|EASEMENT|UNNAMED)\b|^(NORTH|SOUTH|EAST|WEST|CHANNEL)$|:|\bRAMP\b|BOUND$/;   // the list's own notes, not street names
   function stCase(s) {                                   // "03RD ST" -> "3rd St", "MCALLISTER ST" -> "McAllister St"
@@ -1958,6 +1974,7 @@ var BUILD = "2026-11-19 11:50 PT";
     bDrive.setAttribute("aria-pressed", drive.open ? "true" : "false"); bDrive.textContent = drive.open ? "Close route" : "Plan a route";
     bReport.hidden = !!drive.pick;                       // one long label at a time in the button row
     bDrive.hidden = picking;
+    whSync();
     if (!drive.open) return;
     driveFrom();
     dEl("FromBtn").textContent = !edit ? "Change" : drive.pick === "start" ? "Cancel" : "Change start";
@@ -2031,7 +2048,20 @@ var BUILD = "2026-11-19 11:50 PT";
 
   // ---- Follow mode (driving or walking): follow the dot along the route, with one big "Water here" button.
   // The position never leaves the phone. A one-tap report carries only the water's spot, through the same path as Report water.
-  var dm = { on: false, startedFollow: false, pend: null, last: null, ahead: null, seen: [], back: null, sayT: null };
+  var dm = { on: false, startedFollow: false, pend: null, ahead: null, seen: [], back: null, sayT: null };
+  // One-tap reports, from the follow bar and from the Water here button on the map, share everything below.
+  var waterLast = null;                                  // where and when the last one-tap report was made, on this visit only
+  // The report goes where the phone is now: a rough fix, or one older than 20 seconds, is refused.
+  function waterFixOk(ll, acc, at) { return !!ll && acc <= 75 && Date.now() - at <= 20000; }
+  // One report per stretch of road: a second tap within 150 m and 2 minutes is a double tap.
+  function waterRepeat(ll, now) { return !!waterLast && now - waterLast.t < 120000 && distM(ll, waterLast.ll) < 150; }
+  // The one way a one-tap report is sent. Only the water's spot goes, with the same fields as Report water; "sewage" is added
+  // only when the person ticked it and the database has that column, exactly as the form does.
+  function sendWater(ll, sewage) {
+    var b = { kind: "water", drain_id: null, lat: ll[0], lon: ll[1], note: null, photo_path: null };
+    if (sewage === true && sewCol === true) b.sewage = true;
+    return postReport(b).then(function () { sb("/functions/v1/moderate", { method: "POST" }).catch(function () {}).then(loadReports); });
+  }
   function driveBarSay(t) {
     var m = dEl("BarMsg"); m.textContent = t; m.hidden = !t; clearTimeout(dm.sayT);
     if (t) dm.sayT = setTimeout(function () { m.hidden = true; m.textContent = ""; }, 8000);
@@ -2039,6 +2069,7 @@ var BUILD = "2026-11-19 11:50 PT";
   function driveModeShow() {
     dEl("Bar").hidden = !dm.on; dEl("Start").hidden = dm.on;
     dEl("Ahead").hidden = !dm.ahead; dEl("Sent").hidden = !dm.pend;
+    whSync();
   }
   function driveModeOn() {
     if (!drive.res || dm.on) return;
@@ -2058,27 +2089,24 @@ var BUILD = "2026-11-19 11:50 PT";
   function driveSendNow() {
     var p = dm.pend; if (!p) return;
     clearTimeout(p.t); dm.pend = null; driveModeShow();
-    postReport({ kind: "water", drain_id: null, lat: p.ll[0], lon: p.ll[1], note: null, photo_path: null })
-      .then(function () { driveBarSay("Sent. Thank you."); return sb("/functions/v1/moderate", { method: "POST" }).catch(function () {}).then(loadReports); })
-      .catch(function () { dm.last = null; driveBarSay("Couldn't send. Use Report water when you stop."); });
+    sendWater(p.ll).then(function () { driveBarSay("Sent. Thank you."); })
+      .catch(function () { waterLast = null; driveBarSay("Couldn't send. Use Report water when you stop."); });
   }
   dEl("Start").addEventListener("click", driveModeOn);
   dEl("Stop").addEventListener("click", driveModeOff);
   dEl("Water").addEventListener("click", function () {
     if (!dm.on || dm.pend) return;
-    // The report goes where the phone is now: a rough fix, or one older than 20 seconds, is refused.
-    if (!fw.ll || !(fw.acc <= 75) || !(Date.now() - fw.at <= 20000)) { driveBarSay("Can't tell where you are well enough. Use Report water when you stop."); return; }
+    if (!waterFixOk(fw.ll, fw.acc, fw.at)) { driveBarSay("Can't tell where you are well enough. Use Report water when you stop."); return; }
     var ll = fw.ll.slice(), now = Date.now();
-    // One report per stretch of road: a second tap within 150 m and 2 minutes is a double tap.
-    if (dm.last && now - dm.last.t < 120000 && distM(ll, dm.last.ll) < 150) { driveBarSay("Already sent from here. Thank you."); return; }
-    dm.last = { ll: ll, t: now };
+    if (waterRepeat(ll, now)) { driveBarSay("Already sent from here. Thank you."); return; }
+    waterLast = { ll: ll, t: now };
     // Held for 5 seconds so Undo can stop it: a posted report can't be taken back from the phone.
     dm.pend = { ll: ll, t: setTimeout(driveSendNow, 5000) };
     driveBarSay(""); driveModeShow();
   });
   dEl("Undo").addEventListener("click", function () {
     if (!dm.pend) return;
-    clearTimeout(dm.pend.t); dm.pend = null; dm.last = null; driveModeShow(); driveBarSay("Not sent.");
+    clearTimeout(dm.pend.t); dm.pend = null; waterLast = null; driveModeShow(); driveBarSay("Not sent.");
   });
   // Called whenever neighbor reports reload (every 2 minutes on this tab): is there new water on the route ahead of the dot?
   function driveAheadCheck() {
@@ -2097,6 +2125,123 @@ var BUILD = "2026-11-19 11:50 PT";
     if (fw.ll) drive.start = { ll: fw.ll.slice(), src: "live", name: "where you are now" };
     dm.ahead = null; driveModeShow(); driveBarSay("Finding a way around…");
     driveRoute();
+  });
+
+  // ---- "Water here" on the map, on both tabs: one tap reports water where the phone is.
+  // Privacy: this posts the phone's position at that moment as the water's spot, publicly, as a neighbor report dot (the same as
+  // the follow bar's button). Because this button is on the first screen, a tap at home would put a dot at home. So: the very
+  // first tap on a device only explains and sends nothing; every report is held for 5 seconds with the spot named and marked on
+  // the map and an Undo; no report leaves the phone before the hold ends; and nothing about the person is kept or sent.
+  // To name the spot, the city's street list is asked for a fixed square of the street grid, never for the point (see snStreets).
+  var wh = { btn: null, pend: null, wait: false, n: 0, told: false, tipAt: 0, cant: false, mark: null, sayT: null, markT: null };
+  var whBar = document.getElementById("whBar"), whMsg = document.getElementById("whMsg"), whSew = document.getElementById("whSewage");
+  var whCtl = L.control({ position: "bottomright" });
+  whCtl.onAdd = function () {
+    var b = L.DomUtil.create("button");
+    b.type = "button"; b.id = "bWaterHere"; b.title = "Report water where you are";
+    b.innerHTML = '<svg viewBox="0 0 15 20" aria-hidden="true"><path d="M7.5 1C7.5 1 1.5 8.6 1.5 13a6 6 0 0 0 12 0C13.5 8.6 7.5 1 7.5 1z" fill="#00323b"/></svg>Water here';
+    L.DomEvent.disableClickPropagation(b);
+    L.DomEvent.on(b, "click", function (e) { L.DomEvent.stop(e); whTap(); });
+    wh.btn = b;
+    return b;
+  };
+  whCtl.addTo(map);
+  // The button steps aside while the follow bar shows (it has its own big button) and while a tap on the map is picking a spot.
+  function whSync() {
+    if (!wh || !wh.btn) return;
+    var off = dm.on || picking || !!drive.pick;
+    wh.btn.hidden = off;
+    if (off && wh.wait) { wh.n++; wh.wait = false; whSay(""); }                // a location answer that comes late is dropped
+    if (!picking && wh.cant) { wh.cant = false; whSay(""); }                   // the spot was picked, or picking was cancelled
+  }
+  function whWhere(n) { return !n ? "where you are" : n.indexOf("a spot near ") === 0 ? n.slice(7) : "at " + n; }
+  function whShow() {
+    if (!wh || !whBar) return;
+    var p = wh.pend;
+    document.getElementById("whSent").hidden = !p;
+    document.getElementById("whSewRow").hidden = !(p && sewCol === true);
+    if (p) document.getElementById("whTxt").textContent = "Sending water report " + whWhere(p.name) + ".";
+    whBar.hidden = !p && whMsg.hidden;
+  }
+  // One line in the bar. It clears itself after a few seconds unless keep is set.
+  function whSay(t, keep) {
+    clearTimeout(wh.sayT); whMsg.textContent = t; whMsg.hidden = !t; whShow();
+    if (t && keep !== true) wh.sayT = setTimeout(function () { whSay(""); }, keep || 8000);
+  }
+  function whMarkOff() { clearTimeout(wh.markT); if (wh.mark) { map.removeLayer(wh.mark); wh.mark = null; } }
+  // A dashed ring where the report will land. It sits straight on the map, so it shows on both tabs.
+  function whMarkAt(ll) {
+    whMarkOff();
+    wh.mark = L.circleMarker(ll, { pane: "reports", interactive: false, className: "whmark", radius: 12, color: "#004d5a", weight: 3, dashArray: "5 4", fillColor: "#00bcd4", fillOpacity: 0.55 }).addTo(map);
+  }
+  // Move the map only as far as needed for the ring to be seen: zoom in when the map is too far out to tell one corner from the
+  // next, and slide it when the spot is off the part of the map that is on screen and clear of the bar.
+  function whShowSpot(ll) {
+    var box = map.getContainer();
+    if (map.getZoom() < 16) map.setView(ll, 17, { animate: false });
+    var r = box.getBoundingClientRect(), top = Math.max(r.top, 52), bot = Math.min(r.bottom, whBar.getBoundingClientRect().top);
+    if (bot - top < 160) { box.scrollIntoView({ block: "center" }); r = box.getBoundingClientRect(); top = Math.max(r.top, 52); bot = Math.min(r.bottom, whBar.getBoundingClientRect().top); }
+    var p = map.latLngToContainerPoint(ll), x = r.left + p.x, y = r.top + p.y, pad = 40;
+    if (x < r.left + pad || x > r.right - pad || y < top + pad || y > bot - pad) map.panBy([x - (r.left + r.right) / 2, y - (top + bot) / 2], { animate: false });
+  }
+  // Where is the phone? Locate me already on with a good, recent fix: use that. Otherwise ask once. This does not turn on following.
+  function whFix(ok, no) {
+    if (fw.on && waterFixOk(fw.ll, fw.acc, fw.at)) { ok(fw.ll.slice()); return; }
+    if (!navigator.geolocation || !window.isSecureContext) { no(); return; }
+    var mine = ++wh.n; wh.wait = true; whSay("Finding you…", true);
+    navigator.geolocation.getCurrentPosition(function (p) {
+      if (mine !== wh.n) return; wh.wait = false;
+      var ll = [p.coords.latitude, p.coords.longitude];
+      if (!waterFixOk(ll, p.coords.accuracy, Math.min(p.timestamp || Infinity, Date.now()))) { no(); return; }
+      if (NAT) NAT.locBlocked(false);
+      ok(ll);
+    }, function (e) {
+      if (mine !== wh.n) return; wh.wait = false;
+      if (e && e.code === 1 && NAT) NAT.locBlocked(true);
+      no();
+    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+  }
+  // No usable location: nothing is sent. Hand over to Report water, where the person taps the spot on the map.
+  function whCant() {
+    if (MODE !== "flood") setMode("flood");
+    map.closePopup(); setPicking(true); document.getElementById("map").scrollIntoView({ block: "center" });
+    wh.cant = true; whSay("Can't tell where you are. Tap the map to mark the water.", 12000);
+  }
+  function whTap() {
+    if (wh.pend || wh.wait || dm.on || picking || drive.pick) return;
+    if (wh.tipAt && Date.now() - wh.tipAt < 1000) return;   // a double tap must not skip past the explanation below
+    if (sewCol === null) loadReports();                  // Nature & walks has not read the reports yet: find out if the sewage box can be offered
+    // First time on this device: say what the button does. This tap sends nothing and does not ask for the location.
+    if (!wh.told && !store("fm_water_tip")) {
+      wh.told = true; wh.tipAt = Date.now(); store("fm_water_tip", 1);
+      whSay("This puts a public water report where you are standing. Tap again to send.", 15000); return;
+    }
+    wh.told = true;
+    whFix(function (ll) {
+      var B = CITY.bounds, now = Date.now();
+      if (!(ll[0] >= B[0][0] && ll[0] <= B[1][0] && ll[1] >= B[0][1] && ll[1] <= B[1][1])) { whSay("You seem to be outside " + CITY.name + ", so the map stayed where it was."); return; }
+      if (waterRepeat(ll, now)) { whSay("Already sent from here. Thank you."); return; }
+      waterLast = { ll: ll, t: now };
+      // Held for 5 seconds so Undo can stop it: a posted report can't be taken back from the phone.
+      var p = wh.pend = { ll: ll, name: "", t: setTimeout(whSendNow, 5000) };
+      whSew.checked = false;
+      document.getElementById("mapMsg").hidden = true;   // an older note at the bottom of the screen must not sit on Undo
+      whMarkAt(ll); whSay(""); whShowSpot(ll);
+      if (SN && SN.dataset && HOSTS.length && NAT) snStreets(ll).then(function (segs) { if (wh.pend === p) { p.name = snName(ll, segs); whShow(); } }).catch(function () {});
+    }, whCant);
+  }
+  function whSendNow() {
+    var p = wh.pend; if (!p) return;
+    clearTimeout(p.t); wh.pend = null; whShow();
+    sendWater(p.ll, whSew.checked).then(function () {
+      if (wh.mark) wh.mark.setStyle({ dashArray: null });
+      clearTimeout(wh.markT); wh.markT = setTimeout(whMarkOff, 8000);
+      whSay("Sent. Thank you.");
+    }).catch(function () { waterLast = null; whMarkOff(); whSay("Couldn't send. Tap Water here to try again."); });
+  }
+  document.getElementById("whUndo").addEventListener("click", function () {
+    if (!wh.pend) return;
+    clearTimeout(wh.pend.t); wh.pend = null; waterLast = null; whMarkOff(); whSay("Not sent.");
   });
 
   // ================= Modes: one map, two views =================
