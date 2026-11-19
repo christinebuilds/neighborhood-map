@@ -84,6 +84,38 @@ for (const id of readdirSync(new URL("../cities/", import.meta.url))) {
       if (!https(e.url)) fail(we, "url must be an https:// link to the report");
     });
   });
+
+  // ---- transit.json (optional): bus lines for "Bus or drive?", written by tools/build-transit.py
+  let transit = null;
+  try { transit = JSON.parse(readFileSync(new URL("transit.json", dir), "utf8")); }
+  catch (e) { if (e.code !== "ENOENT") fail(`cities/${id}/transit.json`, "is not valid JSON: " + e.message); }
+  if (transit) {
+    const wt = `cities/${id}/transit.json`;
+    const src = transit.source || {};
+    if (!isStr(transit.notice, 1200) || !transit.notice.startsWith("Reproduced with permission granted by the City and County of San Francisco.")) fail(wt, "needs the notice the data license asks for");
+    if (!isStr(transit.no_liability, 600) || !isStr(transit.license, 600)) fail(wt, "needs \"no_liability\" and \"license\" (tools/build-transit.py writes them)");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(src.service_from || "") || !/^\d{4}-\d{2}-\d{2}$/.test(src.service_to || "")) fail(wt, "source needs service_from and service_to dates");
+    const stops = Array.isArray(transit.stops) ? transit.stops : [];
+    if (!stops.length || !stops.every((s) => Array.isArray(s) && s.length === 3 && isStr(s[0], 120) && inCity([s[1], s[2]]))) fail(wt, "every stop must be [name, latitude, longitude] inside the city's bounds");
+    if (!Array.isArray(transit.routes) || !transit.routes.length) fail(wt, "needs a \"routes\" list");
+    (transit.routes || []).forEach((r, i) => {
+      const wr = `${wt} routes[${i}] (${r && r.name ? r.name : "no name"})`;
+      if (!isStr(r.id, 12) || !isStr(r.name, 80)) fail(wr, "needs an id and a name");
+      if (!Array.isArray(r.line) || r.line.length < 2 || !r.line.every(pair)) fail(wr, "line must be a list of [latitude, longitude] pairs");
+      let last = -1;
+      const ok = Array.isArray(r.stops) && r.stops.length >= 2 && r.stops.every((s) => {
+        const good = Array.isArray(s) && Number.isInteger(s[0]) && s[0] >= 0 && s[0] < stops.length && Number.isInteger(s[1]) && s[1] >= last && s[1] < (r.line || []).length;
+        if (good) last = s[1];
+        return good;
+      });
+      if (!ok) fail(wr, "each stop must be [stop number, place on the line], in the order the bus runs");
+      // under (rail only): stretches that run underground, which the page does not check against street flooding
+      if (r.under !== undefined) {
+        const good = Array.isArray(r.under) && r.under.length > 0 && r.under.every((u) => Array.isArray(u) && u.length === 2 && Number.isInteger(u[0]) && Number.isInteger(u[1]) && u[0] >= 0 && u[1] > u[0] && u[1] < r.line.length);
+        if (!good || r.type === 3 || r.type === 5) fail(wr, "under must be [first, last] places on the line, and only on a rail line");
+      }
+    });
+  }
 }
 
 if (errors.length) {
