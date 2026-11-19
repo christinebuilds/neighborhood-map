@@ -44,7 +44,8 @@ for (const id of readdirSync(new URL("../cities/", import.meta.url))) {
   const fw = city.flood_water_note;
   if (fw !== undefined) {
     if (fw === null || typeof fw !== "object" || !isStr(fw.text, 200) || !isStr(fw.source, 60) || !https(fw.url)) fail(wc, "flood_water_note needs text (200 characters at most), source and an https:// url");
-    else if (/\b(safe|clean|contaminated)\b/i.test(fw.text)) fail(wc, "flood_water_note must not use the words safe, clean or contaminated: the map cannot test the water");
+    else if (fw.short !== undefined && !isStr(fw.short, 60)) fail(wc, "flood_water_note.short must be text of 60 characters at most");
+    else if (/\b(safe|clean|contaminated)\b/i.test(fw.text + " " + (fw.short || ""))) fail(wc, "flood_water_note must not use the words safe, clean or contaminated: the map cannot test the water");
   }
   if (city.reports_311 && city.reports_311.report_sewage_url !== undefined && !https(city.reports_311.report_sewage_url)) fail(wc, "reports_311.report_sewage_url must be an https:// url");
   const margin = 0.03;
