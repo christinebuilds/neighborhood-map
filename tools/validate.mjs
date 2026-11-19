@@ -40,6 +40,13 @@ for (const id of readdirSync(new URL("../cities/", import.meta.url))) {
     if (rs.day_soaking_in >= rs.day_big_in) fail(wc, "rain_so_far.day_soaking_in must be less than day_big_in");
     if (rs.compare !== undefined && (!isStr(rs.compare.label, 40) || !num(rs.compare.inches))) fail(wc, "rain_so_far.compare needs a label and inches");
   }
+  // flood_water_note: one or two short sentences on what flood water can carry, with where the advice comes from
+  const fw = city.flood_water_note;
+  if (fw !== undefined) {
+    if (fw === null || typeof fw !== "object" || !isStr(fw.text, 200) || !isStr(fw.source, 60) || !https(fw.url)) fail(wc, "flood_water_note needs text (200 characters at most), source and an https:// url");
+    else if (/\b(safe|clean|contaminated)\b/i.test(fw.text)) fail(wc, "flood_water_note must not use the words safe, clean or contaminated: the map cannot test the water");
+  }
+  if (city.reports_311 && city.reports_311.report_sewage_url !== undefined && !https(city.reports_311.report_sewage_url)) fail(wc, "reports_311.report_sewage_url must be an https:// url");
   const margin = 0.03;
   const inCity = (p) => pair(p) && boundsOk && p[0] >= bd[0][0] - margin && p[0] <= bd[1][0] + margin && p[1] >= bd[0][1] - margin && p[1] <= bd[1][1] + margin;
 
