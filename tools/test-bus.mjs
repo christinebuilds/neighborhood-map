@@ -138,7 +138,17 @@ test("honest wording: no trip times, no promises", () => {
   assert.equal(B.CANT_SEE, "This map can't see water on the road right now.");
   assert.equal(B.driveLine(6.2, 0), "Drive around flood spots: about 6 min.");
   assert.equal(B.driveLine(6.2, 1), "Drive: about 6 min. That route still passes 1 flood spot.");
+  assert.equal(B.driveLine(6.2, 1, "drive"), "Drive: about 6 min. That route still passes 1 flood spot.");
   assert.doesNotMatch(B.driveLine(6, 0) + B.driveLine(6, 2) + B.TIMES + B.CANT_SEE, BANNED);
+});
+
+test("a walking route from Plan a route is labelled as walking, never as a drive time", () => {
+  assert.equal(B.driveLine(24.6, 0, "walk"), "Walking route around flood spots: about 25 min.");
+  assert.equal(B.driveLine(24.6, 2, "walk"), "Walking route: about 25 min. It still passes 2 flood spots.");
+  assert.equal(B.driveLine(24.6, 1, "walk"), "Walking route: about 25 min. It still passes 1 flood spot.");
+  const w = B.driveLine(24.6, 0, "walk") + B.driveLine(24.6, 3, "walk");
+  assert.doesNotMatch(w, /drive|driving/i);
+  assert.doesNotMatch(w, BANNED);
 });
 
 test("lines that share both stops become one row; the line with the least walking is always shown", () => {

@@ -698,7 +698,7 @@ body.mode-nature .leaflet-bus-pane { display: none; }
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-19 13:35 PT";
+var BUILD = "2026-11-19 13:57 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -2211,7 +2211,7 @@ var BUILD = "2026-11-19 13:35 PT";
   // The button steps aside while the follow bar shows (it has its own big button) and while a tap on the map is picking a spot.
   function whSync() {
     if (!wh || !wh.btn) return;
-    var off = dm.on || picking || !!drive.pick;
+    var off = dm.on || picking || !!drive.pick || !!busPicking;
     wh.btn.hidden = off;
     if (off && wh.wait) { wh.n++; wh.wait = false; whSay(""); }                // a location answer that comes late is dropped
     if (!picking && wh.cant) { wh.cant = false; whSay(""); }                   // the spot was picked, or picking was cancelled
@@ -2270,7 +2270,7 @@ var BUILD = "2026-11-19 13:35 PT";
     wh.cant = true; whSay("Can't tell where you are. Tap the map to mark the water.", 12000);
   }
   function whTap() {
-    if (wh.pend || wh.wait || dm.on || picking || drive.pick) return;
+    if (wh.pend || wh.wait || dm.on || picking || drive.pick || busPicking) return;
     if (wh.tipAt && Date.now() - wh.tipAt < 1000) return;   // a double tap must not skip past the explanation below
     if (sewCol === null) loadReports();                  // Nature & walks has not read the reports yet: find out if the sewage box can be offered
     // First time on this device: say what the button does. This tap sends nothing and does not ask for the location.
@@ -2524,31 +2524,38 @@ var BUILD = "2026-11-19 13:35 PT";
     }
     // The small line under an option: where to get on and off.
     function stopsLine(o) { return o.from.name + " to " + o.to.name + (o.stops ? ", " + o.stops + (o.stops === 1 ? " stop." : " stops.") : "."); }
-    // The driving line, only when Plan a drive has a route to compare with. passing: how many flood spots that route still passes.
-    function driveLine(minutes, passing) {
-      var min = Math.max(1, Math.round(minutes));
-      return passing ? "Drive: about " + min + " min. That route still passes " + passing + (passing === 1 ? " flood spot." : " flood spots.") : "Drive around flood spots: about " + min + " min.";
+    // The line about the route from Plan a route, only when it has one to compare with. passing: how many past-storm places and
+    // water reports that route still passes (the same two lists its own card counts). by: "drive" or "walk", as that route was found.
+    // A walking route's time is a walking time, and the line says so; it never reads as a driving time.
+    function driveLine(minutes, passing, by) {
+      var min = Math.max(1, Math.round(minutes)), spots = passing + (passing === 1 ? " flood spot." : " flood spots.");
+      if (by === "walk") return passing ? "Walking route: about " + min + " min. It still passes " + spots : "Walking route around flood spots: about " + min + " min.";
+      return passing ? "Drive: about " + min + " min. That route still passes " + spots : "Drive around flood spots: about " + min + " min.";
     }
     return { plan: plan, sentences: sentences, stopsLine: stopsLine, driveLine: driveLine, passes: passes, distM: distM, NONE: NONE, TIMES: TIMES, CANT_SEE: CANT_SEE, UNDER: UNDER };
   })();
   // ==== BUS-LOGIC-END ====
 
+  var busPicking = false;                         // "Bus or drive?" is waiting for a tap on the map (Water here steps aside, as for the other pickers)
   // ==== BUS-PAGE-START ====  "Bus or drive?": the button, the two-tap picker, the card and the line on the map.
-  // Uses the start and end of Plan a drive when that feature is on the page and has both; otherwise asks for two taps.
+  // Uses the start and end of Plan a route when that feature is on the page and has both; otherwise asks for two taps.
   // The two places stay in this page's memory only. They are not saved and not sent anywhere: the bus lines come from
   // a file on this site (cities/<id>/transit.json), and all the working out happens on the phone.
   (function () {
     function bEl(id) { return document.getElementById("bus" + id); }
     var bBus = document.getElementById("bBus");
     var bus = { open: false, start: null, dest: null, pick: "", src: "", res: null, sel: 0, data: null, loading: false, msg: "" };
-    map.createPane("bus").style.zIndex = 390;     // under the flood shapes, so the line never hides them
+    // Under the flood shapes (400), the Plan a route line (430), the 311 dots and count bubbles (440) and neighbor reports (450),
+    // so the bus line never hides any of them. It takes no taps: what is under it stays tappable.
+    map.createPane("bus").style.zIndex = 390;
+    map.getPane("bus").style.pointerEvents = "none";
     var busDraw = L.svg({ pane: "bus" }), busLayer = L.layerGroup().addTo(map);
-    function driveEnds() {                         // the drive feature's two places, when it is here and has them
+    function driveEnds() {                         // Plan a route's two places, when it is here and has them (its IDs still say "drive")
       return typeof drive !== "undefined" && drive && drive.start && drive.dest ? { start: drive.start.ll.slice(), dest: drive.dest.ll.slice() } : null;
     }
     function driveRes() { return typeof drive !== "undefined" && drive && drive.res && drive.res.main ? drive.res : null; }
-    // True while the card's two places are still the drive's two places. After "Clear drive", or once Drive mode
-    // has re-routed from where the car is, they no longer are, and the drive line must not show.
+    // True while the card's two places are still Plan a route's two places. After "Start over", or once follow mode
+    // (Start driving / Start walking) has re-routed from where the phone is, they no longer are, and the route line must not show.
     function withDrive() {
       var e = bus.src === "drive" && bus.start && bus.dest ? driveEnds() : null;
       return !!e && BUSLOGIC.distM(e.start, bus.start) <= 1 && BUSLOGIC.distM(e.dest, bus.dest) <= 1;
@@ -2556,18 +2563,18 @@ var BUILD = "2026-11-19 13:35 PT";
     function freshWater() {                        // the "Water here" dots the map is drawing now: the page's own list and time window
       return waterNow.map(function (r) { return [r.lat, r.lon]; });
     }
-    function stopPick() { if (!bus.pick) return; bus.pick = ""; pickMsg.hidden = true; pickMsg.textContent = ""; }
+    function stopPick() { if (!bus.pick) return; bus.pick = ""; busPicking = false; pickMsg.hidden = true; pickMsg.textContent = ""; whSync(); }
     function startPick(which) {
       setPicking(false); map.closePopup();
       if (typeof driveStopPick === "function") driveStopPick();
-      bus.pick = which;
+      bus.pick = which; busPicking = true; whSync();
       pickMsg.textContent = which === "start" ? "Tap where you start" : "Tap where you're going"; pickMsg.hidden = false;
       document.getElementById("map").scrollIntoView({ block: "center" });
     }
     function load() {
       if (bus.data || bus.loading) return;
       bus.loading = true;
-      fetchJson(cityDir + "transit.json").then(function (j) { bus.loading = false; bus.data = j; work(); })
+      fetchJson(cityDir + "transit.json?v=" + encodeURIComponent(BUILD)).then(function (j) { bus.loading = false; bus.data = j; work(); })
         .catch(function () { bus.loading = false; bus.msg = "Bus lines didn't load. Try again in a few minutes."; show(); });
     }
     function work(keep) {                          // keep: the same row stays chosen and the map stays put
@@ -2611,7 +2618,7 @@ var BUILD = "2026-11-19 13:35 PT";
       bEl("Card").hidden = !(bus.open && r);
       list.textContent = "";
       if (!bus.open || !r) return;
-      bEl("Where").textContent = withDrive() ? "Same start and end as your drive." : bus.src === "drive" ? "Between the two places you chose." : "Between the two spots you tapped.";
+      bEl("Where").textContent = withDrive() ? "Same start and end as Plan a route." : bus.src === "drive" ? "Between the two places you chose." : "Between the two spots you tapped.";
       r.options.forEach(function (o, i) {
         var li = document.createElement("li"), b = document.createElement("button"), plain = document.createElement("p"), sm = document.createElement("p");
         b.type = "button"; b.setAttribute("aria-pressed", i === bus.sel ? "true" : "false");
@@ -2628,7 +2635,7 @@ var BUILD = "2026-11-19 13:35 PT";
       });
       bEl("None").textContent = r.message; bEl("None").hidden = !r.message;
       bEl("Drive").hidden = !d; bEl("Drive").textContent = "";
-      if (d) bEl("Drive").textContent = BUSLOGIC.driveLine(d.main.minutes, d.cm ? d.cm.past.length + d.cm.water.length : 0);
+      if (d) bEl("Drive").textContent = BUSLOGIC.driveLine(d.main.minutes, d.cm ? d.cm.past.length + d.cm.water.length : 0, d.by);
       bEl("Times").textContent = BUSLOGIC.TIMES; bEl("Times").hidden = !r.options.length;
       bEl("Warn").textContent = BUSLOGIC.CANT_SEE + (repOk ? "" : " Neighbor reports didn't load, so they aren't counted here.");
       var from = bus.data && bus.data.source && bus.data.source.service_from, when = "";
@@ -2665,10 +2672,10 @@ var BUILD = "2026-11-19 13:35 PT";
       if (!bus.pick || !ev.target.closest || !ev.target.closest("#bReport, #bDrive, #driveFromBtn, #driveToBtn, #mNature, #mFlood, #bPlan")) return;
       stopPick(); if (!bus.res) close();
     }, true);
-    // When the drive changes, the card follows it. Every change to the drive (a new route, "Clear drive", a route
-    // that failed, Drive mode going around water) ends in driveShow(), so that is the one place to listen.
-    // New places are worked out without moving the map: the drive decides where the map looks. In Drive mode the
-    // route starts again from the moving car, so the card keeps its two places and only drops the drive line.
+    // When Plan a route changes, the card follows it. Every change to the route (a new route, Drive or Walk, "Start over", a
+    // route that failed, follow mode going around water) ends in driveShow(), so that is the one place to listen.
+    // New places are worked out without moving the map: Plan a route decides where the map looks. In follow mode the
+    // route starts again from the moving phone, so the card keeps its two places and only drops the route line.
     function followDrive() {
       if (!bus.open || bus.src !== "drive" || !bus.res) return;
       var e = driveEnds(), moved = e && (BUSLOGIC.distM(e.start, bus.start) > 1 || BUSLOGIC.distM(e.dest, bus.dest) > 1);
