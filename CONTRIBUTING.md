@@ -1,6 +1,6 @@
 # How to help with My Neighborhood Map
 
-My Neighborhood Map is a free, open-source map made by neighbors in San Francisco. It has two views on one map: **Nature & walks** (trees in season, wildlife sightings, the weather and a walk planner) and **Storms & flooding** (storm drains, flood reports, past flooding and the city's flood zone).
+My Neighborhood Map is a free, open-source map made by neighbors in San Francisco. It has three tabs: **Nature** (trees in season, wildlife sightings, the weather and a walk planner), **Flooding** (storm drains, flood reports, past flooding and the city's flood zone) and **Forecast** (the outlook, rain, high tides and Weather Service alerts, with no map).
 
 The map is in **public beta**. You do not need permission to help, and you do not need to be a programmer. First-time contributors are very welcome, including people who code with AI tools like Claude Code or Cursor.
 
@@ -35,7 +35,7 @@ Open http://localhost:8931/ and edit `index.html` or the files in `cities/sf/`. 
 Before you open a pull request:
 
 - [ ] `node tools/validate.mjs` passes (it checks the city files; the same check runs on every pull request).
-- [ ] You tried the change at phone size (iPhone 13 in Playwright or your browser's phone view) with real taps, on both tabs.
+- [ ] You tried the change at phone size (iPhone 13 in Playwright or your browser's phone view) with real taps, on all three tabs.
 - [ ] You did **not** send real reports, thanks or feedback to the live database while testing. In Playwright, mock Supabase with `page.route` (see CLAUDE.md).
 - [ ] No element IDs were renamed or removed (the script finds everything by ID).
 - [ ] The safety wording is unchanged: "Not an official service" and "Emergency: 9-1-1".

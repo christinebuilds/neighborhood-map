@@ -149,7 +149,10 @@ button.act.alt { background: #fff; color: var(--ink); }
 #fbSheet .row { display: flex; gap: 10px; }
 button.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--link); text-decoration: underline; cursor: pointer; }
 /* ---- one page, two views: body.mode-nature or body.mode-flood ---- */
-body.mode-nature .only-flood, body.mode-flood .only-nature { display: none !important; }
+body.mode-nature .only-flood, body.mode-flood .only-nature, body.mode-forecast .only-flood, body.mode-forecast .only-nature, body:not(.mode-forecast) .only-cast { display: none !important; }
+/* ---- third view, body.mode-forecast: no map. The weather strip moves into #fcPanel; Flooding shows one outlook line instead. ---- */
+body.mode-flood #day, body.mode-forecast #day, body.mode-forecast #cta, body.mode-forecast #map, body.mode-forecast #stat, body.mode-forecast #nAlert { display: none !important; }
+body.mode-nature #rainSoFar.dry, body.mode-nature .cmpx { display: none; }
 .sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
 #wx { max-width: 900px; margin: 0 auto; padding: 0 16px 6px; }
 .now { font-size: 17px; margin: 0 0 6px; }
@@ -313,6 +316,38 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 #rainSoFar.lv2 { border-left-color: var(--hot); }
 #rainSoFar.lv2 #rsfSay { color: #8a3b00; }
 #cTide[hidden] { display: none; }
+#outlookLine { max-width: 900px; margin: 0 auto; padding: 8px 16px 0; font-size: 14px; font-weight: 600; }
+#outlookLine[hidden] { display: none; }
+#outlookLine a { color: var(--ink); text-decoration: none; }
+#outlookLine a b { color: var(--link); white-space: nowrap; }
+#outlookLine.worse a { color: #8a3b00; }
+#fcPanel { max-width: 900px; margin: 0 auto; padding: 10px 16px 0; display: flex; flex-direction: column; gap: 14px; }
+#fcPanel h2 { font-size: 16px; margin: 0 0 4px; }
+#fcPanel ul { margin: 0; padding: 0; list-style: none; }
+#fcOutlook { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--muted); border-radius: 10px; padding: 8px 12px; }
+#fcOutlook.worse { border-left-color: var(--hot); }
+#fcOutlook.better { border-left-color: #2f8a4a; }
+#fcHead { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.3; }
+#fcWhy li { font-size: 14px; margin-top: 2px; }
+#fcWhy li::before { content: "· "; color: var(--muted); }
+#fcPanel .words { font-size: 16px; line-height: 1.35; font-weight: 600; margin: 0 0 6px; }
+#fcPanel .words #now { font-weight: 400; color: var(--muted); }
+#fcPanel .words .nb { white-space: nowrap; }
+#fcPanel #live { margin: 0 0 4px; font-size: 14px; color: var(--ink); }
+#fcTides li, #fcWin li, #fcAlerts li { font-size: 14px; line-height: 1.35; padding: 6px 0; border-top: 1px solid var(--line); }
+#fcTides li:first-child, #fcWin li:first-child, #fcAlerts li:first-child { border-top: 0; }
+#fcTides .tt { font-weight: 700; }
+#fcTides .tv { color: var(--muted); }
+.tflag { display: inline-block; margin-left: 6px; font-size: 12px; font-weight: 700; padding: 0 7px; border-radius: 99px; background: #fff4e0; color: #8a3b00; border: 1px solid var(--one); }
+.tflag.f2, .tflag.f3, .tflag.f4 { background: #fdecea; color: #8e2a1f; border-color: var(--hot); }
+#fcTideNote { margin: 4px 0 0; }
+#fcTideNote[hidden], #fcAlertMsg[hidden] { display: none; }
+#fcAlerts .ah { font-size: 12px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#fcAlerts button { margin-top: 2px; font-size: 14px; min-height: 32px; }
+#fcAlertMsg { margin: 0; }
+#fcSrc { margin: 0; }
+.sw.asw { border: 2px dashed #1a237e; background: rgba(57,73,171,.15); }
+.lsw.asw { border-color: #1a237e; background: rgba(57,73,171,.15); }
 #cta { max-width: 900px; margin: 0 auto; padding: 10px 16px 10px; }
 .ctarow { display: flex; gap: 8px; align-items: stretch; }
 .ctarow .act { flex: 1 1 auto; font-size: 16px; padding: 11px 14px; }
@@ -438,16 +473,28 @@ body.mode-nature .leaflet-bus-pane { display: none; }
 </header>
 <div id="tabs">
   <div id="modes" role="tablist" aria-label="What the map shows">
-    <button type="button" role="tab" id="mNature" aria-selected="true" aria-controls="map" tabindex="0">Nature &amp; walks</button>
-    <button type="button" role="tab" id="mFlood" aria-selected="false" aria-controls="map" tabindex="-1">Storms &amp; flooding</button>
+    <button type="button" role="tab" id="mNature" aria-selected="true" aria-controls="map" tabindex="0">Nature</button>
+    <button type="button" role="tab" id="mFlood" aria-selected="false" aria-controls="map" tabindex="-1">Flooding</button>
+    <button type="button" role="tab" id="mCast" aria-selected="false" aria-controls="fcPanel" tabindex="-1">Forecast</button>
   </div>
 </div>
 <section id="day" aria-label="Weather today">
   <p class="words"><span id="now">Loading the weather…</span><span id="dayWords"></span></p>
   <div id="dayWrap"><div id="daySvg" tabindex="0" role="group" aria-label="Hour by hour. Swipe or use the arrow keys to see more hours."></div><span id="dayHint" aria-hidden="true" hidden></span></div>
   <div id="rainSoFar" hidden><p id="rsfLine"></p><p id="rsfSay"></p><p id="rsfNote"></p></div>
-  <div id="alerts"><button type="button" id="nAlert" class="alertline" aria-expanded="false" hidden></button></div>
-  <p id="live" class="only-flood"><span id="cTide">Tide: loading…</span></p>
+  <div id="alerts"><button type="button" id="nAlert" class="alertline" aria-expanded="false" hidden></button><p id="fcAlertMsg" class="small only-cast" hidden></p><ul id="fcAlerts" class="only-cast"></ul></div>
+  <p id="live" class="only-cast"><span id="cTide">Tide: loading…</span></p>
+</section>
+<p id="outlookLine" class="only-flood" hidden><a href="#forecast" id="outlookLink"></a></p>
+<!-- Forecast tab: no map. The weather words, chart, rain so far, alerts box and tide line above move in here while it shows (same IDs). -->
+<section id="fcPanel" class="only-cast" role="tabpanel" aria-labelledby="mCast">
+  <div id="fcOutlook"><p id="fcHead">Loading the forecast…</p><ul id="fcWhy"></ul></div>
+  <div class="fcsec"><h2>When it rains</h2><div id="fcRainSlot"></div></div>
+  <div class="fcsec"><h2>Bay and tides</h2><div id="fcTideSlot"></div><ul id="fcTides"></ul><p class="small" id="fcTideNote" hidden></p></div>
+  <div class="fcsec"><h2>Rain at high tide</h2><ul id="fcWin"></ul></div>
+  <div class="fcsec"><h2>Weather alerts</h2><div id="fcAlertSlot"></div></div>
+  <div class="fcsec" id="fcSoFar"><div id="fcRsfSlot"></div></div>
+  <p class="small" id="fcSrc">Rain: NWS and Open-Meteo. Tides: NOAA. Alerts: National Weather Service. Not an official warning service.</p>
 </section>
 <div id="cta">
   <div class="ctarow">
@@ -501,6 +548,7 @@ body.mode-nature .leaflet-bus-pane { display: none; }
       <label hidden><input type="checkbox" id="t311Closed"><span class="dt" style="background:#90caf9"></span>Show closed 311 cases</label>
       <label><input type="checkbox" id="tDrain" checked><span class="ddot" style="background:#d81b60"></span>Storm drains</label>
       <label><input type="checkbox" id="tRep" checked><span class="ddot" style="background:#00bcd4"></span>Neighbor reports</label>
+      <label><input type="checkbox" id="tAlertArea"><span class="sw asw"></span>Weather alert areas</label>
       <label>311: last <select id="days"><option value="1" selected>1 day</option><option value="3">3 days</option><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label>
     </div>
   </div>
@@ -643,7 +691,8 @@ body.mode-nature .leaflet-bus-pane { display: none; }
       <li><b>Storm drains:</b> pink means check now (a neighbor flagged it, or an open 311 case is within 60 m). Amber means check first (in the flood zone or a past-flood area). Green was cleared by a neighbor in the last 14 days. This is the map's own rule of thumb, not a city assessment. Tap a drain to mark it cleared or flag it. To adopt one officially: <a id="adoptLink" href="#">the city's adopt-a-drain program</a>.</li>
       <li><b>Neighbor reports (cyan):</b> "water here" posts from the last 24 hours, fainter once they are more than 12 hours old. A brown edge means the neighbor said it looks or smells like sewage. Unverified: this map cannot test the water.</li>
       <li><b>Plan a route (dark line):</b> a driving or walking route that goes around places that flooded in past storms, water neighbors reported in the last 24 hours, and open 311 sewage backup reports. It also tries to stay out of the city flood zone when that adds little time. Solid line: this route. Dotted line: the most direct way. This map can't see water on the road right now. Never drive through water. Turn around.</li>
-      <li><b>Weather at the top:</b> the hour-by-hour rain (Open-Meteo forecast), any National Weather Service alert, and in this view the next high tide. Heavy rain near high tide drains slowest.</li>
+      <li><b>Weather alert areas (navy, off at first):</b> where a National Weather Service alert for San Francisco applies. Turn it on in Layers, or tap Show on map in Forecast.</li>
+      <li><b>Outlook line and Forecast:</b> the hour-by-hour rain (Open-Meteo forecast), National Weather Service alerts and the high tides (NOAA). Heavy rain near high tide drains slowest.</li>
       <li>Dashed lines follow the city's own street lines for the streets named in news reports. Circles are a rough area around a corner. How far the water spread along each street is an estimate. No shading does not mean a street is safe.</li>
       <li><b>Bus or drive? (blue line):</b> a Muni ride with no transfer between two places you pick. The dotted blue lines are the walk at each end. The card lists places that flooded in past storms and spots where neighbors reported water recently along the way. Parts of a ride that run underground aren't checked. There are no bus times here, and this map can't see water on the road right now.</li>
     </ul>
@@ -698,7 +747,7 @@ body.mode-nature .leaflet-bus-pane { display: none; }
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-19 13:57 PT";
+var BUILD = "2026-11-19 14:07 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -1187,6 +1236,8 @@ var BUILD = "2026-11-19 13:57 PT";
 
   // ================= City 100-year storm flood zone (SFPUC, via DataSF) =================
   var zonePolys = [], zoneReady = false;
+  // Weather Service alert areas for the city: off until asked for (Layers, or Show on map in Forecast). Official data, so a solid navy dash-dot, not the past-storm dashes.
+  var alertLayer = L.geoJSON(null, { renderer: canvas, interactive: false, style: { color: "#1a237e", weight: 2, dashArray: "10 4 2 4", fillColor: "#3949ab", fillOpacity: 0.1 } });
   var zoneLayer = L.geoJSON(null, { renderer: canvas, style: { color: "#5e35b1", weight: 1, fillColor: "#5e35b1", fillOpacity: 0.2 }, interactive: true });
   zoneLayer.on("add", function () { setTimeout(raiseDrains, 0); });
   if (ZN) zoneLayer.bindPopup('<span class="tag" style="background:#ede7f6;color:#4527a0">CITY MODEL · OFFICIAL</span><br><b>' + esc(ZN.title) + "</b><br>" + esc(ZN.popup) +
@@ -1449,18 +1500,6 @@ var BUILD = "2026-11-19 13:57 PT";
     openForm("water", [ll.lat, ll.lng], null);
   }, true);
 
-  // ================= Live conditions =================
-  // The flood tab adds only the tide. Rain and weather alerts live in the one weather block at the top.
-  function loadLive() {
-    var cT = document.getElementById("cTide");
-    if (!CITY.tide_station) { cT.hidden = true; return; }
-    var d = new Date(), ymd = "" + d.getFullYear() + ("0" + (d.getMonth() + 1)).slice(-2) + ("0" + d.getDate()).slice(-2);
-    fetchJson("https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=" + ymd + "&range=48&station=" + encodeURIComponent(CITY.tide_station) + "&product=predictions&interval=hilo&datum=MLLW&time_zone=lst_ldt&units=english&format=json").then(function (j) {
-      var nx = (j.predictions || []).filter(function (p) { return p.type === "H" && new Date(p.t.replace(" ", "T")).getTime() > Date.now(); })[0];
-      cT.textContent = nx ? "Next high tide: " + new Date(nx.t.replace(" ", "T")).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }) + ", " + parseFloat(nx.v).toFixed(1) + " ft" : "Tide unavailable";
-    }).catch(function () { cT.textContent = "Tide unavailable"; });
-  }
-
   document.getElementById("tDrain").addEventListener("change", syncDrains);
   ["tZone", "tRep", "tHist", "t311"].forEach(function (id) { document.getElementById(id).addEventListener("change", showFlood); });
 
@@ -1476,6 +1515,7 @@ var BUILD = "2026-11-19 13:57 PT";
     L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
     d.innerHTML = '<details' + (window.innerWidth >= 700 ? " open" : "") + '><summary>Legend</summary><b>City model (official)</b>' +
       '<span class="lsw" style="background:rgba(94,53,177,.2);border:2px solid #5e35b1"></span>Modeled flood zone<br>' +
+      '<b>Weather Service (official)</b><span class="lsw asw"></span>Weather alert area, when on in Layers<br>' +
       '<b>Estimated from past storms</b>' +
       '<span class="lsw" style="background:rgba(192,57,43,.3);border-color:#c0392b"></span>Repeat hotspot<br>' +
       '<span class="lsw" style="background:rgba(224,138,30,.3);border-color:#e08a1e"></span>Reported once or twice<br>' +
@@ -2306,8 +2346,9 @@ var BUILD = "2026-11-19 13:57 PT";
     clearTimeout(wh.pend.t); wh.pend = null; waterLast = null; whMarkOff(); whSay("Not sent.");
   });
 
-  // ================= Modes: one map, two views =================
+  // ================= Modes: one map, three views =================
   // "nature" (the default) shows trees, sightings and walks. "flood" shows drains, reports and flood areas.
+  // "forecast" has no map: the outlook, rain chart, tides, rain at high tide, alerts and rain so far (built in nature() below).
   // The flooding data is only fetched the first time that view is opened, so the front door stays fast.
   var MODE = "nature", floodStarted = false, NAT = null;
   function layerOn(layer, on) { on ? layer.addTo(map) : map.removeLayer(layer); }
@@ -2316,38 +2357,48 @@ var BUILD = "2026-11-19 13:57 PT";
     function on(id) { return f && document.getElementById(id).checked; }
     layerOn(zoneLayer, on("tZone")); if (map.hasLayer(zoneLayer)) zoneLayer.bringToBack();
     layerOn(hist, on("tHist")); layerOn(c311, on("t311")); layerOn(repLayer, on("tRep"));
-    layerOn(driveLayer, f);
+    layerOn(driveLayer, f); layerOn(alertLayer, on("tAlertArea"));
     f ? legend.addTo(map) : legend.remove();
     showDrains();
   }
   function startFlood() {
     if (floodStarted) return; floodStarted = true;
-    loadZone(); loadReports(); loadLive(); load311();
-    setInterval(loadReports, 120000); setInterval(loadLive, 600000);
+    loadZone(); loadReports(); load311();
+    setInterval(loadReports, 120000);
   }
+  // The weather words, chart, rain so far, alerts box and tide line live in #day (Nature) and move into the Forecast panel while it shows.
+  // Same elements, same IDs; Flooding shows neither, only the one outlook line.
+  var daySec = document.getElementById("day"), dayParts = [daySec.querySelector(".words"), "dayWrap", "rainSoFar", "alerts", "live"].map(function (x) { return typeof x === "string" ? document.getElementById(x) : x; });
+  function placeDay(m) {
+    var slots = ["fcRainSlot", "fcRainSlot", "fcRsfSlot", "fcAlertSlot", "fcTideSlot"];
+    dayParts.forEach(function (el, i) { (m === "forecast" ? document.getElementById(slots[i]) : daySec).appendChild(el); });
+  }
+  var TABS = [["mNature", "nature"], ["mFlood", "flood"], ["mCast", "forecast"]];
   function setMode(m, quiet) {
-    m = m === "flood" ? "flood" : "nature";
+    m = m === "flood" || m === "forecast" ? m : "nature";
     if (m === MODE && quiet !== "init") return;
     MODE = m; store("fm_mode", m);
     document.body.className = "mode-" + m;
-    [["mNature", "nature"], ["mFlood", "flood"]].forEach(function (t) {
+    TABS.forEach(function (t) {
       var b = document.getElementById(t[0]), on = m === t[1];
       b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1;
     });
     map.closePopup(); setPicking(false); driveStopPick(); if (m !== "flood") driveModeOff();
     if (m === "flood") startFlood();
+    placeDay(m);
     showFlood(); syncDrains();
     if (NAT) NAT.sync();
     nearSync();
     map.invalidateSize();
+    if (NAT) NAT.cast(m);
   }
-  document.getElementById("mNature").addEventListener("click", function () { setMode("nature"); });
-  document.getElementById("mFlood").addEventListener("click", function () { setMode("flood"); });
+  TABS.forEach(function (t) { document.getElementById(t[0]).addEventListener("click", function () { setMode(t[1]); }); });
   // Tabs: left and right arrows (and Home, End) move between them, as in any tab bar.
   document.getElementById("modes").addEventListener("keydown", function (e) {
-    var k = e.key, next = k === "ArrowRight" || k === "End" ? "mFlood" : k === "ArrowLeft" || k === "Home" ? "mNature" : null;
-    if (!next) return;
-    e.preventDefault(); setMode(next === "mFlood" ? "flood" : "nature"); document.getElementById(next).focus();
+    var k = e.key, i = TABS.map(function (t) { return t[1]; }).indexOf(MODE);
+    i = k === "ArrowRight" ? Math.min(TABS.length - 1, i + 1) : k === "ArrowLeft" ? Math.max(0, i - 1) : k === "End" ? TABS.length - 1 : k === "Home" ? 0 : -1;
+    if (i < 0) return;
+    e.preventDefault(); setMode(TABS[i][1]); document.getElementById(TABS[i][0]).focus();
   });
   // One "Layers" button holds every layer switch for the tab, so the map starts higher up the screen.
   var bLayers = document.getElementById("bLayers"), layerPanel = document.getElementById("layerPanel");
@@ -2764,7 +2815,7 @@ var BUILD = "2026-11-19 13:57 PT";
     var x = hr(a), y = hr(b), ax = x.split(" "), by = y.split(" ");
     return (ax[1] === by[1] ? ax[0] : x) + "–" + y;
   }
-  // One weather alert line for both tabs: each kind of alert named once, tap to read the whole line.
+  // One weather alert line on Nature: each kind of alert named once, tap to read the whole line. Forecast lists them in full.
   var nAlert = document.getElementById("nAlert");
   nAlert.addEventListener("click", function () { nAlert.setAttribute("aria-expanded", nAlert.getAttribute("aria-expanded") === "true" ? "false" : "true"); });
   function showAlerts(ev) {
@@ -2792,9 +2843,7 @@ var BUILD = "2026-11-19 13:57 PT";
     fetchSoon("https://api.weather.gov/points/" + ll[0].toFixed(4) + "," + ll[1].toFixed(4), 8000).then(function (j) { return fetchSoon(j.properties.forecastHourly, 8000); })
       .then(function (j) { mine.nws = (j.properties.periods || []).slice(0, 48); wxSave(mine); if (wx === mine) drawDay(); })
       .catch(function () { mine.nws = mine.cached ? mine.cached.nws : false; if (wx === mine) drawDay(); });
-    fetchSoon("https://api.weather.gov/alerts/active?point=" + ll[0].toFixed(4) + "," + ll[1].toFixed(4), 8000).then(function (j) {
-      if (wx === mine) showAlerts((j.features || []).map(function (f) { return f.properties && f.properties.event; }).filter(Boolean));
-    }).catch(function () {});
+    loadAlerts();   // for the whole city, not this spot: the request carries no location
     // Hourly amounts from Open-Meteo; if it is not answering, the chart shows the Weather Service's hourly chance instead.
     // Open-Meteo gives each hour's rain at the END of that hour ("sum of the preceding hour"), so the value stamped 3:00 is the rain from 2 to 3.
     fetchSoon("https://api.open-meteo.com/v1/forecast?latitude=" + ll[0].toFixed(3) + "&longitude=" + ll[1].toFixed(3) + "&hourly=precipitation&past_hours=24&forecast_hours=44&precipitation_unit=inch&timezone=UTC", 8000).then(function (j) {
@@ -2822,6 +2871,7 @@ var BUILD = "2026-11-19 13:57 PT";
     return s;
   }
   function drawRain() {
+    castSoon();
     if (!wx || wx.past === null) return;   // still loading: leave what is showing
     var line = document.getElementById("rsfLine"), say = document.getElementById("rsfSay"), note = document.getElementById("rsfNote");
     line.textContent = ""; say.textContent = ""; note.textContent = ""; rsfBox.className = ""; rsfBox.hidden = false;
@@ -2830,7 +2880,7 @@ var BUILD = "2026-11-19 13:57 PT";
     if (!m || now - wx.rainAt > 45 * 6e4) { line.textContent = "Rain so far didn't load."; return; }
     var t1 = inches(rainOver(m, 1, now)), t6 = inches(rainOver(m, 6, now)), t24 = inches(rainOver(m, 24, now));
     var h = +t1, d = +t24;
-    if (!d && !+t6 && !h) { rsfBox.className = "only-flood"; line.textContent = "No rain in the last 24 hours (an estimate)."; return; }   // dry: one quiet line, on the storm tab only
+    if (!d && !+t6 && !h) { rsfBox.className = "dry"; line.textContent = "No rain in the last 24 hours (an estimate)."; return; }   // dry: one quiet line, on Forecast only
     note.textContent = "Estimate from weather models, not a rain gauge.";
     var b = document.createElement("b"); b.textContent = "Rain so far:"; line.appendChild(b);
     [[t1, "last hour"], [t6, "6 hrs"], [t24, "24 hrs"]].forEach(function (x, n) {
@@ -2845,8 +2895,8 @@ var BUILD = "2026-11-19 13:57 PT";
     // Next to a storm people remember, once there is enough rain for that to mean something.
     var C = RS.compare, r = C && C.inches > 0 && RS.day_soaking_in && d >= RS.day_soaking_in ? d / C.inches : 0;
     say.textContent = words.join(" ");
-    if (r >= 0.2) {   // on the storm tab only, in plain weight
-      var cmp = document.createElement("span"); cmp.className = "only-flood";
+    if (r >= 0.2) {   // on Forecast only, in plain weight
+      var cmp = document.createElement("span"); cmp.className = "cmpx";
       cmp.textContent = " " + (r < 0.29 ? "About a quarter of" : r < 0.42 ? "About a third of" : r < 0.58 ? "About half of" : r < 0.71 ? "About two thirds of" : r < 0.88 ? "About three quarters of" : r < 1.15 ? "About as much as" : "More than")
         + " the " + C.label + " storm (" + C.inches + " in that day).";
       say.appendChild(cmp);
@@ -2884,6 +2934,7 @@ var BUILD = "2026-11-19 13:57 PT";
   var dayResize = null;
   window.addEventListener("resize", function () { clearTimeout(dayResize); dayResize = setTimeout(function () { if (wx) drawDay(); }, 200); });
   function drawDay() {
+    castSoon();
     if (!wx || wx.nws === null || (wx.rain === null && !wx.grace)) return;   // wait for the Weather Service; rain amounts may follow
     var nowEl = document.getElementById("now"), wordsEl = document.getElementById("dayWords"), box = dayBox;
     if (!wx.nws && !wx.rain) { nowEl.textContent = "The forecast is unavailable right now."; wordsEl.textContent = ""; box.textContent = ""; dayView = null; syncHint(); return; }
@@ -3013,6 +3064,275 @@ var BUILD = "2026-11-19 13:57 PT";
     dayView = { pxh: pxh, leftText: tomorrow ? "← Tonight" : now < visA ? "← Now" : (visA - T0 > 36e5 ? "← Earlier" : ""), rightText: tomorrow || (runs.some(function (r) { return r.b > now && X(r.a) < viewR - 40; })) ? "Later →" : "Tonight →" };
     if (!box.__user) box.scrollLeft = Math.max(0, X(visA) - pad);
     syncHint();
+  }
+
+  // ---------- Forecast tab: the outlook, bay and tides, rain at high tide, weather alerts ----------
+  // The ideas for the tide estimate, the flood-level grades, the outlook and the alert filter come from bay-flood
+  // (https://github.com/mcsplat/bay-flood, MIT License). Each function adapted from it says so above it. See THIRD_PARTY_NOTICES.md.
+  // Nothing here is an official forecast: it sums up what the Weather Service, NOAA and Open-Meteo publish, and never calls anything safe.
+  var TFL = CITY.tide_flood_levels || null, ALR = CITY.alerts || null, HOUR = 36e5;
+  var WET = 0.1, HEAVY = 0.15;   // in/hr. bay-flood's lines: from about 0.1 rain near a high tide backs up bayside drains; 0.15 is heavy, when storm drains start to struggle
+  var fc = { on: false, tides: undefined, alerts: undefined, shapes: {} };   // undefined: still loading; null: didn't load
+  function dayClock(t) { var d = new Date(t); return d.toLocaleDateString("en-US", { weekday: "short" }) + " " + clock(d); }   // "Wed 7:20 pm"
+  function whenAt(t) { return new Date(t).toDateString() === new Date().toDateString() ? clock(new Date(t)) : dayClock(t); }   // today: "7:20 pm"
+  function partOfDay(t, now) {   // "tonight", "tomorrow morning"…
+    t = Math.max(t, now); if (t - now < HOUR) return "now";
+    var d = new Date(t), h = d.getHours(), days = Math.round((noonOf(t) - noonOf(now)) / 864e5);
+    if (days === 0) return h < 12 ? "this morning" : h < 17 ? "this afternoon" : h < 21 ? "this evening" : "tonight";
+    if (days === 1 && h < 5) return "tonight";
+    if (days === 1) return h < 12 ? "tomorrow morning" : h < 17 ? "tomorrow afternoon" : "tomorrow night";
+    return "on " + d.toLocaleDateString("en-US", { weekday: "long" });
+  }
+
+  // -- tides: NOAA CO-OPS, all three asks in feet above MLLW and GMT, so the times line up
+  var COOPS = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=" + encodeURIComponent(CITY.tide_station || "") + "&datum=MLLW&time_zone=gmt&units=english&format=json";
+  function gmt(ms) { return new Date(ms).toISOString().slice(0, 16).replace(/-/g, "").replace("T", " "); }   // CO-OPS "yyyyMMdd HH:mm"
+  function coopsT(t) { return Date.parse(String(t).replace(" ", "T") + ":00Z"); }
+  // Adapted from bay-flood (https://github.com/mcsplat/bay-flood), MIT License, Copyright (c) 2026 Matt Carter.
+  // The tide table's height at time t, read between its 6-minute points.
+  function predictedAt(P, t) {
+    for (var i = 1; i < P.length; i++) { var a = P[i - 1], b = P[i]; if (t >= a.t && t <= b.t) return a.v + (b.v - a.v) * (t - a.t) / ((b.t - a.t) || 1); }
+    return null;
+  }
+  // Adapted from bay-flood (https://github.com/mcsplat/bay-flood), MIT License, Copyright (c) 2026 Matt Carter.
+  // How far the bay is running above (or below) the tide table: the latest reading minus the table at that moment, in feet.
+  // A reading more than an hour old doesn't count.
+  function surgeOf(obs, P, now) {
+    var o = (obs || []).filter(function (r) { return r && r.v !== "" && isFinite(+r.v); }).pop();
+    if (!o) return null;
+    var t = coopsT(o.t), e = predictedAt(P, t);
+    return e == null || !(now - t <= HOUR) ? null : Math.round((+o.v - e) * 100) / 100;
+  }
+  // Adapted from bay-flood (https://github.com/mcsplat/bay-flood), MIT License, Copyright (c) 2026 Matt Carter.
+  // Grade a height against the station's flood levels (city.json "tide_flood_levels", feet above MLLW):
+  // 4 major, 3 moderate, 2 minor, 1 near flood level (half a foot under minor when no "action" level is given), 0 under, -1 no levels known.
+  function floodRank(v, L) {
+    if (!L || L.minor == null) return -1;
+    if (L.major != null && v >= L.major) return 4;
+    if (L.moderate != null && v >= L.moderate) return 3;
+    if (v >= L.minor) return 2;
+    return v >= (L.action != null ? L.action : L.minor - 0.5) ? 1 : 0;
+  }
+  var FLAG = ["", "Near flood level", "Minor flooding level", "Moderate flooding level", "Major flooding level"];
+  function loadTides() {
+    if (!CITY.tide_station) { fc.tides = null; castSoon(); return; }
+    var c = store("fm_tide"), now = Date.now();
+    if (c && c.st === CITY.tide_station && now - c.at < 15 * 6e4 && c.highs && c.highs.length) { fc.tides = c; castSoon(); return; }
+    function q(x) { return fetchSoon(COOPS + x, 10000); }
+    function soft(x) { return q(x).catch(function () { return {}; }); }   // without these two there is no bay reading, but the tide table still shows
+    Promise.all([q("&product=predictions&interval=hilo&begin_date=" + encodeURIComponent(gmt(now - HOUR)) + "&range=50"),
+      soft("&product=predictions&interval=6&begin_date=" + encodeURIComponent(gmt(now - 3 * HOUR)) + "&range=4"),
+      soft("&product=water_level&date=latest")]).then(function (r) {
+      var highs = (r[0].predictions || []).filter(function (p) { return p.type === "H" && isFinite(+p.v); }).map(function (p) { return { t: coopsT(p.t), v: +p.v }; });
+      if (!highs.length) throw new Error("no tides");
+      var P = (r[1].predictions || []).map(function (p) { return { t: coopsT(p.t), v: +p.v }; });
+      fc.tides = { st: CITY.tide_station, at: Date.now(), highs: highs, surge: surgeOf(r[2].data, P, Date.now()) };
+      store("fm_tide", fc.tides);
+    }).catch(function () { fc.tides = null; }).then(castSoon);
+  }
+
+  // -- weather alerts: National Weather Service
+  // Adapted from bay-flood (https://github.com/mcsplat/bay-flood), MIT License, Copyright (c) 2026 Matt Carter.
+  // The whole state's active alerts, kept only where they name this city's county (its SAME/FIPS code, city.json "alerts").
+  // The request carries no location: the phone does the filtering.
+  function cityAlerts(j) {
+    return (j.features || []).filter(function (f) { var p = f.properties || {}; return ((p.geocode || {}).SAME || []).indexOf(ALR.county_fips) >= 0 && p.event; })
+      .map(function (f) {
+        var p = f.properties;
+        return { id: p.id, event: p.event, ends: p.ends || p.expires || null, headline: p.headline || "", geom: f.geometry || null,
+          zones: (p.affectedZones || []).filter(function (u) { return /^https:\/\/api\.weather\.gov\/zones\/[a-z]+\/[A-Z0-9]+$/.test(u); }).slice(0, 8) };
+      });
+  }
+  function useAlerts(list) {
+    fc.alerts = list.filter(function (a) { return !a.ends || Date.parse(a.ends) > Date.now(); });
+    showAlerts(fc.alerts.map(function (a) { return a.event; }));
+    castSoon();
+    if (chk("tAlertArea")) drawAlertAreas();
+  }
+  function loadAlerts() {
+    if (!ALR) { fc.alerts = null; castSoon(); return; }
+    var c = store("fm_alerts"), now = Date.now();
+    if (c && c.list && now - c.at < 5 * 6e4) { useAlerts(c.list); return; }
+    fetchSoon("https://api.weather.gov/alerts/active?area=" + encodeURIComponent(ALR.area), 10000).then(function (j) {
+      var list = cityAlerts(j); store("fm_alerts", { at: Date.now(), list: list }); useAlerts(list);
+    }).catch(function () {
+      if (c && c.list && now - c.at < 60 * 6e4) { useAlerts(c.list); return; }   // a recent copy beats nothing
+      fc.alerts = null; showAlerts([]); castSoon();
+    });
+  }
+  // Where an alert applies: its own outline, or the outlines of its forecast zones (asked for only when someone wants the map).
+  function alertShapes(a) {
+    if (a.geom) return Promise.resolve([a.geom]);
+    return Promise.all(a.zones.map(function (u) {
+      if (!fc.shapes[u]) fc.shapes[u] = fetchSoon(u, 10000).then(function (z) { return z.geometry || null; }).catch(function () { delete fc.shapes[u]; return null; });
+      return fc.shapes[u];
+    })).then(function (g) { return g.filter(Boolean); });
+  }
+  function drawAlertAreas() {
+    var list = fc.alerts || [];
+    return Promise.all(list.map(alertShapes)).then(function (all) {
+      alertLayer.clearLayers();
+      all.forEach(function (gs) { gs.forEach(function (g) { alertLayer.addData({ type: "Feature", properties: {}, geometry: g }); }); });
+      showFlood();
+      return all;
+    });
+  }
+  function areaBounds(gs) {   // the shapes' extent, trimmed to the city so a county's offshore islands don't zoom the map out
+    var b = L.geoJSON({ type: "FeatureCollection", features: gs.map(function (g) { return { type: "Feature", properties: {}, geometry: g }; }) }).getBounds(), c = L.latLngBounds(B);
+    if (!b.intersects(c)) return b;
+    return L.latLngBounds([Math.max(b.getSouth(), c.getSouth()), Math.max(b.getWest(), c.getWest())], [Math.min(b.getNorth(), c.getNorth()), Math.min(b.getEast(), c.getEast())]);
+  }
+  function showAlertOnMap(a, btn) {
+    btn.disabled = true; btn.textContent = "Loading the area…";
+    document.getElementById("tAlertArea").checked = true;
+    drawAlertAreas().then(function () { return alertShapes(a); }).then(function (gs) {
+      btn.disabled = false; btn.textContent = "Show on map";
+      if (!gs.length) { say("That alert's area didn't load. Try again in a few minutes."); return; }
+      FL.setMode("flood");
+      map.invalidateSize(); map.fitBounds(areaBounds(gs), { padding: [12, 12] });
+      document.getElementById("map").scrollIntoView({ block: "start" });
+      say("Shaded: where the " + a.event + " applies (National Weather Service).");
+    });
+  }
+  document.getElementById("tAlertArea").addEventListener("change", function () {
+    if (!this.checked) { showFlood(); return; }
+    if (fc.alerts === undefined) return;   // still loading: drawn when it arrives
+    if (!fc.alerts || !fc.alerts.length) { say(fc.alerts ? "No weather alerts for " + CITY.name + " right now." : "Weather alerts didn't load. Try again in a few minutes."); return; }
+    drawAlertAreas().then(function (all) { if (!all.some(function (g) { return g.length; })) say("The alert areas didn't load. Try again in a few minutes."); });
+  });
+
+  // -- the outlook
+  // Adapted from bay-flood (https://github.com/mcsplat/bay-flood), MIT License, Copyright (c) 2026 Matt Carter.
+  // Rain at high tide: rain of WET in/hr or more within 2 hours of a high tide near flood level, in the next 48 hours.
+  // rain[k] is the rain in the clock hour that starts at k hours (the chart's own keys).
+  function watchWindows(rain, highs, now) {
+    var out = [];
+    highs.forEach(function (h) {
+      if (h.rank < 1 || h.t < now - 2 * HOUR || h.t > now + 48 * HOUR) return;
+      var a = null, b = null, top = 0;
+      for (var k = Math.floor((h.t - 2 * HOUR) / HOUR); k * HOUR < h.t + 2 * HOUR; k++) {
+        var v = rain[k] || 0;
+        if (v >= WET && (k + 1) * HOUR > now) { if (a === null) a = k; b = k; top = Math.max(top, v); }
+      }
+      if (a !== null) out.push({ tide: h, a: a * HOUR, b: (b + 1) * HOUR, top: top });
+    });
+    return out;
+  }
+  // Adapted from bay-flood (https://github.com/mcsplat/bay-flood), MIT License, Copyright (c) 2026 Matt Carter.
+  // Each signal votes worse (+1), better (-1) or neither, with a plain reason. Two or more worse: "Getting worse"; any better: "Improving";
+  // but never "Improving" while a water alert is out or 0.1 in of rain is due in the next 6 hours.
+  // o: { now, rain, past (hour maps or null), highs (graded high tides or null), alerts (list or null) }. Returns null when too little is known.
+  function outlook(o) {
+    var now = o.now, R = o.rain, highs = o.highs || [], score = 0, first = null, why = [];
+    function vote(n, t) { score += n; if (n > 0 && first === null) first = t; }   // "when" comes from the first worse signal in this order: rain at high tide, warning, tide, rain
+    var water = (o.alerts || []).filter(function (a) { return /flood|hydrologic|coastal|surge|rain|tsunami/i.test(a.event); });
+    var warns = water.filter(function (a) { return /warning/i.test(a.event); });
+    var risky = highs.filter(function (h) { return h.rank >= 1 && h.t > now - HOUR && h.t <= now + 48 * HOUR; });
+    var wins = R ? watchWindows(R, highs, now) : [], k0 = Math.floor(now / HOUR), next6 = 0, last6 = 0, total = 0, heavy = null, wetAt = null, i;
+    if (R) {
+      for (i = 0; i < 44; i++) { var v = R[k0 + i] || 0; total += v; if (i < 6) next6 += v; if (v >= 0.01 && wetAt === null) wetAt = (k0 + i) * HOUR; if (i < 12 && v >= HEAVY && heavy === null) heavy = (k0 + i) * HOUR; }
+      for (i = 1; i <= 6; i++) last6 += (o.past || R)[k0 - i] || 0;
+    }
+    if (wins.length) {
+      var w = wins[0], t = w.tide.t;
+      if (w.a <= now + 12 * HOUR) vote(1, w.a);
+      why.push((w.top >= HEAVY ? "Heavy rain" : "Rain") + " around the " + whenAt(t) + " high tide.");
+    }
+    if (warns.length) { vote(1, now); why.push("The Weather Service has a " + warns[0].event + " out."); }
+    if (risky.length) {
+      var h = risky[0];
+      if (h.t <= now + 12 * HOUR) vote(1, h.t);
+      why.push("High tide " + (h.rank === 1 ? "near flood level" : "at the " + FLAG[h.rank].toLowerCase()) + " at " + whenAt(h.t) + ".");
+    }
+    if (R) {
+      if (next6 >= 0.25 && next6 > last6 * 1.2) { vote(1, wetAt || now); why.push("Rain picking up: about " + inches(next6) + " in over the next 6 hours."); }
+      else if (last6 >= 0.1 && next6 < last6 * 0.5) { vote(-1); why.push("Rain easing: about " + inches(next6) + " in over the next 6 hours, down from " + inches(last6) + " in."); }
+      else if (next6 >= 0.1) why.push("Steady rain: about " + inches(next6) + " in over the next 6 hours.");
+      else why.push(total < 0.01 ? "No rain expected in the next 2 days." : "Little or no rain in the next 6 hours.");
+      if (heavy !== null && !wins.length) vote(1, heavy);
+      if (heavy !== null && !wins.length) why.push("Heavy rain around " + (new Date(heavy).toDateString() === new Date(now).toDateString() ? "" : dayClock(heavy).split(" ")[0] + " ") + hr(heavy) + ".");
+    }
+    if (water.length && !warns.length) why.push("The Weather Service has a " + water[0].event + " out.");
+    if (!R && score < 1 && !water.length) return null;
+    var dir = score >= 2 ? "worse" : score <= -1 ? "better" : "steady";
+    if (dir === "better" && (water.length || next6 >= 0.1)) dir = "steady";
+    if (!R && dir !== "worse") dir = null;   // without the rain forecast, say what is known but don't call a direction
+    why = why.slice(0, 3);
+    if (!o.highs) { why = why.slice(0, 2); why.push("Tides didn't load, so they are left out."); }
+    return { dir: dir, when: dir === "worse" ? partOfDay(first || now, now) : "", reasons: why, windows: wins,
+      quiet: !!R && total < 0.01 && !water.length && !risky.length };
+  }
+  var OUTLOOK = { worse: "Getting worse", steady: "Holding steady", better: "Improving" };
+
+  // -- drawing: the outlook line on Flooding, and the Forecast panel
+  var castT = null;
+  function castSoon() { clearTimeout(castT); castT = setTimeout(renderCast, 0); }
+  function li(parent, text) { var x = document.createElement("li"); if (text) x.textContent = text; parent.appendChild(x); return x; }
+  function renderCast() {
+    var now = Date.now(), T = fc.tides, R = wx && wx.rain ? wx.rain : null;
+    var highs = T ? T.highs.map(function (h) { var p = Math.round((h.v + (T.surge || 0)) * 10) / 10; return { t: h.t, v: h.v, proj: p, rank: floodRank(p, TFL) }; }) : null;
+    var loading = !wx || wx.rain === null || fc.alerts === undefined || (fc.on && T === undefined);
+    var O = loading ? null : outlook({ now: now, rain: R, past: wx.past || null, highs: highs, alerts: fc.alerts });
+    if (loading && fc.last) O = fc.last;   // a refresh is under way: keep the last outlook, so the line doesn't blink and move the map
+    if (!loading) fc.last = O;
+    var label = !O ? "" : O.dir ? OUTLOOK[O.dir] + (O.when ? " " + O.when : "") : "";
+    // Flooding: one line
+    var ol = document.getElementById("outlookLine"), a = document.getElementById("outlookLink"), b = document.createElement("b");
+    ol.hidden = !O; ol.className = "only-flood" + (O && O.dir === "worse" ? " worse" : ""); a.textContent = "";
+    if (O) { a.appendChild(document.createTextNode(O.quiet ? "No rain expected in the next 2 days · " : label ? "Outlook: " + label.charAt(0).toLowerCase() + label.slice(1) + " · " : (O.reasons[0] || "").replace(/\.$/, "") + " · ")); b.textContent = O.quiet ? "Forecast →" : "See forecast →"; a.appendChild(b); }
+    // Forecast: 1. the outlook and up to three reasons
+    var box = document.getElementById("fcOutlook"), why = document.getElementById("fcWhy");
+    box.className = O && O.dir ? O.dir : ""; why.textContent = "";
+    document.getElementById("fcHead").textContent = O ? label || "No outlook: the rain forecast didn't load." : loading ? "Loading the forecast…" : "The forecast didn't load. Try again in a few minutes.";
+    if (O) O.reasons.forEach(function (r) { li(why, r); });
+    // 3. bay and tides
+    var cT = document.getElementById("cTide"), list = document.getElementById("fcTides"), note = document.getElementById("fcTideNote");
+    list.textContent = ""; note.hidden = true;
+    if (!CITY.tide_station) cT.textContent = "No tide gauge is set up for this city.";
+    else if (T === undefined) cT.textContent = "Tide: loading…";
+    else if (!T) cT.textContent = "Tides didn't load. Try again in a few minutes.";
+    else {
+      var s = T.surge, n = s == null ? 0 : Math.round(Math.abs(s) * 12), shift = s != null && Math.abs(s) >= 0.1;   // under about an inch: "close to the tide table"
+      cT.textContent = s == null ? "No recent reading from the bay, so these are the tide table's heights." : !shift ? "Right now the bay is running close to the tide table."
+        : "Right now the bay is running " + n + " in " + (s > 0 ? "higher" : "lower") + " than predicted.";
+      highs.filter(function (h) { return h.t > now - 30 * 6e4 && h.t <= now + 48 * HOUR; }).forEach(function (h) {
+        var x = li(list), tt = document.createElement("span"), tv = document.createElement("span");
+        tt.className = "tt"; tt.textContent = dayClock(h.t); x.appendChild(tt);
+        if (h.rank >= 1) { var f = document.createElement("span"); f.className = "tflag f" + h.rank; f.textContent = FLAG[h.rank]; x.appendChild(f); }
+        tv.className = "tv"; tv.textContent = "Predicted " + h.v.toFixed(1) + " ft" + (shift ? " · estimate " + h.proj.toFixed(1) + " ft" : "");
+        x.appendChild(document.createElement("br")); x.appendChild(tv);
+      });
+      note.hidden = false;
+      note.textContent = (shift ? "Assumes the bay stays this much " + (s > 0 ? "above" : "below") + " the tide table. A rough estimate, not an official forecast. " : "")
+        + "Feet above the average low tide, at NOAA's " + CITY.name + " tide gauge." + (TFL && TFL.minor != null ? " Minor flooding starts near " + TFL.minor.toFixed(1) + " ft there." : "");
+    }
+    // 4. rain at high tide
+    var wl = document.getElementById("fcWin"); wl.textContent = "";
+    if (O && O.windows.length) O.windows.forEach(function (w) { li(wl, dayClock(w.a).split(" ")[0] + " " + span(w.a, w.b) + ": drains near the bay may back up."); });
+    else if (loading) li(wl, "Loading…");
+    else if (!R || !T) li(wl, "Can't check this right now: the " + (!R ? "rain" : "tide") + " forecast didn't load.");
+    else li(wl, "No times when heavy rain lines up with a high tide.");
+    // 5. weather alerts, in the Weather Service's own words
+    var al = document.getElementById("fcAlerts"), am = document.getElementById("fcAlertMsg"), A = fc.alerts;
+    al.textContent = ""; am.hidden = !!(A && A.length);
+    am.textContent = A === undefined ? "Loading weather alerts…" : !A ? "Weather alerts didn't load. Try again in a few minutes." : "No weather alerts for " + CITY.name + " right now.";
+    (A || []).forEach(function (x) {
+      var row = li(al), e = document.createElement("b"), u = document.createElement("span"), hd = document.createElement("span");
+      e.textContent = x.event; row.appendChild(e);
+      u.className = "small"; u.textContent = x.ends ? " until " + dayClock(Date.parse(x.ends)) : ""; row.appendChild(u);
+      hd.className = "ah"; hd.textContent = x.headline; row.appendChild(hd);
+      if (x.geom || x.zones.length) {
+        var btn = document.createElement("button"); btn.type = "button"; btn.className = "linkish"; btn.textContent = "Show on map";
+        btn.addEventListener("click", function () { showAlertOnMap(x, btn); }); row.appendChild(btn);
+      }
+    });
+  }
+  document.getElementById("outlookLink").addEventListener("click", function (e) { e.preventDefault(); FL.setMode("forecast"); window.scrollTo(0, 0); });
+  // Called on every tab change. Tides load the first time Flooding or Forecast opens, then every 10 minutes.
+  function castMode(m) {
+    if ((m === "flood" || m === "forecast") && !fc.on) { fc.on = true; loadTides(); setInterval(loadTides, 10 * 6e4); }
+    if (m !== "flood" && wx) drawDay();   // the chart may have moved, or been drawn while hidden: draw it at its width now
+    castSoon();
   }
 
   // ---------- rain radar: off until asked for, with a key, and a nudge to zoom out ----------
@@ -3727,7 +4047,7 @@ var BUILD = "2026-11-19 13:57 PT";
       fact("You'll pass about " + near.length + " street trees. Most common: " + top.join(", ") + "." + (Object.keys(nat).length ? " California natives on the way: " + Object.keys(nat).slice(0, 4).join(", ") + "." : ""));
     }
     var ft = floodFeet();
-    if (ft !== null && ft >= 30) fact("About " + ft.toLocaleString() + " feet of this walk is inside the city's flood zone. In heavy rain, check Storms & flooding first.");
+    if (ft !== null && ft >= 30) fact("About " + ft.toLocaleString() + " feet of this walk is inside the city's flood zone. In heavy rain, check Flooding first.");
     else if (ft !== null) fact("This walk stays out of the city's mapped flood zone.");
     var on = [], off = [], seenTaxa = {}, counts = {};
     var all = Object.keys(wild).map(function (id) { return wild[id]; });
@@ -3882,18 +4202,19 @@ var BUILD = "2026-11-19 13:57 PT";
   if (location.hash === "#walk") { document.getElementById("map").scrollIntoView(); bPlan.click(); }
   syncNature();
   syncRadar();
-  return { sync: syncNature, locate: locate, plan: planJson, say: say, locHelp: openLocHelp, locBlocked: locBlocked,
+  return { sync: syncNature, cast: castMode, locate: locate, plan: planJson, say: say, locHelp: openLocHelp, locBlocked: locBlocked,
     place: function () { return place; }, geocode: geocode, fetchSoon: fetchSoon, decode6: decode6 };
   } // end nature
 
   // A link can pick the tab: #flood, #route and #drive open Storms & flooding (#route and the older #drive also open Plan a route),
-  // #nature and #walk open Nature & walks (#walk also opens Plan a walk). With none of these, the last tab used on this device opens.
+  // #nature and #walk open Nature & walks (#walk also opens Plan a walk), #forecast opens Forecast. With none of these, the last tab used on this device opens.
   // The short addresses /flood, /walks, /route and /drive are tiny pages that send people here with one of these.
-  function hashMode() { var h = location.hash; return h === "#flood" || h === "#drive" || h === "#route" ? "flood" : h === "#nature" || h === "#walk" ? "nature" : ""; }
+  function hashMode() { var h = location.hash; return h === "#flood" || h === "#drive" || h === "#route" ? "flood" : h === "#nature" || h === "#walk" ? "nature" : h === "#forecast" ? "forecast" : ""; }
   function hashDrive() { if ((location.hash === "#drive" || location.hash === "#route") && !drive.open) driveOpen(); }
   var firstMode = hashMode() || store("fm_mode") || "nature";
   setMode(firstMode, "init");
   NAT = nature(FL);
+  NAT.cast(MODE);
   hashDrive();
   window.addEventListener("hashchange", function () { var m = hashMode(); if (m) setMode(m); hashDrive(); if (location.hash === "#feedback") openFb(); });
   } // end start(CITY)

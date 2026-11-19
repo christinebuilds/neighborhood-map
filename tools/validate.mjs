@@ -47,6 +47,20 @@ for (const id of readdirSync(new URL("../cities/", import.meta.url))) {
     else if (fw.short !== undefined && !isStr(fw.short, 60)) fail(wc, "flood_water_note.short must be text of 60 characters at most");
     else if (/\b(safe|clean|contaminated)\b/i.test(fw.text + " " + (fw.short || ""))) fail(wc, "flood_water_note must not use the words safe, clean or contaminated: the map cannot test the water");
   }
+  // tide_flood_levels: flood levels for the tide station, in feet above MLLW, with where they come from. null means "not known": that level is not graded.
+  const tf = city.tide_flood_levels;
+  if (tf !== undefined) {
+    const lv = ["action", "minor", "moderate", "major"].map((k) => tf[k]);
+    if (!lv.every((v) => v === null || v === undefined || (typeof v === "number" && v > 0 && v < 30))) fail(wc, "tide_flood_levels: action, minor, moderate and major must each be feet above MLLW, or null");
+    const known = lv.filter((v) => typeof v === "number");
+    if (known.some((v, i) => i && v <= known[i - 1])) fail(wc, "tide_flood_levels must go up: action < minor < moderate < major");
+    if (typeof tf.minor !== "number" && (typeof tf.moderate === "number" || typeof tf.major === "number")) fail(wc, "tide_flood_levels needs minor before moderate or major");
+    if (!https(tf.source_url) || !isStr(tf.as_of, 20) || (tf.note !== undefined && !isStr(tf.note, 800))) fail(wc, "tide_flood_levels needs source_url (https://), as_of (a date) and an optional note of 800 characters or fewer");
+    if (!city.tide_station) fail(wc, "tide_flood_levels needs a tide_station");
+  }
+  // alerts: Weather Service alerts are asked for a whole state ("area", e.g. "CA") and kept only for this county ("county_fips", 6 digits)
+  const al = city.alerts;
+  if (al !== undefined && (al === null || !/^[A-Z]{2}$/.test(al.area || "") || !/^\d{6}$/.test(al.county_fips || ""))) fail(wc, "alerts needs area (a two-letter state code) and county_fips (six digits, e.g. 006075)");
   if (city.reports_311 && city.reports_311.report_sewage_url !== undefined && !https(city.reports_311.report_sewage_url)) fail(wc, "reports_311.report_sewage_url must be an https:// url");
   const margin = 0.03;
   const inCity = (p) => pair(p) && boundsOk && p[0] >= bd[0][0] - margin && p[0] <= bd[1][0] + margin && p[1] >= bd[0][1] - margin && p[1] <= bd[1][1] + margin;

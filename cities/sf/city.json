@@ -20,6 +20,21 @@
     -122.41
   ],
   "tide_station": "9414290",
+  "tide_flood_levels": {
+    "units": "feet above MLLW at the tide station",
+    "action": null,
+    "minor": 7.0,
+    "moderate": null,
+    "major": null,
+    "source_url": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/9414290/floodlevels.json",
+    "as_of": "not yet checked",
+    "note": "NOT YET CHECKED against NOAA: the computer that built the Forecast tab could not reach NOAA's station pages. 7.0 ft = about 1.2 ft (0.366 m) above mean higher high water, which a web search summary gave as the Weather Service's minor flood level for this gauge, citing a 2025 paper (Piecuch and others, Earth's Future, doi 10.1029/2024EF005850) that was not itself read, plus mean higher high water of about 5.8 ft above MLLW, which the Weather Service's own Coastal Flood Advisory of Nov 19, 2026 implies (6.9 ft MLLW described as 1.1 ft above normal). To check: nws_minor (or nos_minor) from source_url minus the MLLW value in datums.json at the same address. Fill in moderate and major the same way. A level left null is not graded."
+  },
+  "alerts": {
+    "area": "CA",
+    "county_fips": "006075",
+    "note": "Weather Service alerts are asked for the whole state (no location is sent) and kept on the phone only when they list this county code (SAME/FIPS 006075 is San Francisco County)."
+  },
   "open_data_hosts": [
     "https://data.sf.gov",
     "https://data.sfgov.org"

@@ -20,11 +20,11 @@ Then open http://localhost:8931/ in your browser. Use your browser's phone view,
 
 | File | What it does |
 |---|---|
-| `index.html` | The whole map: styles, page and script in one file. Both tabs live here. |
+| `index.html` | The whole map: styles, page and script in one file. All three tabs live here. |
 | `cities/sf/city.json` | San Francisco settings: map bounds, data feeds, phone numbers, links, rain notes. |
 | `cities/sf/past-storms.json` | Places that flooded in past storms, each with a source link. |
 | `flood.html` | Short "About the flood map" page. `today.html` and `walk.html` only redirect. |
-| `flood/`, `walks/`, `route/`, `drive/` | Short addresses to share: `/flood`, `/walks` and `/route` open the map on the right tab. `/drive` is the older address for `/route` and still works. |
+| `flood/`, `walks/`, `route/`, `drive/`, `forecast/` | Short addresses to share: `/flood`, `/walks`, `/route` and `/forecast` open the map on the right tab. `/drive` is the older address for `/route` and still works. |
 | `CNAME` | The site's web address (`sfcommunitymap.org`) for GitHub Pages. |
 | `tools/validate.mjs` | Checks the city files. Run `node tools/validate.mjs` before every pull request. |
 | `supabase/migrations/` | Record of the database setup for neighbor reports. Only Christine applies changes. |
@@ -40,19 +40,20 @@ Then open http://localhost:8931/ in your browser. Use your browser's phone view,
 
 ## What the map does
 
-It is one page with two views of your own block:
+It is one page with three views of your own block:
 
-- **Nature & walks** (the front door): find your address and the page names your neighborhood. A day strip shows sunrise, sunset, rain hour by hour, temperature and the best two hours for a walk. The map shows street trees (a density picture when zoomed out, single trees when zoomed in) and wildlife neighbors photographed nearby (iNaturalist). Tap a tree or sighting for a small card and "Walk here" for a walking route, what you will pass, and short detours. A seasonal walk (fall colors, blossom) paints the trees in season.
-- **Storms & flooding**: the city's flood zone, places that flooded in past storms (with sources), 311 flooding and drain cases, storm drains with a rule-of-thumb flag for which to check first, and neighbor reports ("water here", "I cleared this drain", "needs clearing", "the water is gone"). Each drain keeps a log of clearings and a way to thank the neighbor. Rain amounts, alerts, the next high tide and live rain radar sit alongside.
+- **Nature** (the front door): find your address and the page names your neighborhood. A day strip shows sunrise, sunset, rain hour by hour, temperature and the best two hours for a walk. The map shows street trees (a density picture when zoomed out, single trees when zoomed in) and wildlife neighbors photographed nearby (iNaturalist). Tap a tree or sighting for a small card and "Walk here" for a walking route, what you will pass, and short detours. A seasonal walk (fall colors, blossom) paints the trees in season.
+- **Flooding**: the city's flood zone, places that flooded in past storms (with sources), 311 flooding and drain cases, storm drains with a rule-of-thumb flag for which to check first, and neighbor reports ("water here", "I cleared this drain", "needs clearing", "the water is gone"). Each drain keeps a log of clearings and a way to thank the neighbor. One line at the top says where the outlook is heading and links to Forecast. Live rain radar is in Layers.
+- **Forecast** (no map): is it getting worse, holding steady or improving, with up to three plain reasons; the hour-by-hour rain; the high tides for the next two days with how far the bay is running above the tide table; the times heavy rain lines up with a high tide near flood level; Weather Service alerts for the city (tap Show on map to see where); and rain so far. It sums up Weather Service, NOAA and Open-Meteo data. It is not an official warning.
 
 This is not an official city service or a warning system. In an emergency call 9-1-1. Report flooding to the city at 3-1-1.
 
 ## Pages and links
 
-- `index.html` is the map. `#flood` opens the Storms & flooding view, `#route` opens it with Plan a route (the older `#drive` does the same), `#nature` opens Nature & walks, `#walk` starts planning a walk, `#feedback` opens the bug and idea form.
+- `index.html` is the map. `#flood` opens the Flooding view, `#route` opens it with Plan a route (the older `#drive` does the same), `#nature` opens Nature, `#walk` starts planning a walk, `#forecast` opens Forecast, `#feedback` opens the bug and idea form.
 - `flood.html` is a short page titled "SF Flood Map" that says what the flood map is. The link to share for flooding is `sfcommunitymap.org/flood`.
 - `today.html` and `walk.html` only redirect to the map, so old links keep working.
-- Short addresses to share: `sfcommunitymap.org/flood` opens Storms & flooding, `/walks` opens Nature & walks, and `/route` opens Plan a route (`/drive` still works and does the same). Each is a tiny page that sends people to the map with `#flood`, `#nature`, `#route` or `#drive` at the end of the address. `/flood` carries the flood map's own link preview.
+- Short addresses to share: `sfcommunitymap.org/flood` opens Flooding, `/walks` opens Nature, `/forecast` opens Forecast, and `/route` opens Plan a route (`/drive` still works and does the same). Each is a tiny page that sends people to the map with `#flood`, `#nature`, `#forecast`, `#route` or `#drive` at the end of the address. `/flood` carries the flood map's own link preview.
 - `version.txt` holds the build time. The page shows it in the footer and offers to update when a newer one is published.
 
 ## Cities
@@ -70,3 +71,7 @@ Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 ## How it is built
 
 One static engine page (`index.html`) with Leaflet and no build step, plus one settings folder per city under `cities/`, published with GitHub Pages. All links between pages are relative, so the site works under any repository name. Neighbor reports are stored in Supabase; notes and photos are checked automatically before they appear.
+
+## Third-party code
+
+The Forecast tab's tide estimate, flood-level grades, outlook rules and alert filter are adapted from [bay-flood](https://github.com/mcsplat/bay-flood) by Matt Carter, under the MIT License. The ported functions in `index.html` are marked, and the full license notice is in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
