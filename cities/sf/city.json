@@ -46,7 +46,7 @@
         "role": "flooding"
       },
       "catch_basin": {
-        "label": "Storm drain needs maintenance",
+        "label": "Blocked or broken storm drain",
         "role": "drain"
       },
       "sewage_back-up_discharge": {
