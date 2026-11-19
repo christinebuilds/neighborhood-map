@@ -7,7 +7,7 @@ The live site is https://sfcommunitymap.org/. Neighbors use it on their phones, 
 ## How the project is built
 
 - **No build step.** Plain HTML, CSS and JavaScript with Leaflet in `vendor/`. Do not add npm packages, bundlers, frameworks, TypeScript or a `package.json` to the site. Test-only tools (Playwright) stay on your own computer.
-- `index.html` is the whole app: one `<style>` block, the page markup, then one `<script>`. Inside the script, `start(CITY)` runs the flood layers and `nature(FL)` runs trees, wildlife, the weather strip and the walk planner.
+- `index.html` is the whole app: one `<style>` block, the page markup, then one `<script>`. Inside the script, `start(CITY)` runs the flood layers and `nature(FL)` runs trees, wildlife, the weather strip, the walk planner and the Forecast tab.
 - City settings live in `cities/sf/city.json` and `cities/sf/past-storms.json`. Change a link, phone number or note there, not in `index.html`.
 - Publishing: `.github/workflows/publish.yml` copies a fixed list of files to the `gh-pages` branch. If you add a file the page needs, add it to that `cp` line. The `CNAME` file on that line keeps the site on its own address (`sfcommunitymap.org`); do not remove it.
 - Write links between the site's own files as relative paths (`assets/...`, `./`, `../` from the short-address folders), never starting with `/`, so the site works at any address.
@@ -30,7 +30,7 @@ node tools/validate.mjs          # must pass before every PR
 
   Do not tap Send / Report / Thanks against the live database, and never use the Supabase dashboard or an API key to write data.
 - Mock other feeds with `page.route` too when a test needs fixed data (weather, iNaturalist, routing), so tests don't break when the weather changes.
-- Check both tabs (Nature & walks, Storms & flooding), and any pop-up or sheet you touched.
+- Check all three tabs (Nature, Flooding, Forecast), and any pop-up or sheet you touched.
 
 ## Rules for changes
 
@@ -47,7 +47,7 @@ node tools/validate.mjs          # must pass before every PR
 ## Privacy
 
 - No names of private people and no home addresses in data files, issues, screenshots or test fixtures. Use cross streets.
-- **A person's location stays on their device.** The page keeps the chosen spot in this browser only (`localStorage`, keys starting `fm_`). Never send or store someone's own location or address in Supabase or any new service. A neighbor report carries only the spot being reported (a drain or a street spot the neighbor chose), never where the person is or lives. Public weather lookups already receive rounded coordinates; don't add new places that receive them without asking first.
+- **A person's location stays on their device.** The page keeps the chosen spot in this browser only (`localStorage`, keys starting `fm_`). Never send or store someone's own location or address in Supabase or any new service. A neighbor report carries only the spot being reported (a drain or a street spot the neighbor chose), never where the person is or lives. Public weather forecast lookups (Weather Service and Open-Meteo) already receive rounded coordinates; don't add new places that receive them without asking first. Weather alerts are asked for the whole state and filtered to the city on the phone, so they receive no location; keep it that way. Tides come from one fixed NOAA station and receive no location either.
 - **Water here (one tap)** is the one report that carries where the person is: the button on the map and the big one in Plan a route's follow bar post the phone's position at that moment as the water's spot, as a public neighbor report dot. A tap at home would put a dot at home, so keep its guards: the first tap on a device only explains and sends nothing (remembered as `fm_water_tip`), every report waits 5 seconds with an Undo (the map button also names the spot and marks it on the map during the wait), and nothing about the person is stored or sent. To name the spot, the city street list is asked for a fixed square of the street grid, never for the point.
 - Plan a drive: the routing and address-search services receive the start and destination (as the walk planner already does). "Open in Google Maps" and "Open in Apple Maps" are plain links: Google or Apple receives the destination and a few route points only when the person taps one, and nothing before that. Christine approved those two links; don't add other hand-offs without asking.
 - Don't add analytics, trackers, ads or third-party scripts.
@@ -56,7 +56,7 @@ node tools/validate.mjs          # must pass before every PR
 ## Before you open a PR
 
 - [ ] `node tools/validate.mjs` passes.
-- [ ] Tested at iPhone 13 size with real taps, both tabs.
+- [ ] Tested at iPhone 13 size with real taps, all three tabs.
 - [ ] Supabase calls were mocked; no real rows were posted.
 - [ ] No element IDs renamed or removed.
 - [ ] Safety wording unchanged; new text is plain language.
