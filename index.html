@@ -74,6 +74,11 @@ a { color: var(--link); }
 .tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .02em; padding: 1px 7px; border-radius: 99px; margin-bottom: 4px; }
 .tag.past { background: #fbe3df; color: #8e2a1f; }
 .tag.now { background: #dbe9f8; color: #0d47a1; }
+/* 311 count for one neighborhood: a white disc with the number, ringed in the 311 colours (blue flooding, teal drains, brown sewage). */
+.b311 { box-sizing: border-box; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.45), 0 1px 5px rgba(0,0,0,.35); padding: 5px; cursor: pointer; }
+.b311 span { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 50%; background: #fff; color: #0d47a1; font: 700 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.b311.big span { font-size: 15px; }
+.lnum { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 18px; height: 18px; margin-right: 5px; border-radius: 50%; border: 3px solid #1565c0; background: #fff; color: #0d47a1; font-size: 9px; font-weight: 700; line-height: 1; vertical-align: middle; }
 .small { font-size: 13px; color: var(--muted); }
 .chip { font-size: 13px; background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px; }
 .chip.alert { background: #fdecea; border-color: #c0392b; color: #8e2a1f; font-weight: 600; }
@@ -187,7 +192,7 @@ button.act[aria-pressed="true"] { background: #1d6a4f; border-color: #1d6a4f; co
 /* Wildlife sightings: a small white badge with a group icon and a thin ring in the group color (zoom 16 and closer) */
 .wbadge span { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; box-sizing: border-box; border-radius: 50%; background: rgba(255,255,255,.94); border: 2px solid; box-shadow: 0 1px 2px rgba(0,0,0,.35); font-size: 12px; line-height: 1; overflow: hidden; }
 .wbadge.s18 span { font-size: 10px; border-width: 1.5px; }
-.kb { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; box-sizing: border-box; margin-right: 6px; border-radius: 50%; background: #fff; border: 2px solid; font-size: 10px; line-height: 1; vertical-align: -4px; }
+.kb { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; box-sizing: border-box; margin-right: 6px; border-radius: 50%; background: #fff; border: 2px solid; font-size: 10px; line-height: 1; vertical-align: middle; }
 .ksq { display: inline-block; width: 10px; height: 10px; margin: 0 6px 0 4px; background: rgba(30,130,60,.62); box-shadow: 4px 4px 0 rgba(12,84,45,.95); vertical-align: -1px; }
 #natKey { max-height: min(320px, 50vh); overflow-y: auto; }
 .numpin { width: 24px; height: 24px; border-radius: 50%; background: #d0581c; color: #fff; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.4); font: 700 12px/20px system-ui, sans-serif; text-align: center; }
@@ -561,7 +566,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
     <ul>
       <li><b>City flood zone (purple):</b> <span id="zoneNote"></span></li>
       <li><b>Past storms (dashed):</b> places news reports say flooded before. Red is a repeat hotspot, orange was reported once or twice. An estimate, not a record of this week.</li>
-      <li><b>311 reports (solid dots):</b> blue is flooding, teal a blocked or broken storm drain, brown a sewage backup. Only open cases from the last day show; closed ones are left off. "311: last" in Layers reaches further back. <span id="r311Note"></span></li>
+      <li><b>311 reports (solid dots):</b> blue is flooding, teal a blocked or broken storm drain, brown a sewage backup. Only open cases from the last day show; closed ones are left off. "311: last" in Layers reaches further back. When there are too many dots to read, the map shows one number for each neighborhood instead; tap it or zoom in to see each report. <span id="r311Note"></span></li>
       <li><b>Storm drains:</b> pink means check now (a neighbor flagged it, or an open 311 case is within 60 m). Amber means check first (in the flood zone or a past-flood area). Green was cleared by a neighbor in the last 14 days. This is the map's own rule of thumb, not a city assessment. Tap a drain to mark it cleared or flag it. To adopt one officially: <a id="adoptLink" href="#">the city's adopt-a-drain program</a>.</li>
       <li><b>Neighbor reports (cyan):</b> "water here" posts from the last 24 hours, fainter once they are more than 12 hours old. Unverified.</li>
       <li><b>Plan a route (dark line):</b> a driving or walking route that goes around places that flooded in past storms, water neighbors reported in the last 24 hours, and open 311 sewage backup reports. It also tries to stay out of the city flood zone when that adds little time. Solid line: this route. Dotted line: the most direct way. This map can't see water on the road right now. Never drive through water. Turn around.</li>
@@ -608,7 +613,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-19 10:27 PT";
+var BUILD = "2026-11-19 10:32 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -727,6 +732,12 @@ var BUILD = "2026-11-19 10:27 PT";
 
   // ---- Layer 2: reported now (the city's 311 open data). Solid dots.
   var c311 = L.layerGroup();
+  // c311 holds one of these two at a time: every case as a dot, or one count per neighborhood (see sync311)
+  var dots311 = L.layerGroup(), bub311 = L.layerGroup(), items311 = [], hoods311 = null, mode311 = "", dotsBuilt = false, bubZoom = -1, bubOpen = false;
+  function reset311() {   // forget what was drawn, so rows from an earlier window can never come back
+    c311.clearLayers(); dots311.clearLayers(); bub311.clearLayers();
+    items311 = []; hoods311 = null; mode311 = ""; dotsBuilt = bubOpen = false; bubZoom = -1;
+  }
   map.createPane("p311").style.zIndex = 440;   // above the drains' canvas (which swallows taps), just under neighbor reports
   var nEl = document.getElementById("n311");
   // How fresh a report must be to show. Old reports on a storm map read as water that is there now.
@@ -769,7 +780,7 @@ var BUILD = "2026-11-19 10:27 PT";
   function nice(s) { return String(s || "").replace(/_/g, " "); }
   var days311 = 0;
   function load311() {
-    c311.clearLayers();
+    reset311();
     if (!R) { nEl.textContent = ""; return; }
     var days = parseInt(document.getElementById("days").value, 10);
     nEl.textContent = "Loading " + R.name + " reports…";
@@ -782,7 +793,7 @@ var BUILD = "2026-11-19 10:27 PT";
   }
   // Draws the 311 rows already loaded. Closed cases are left out unless "Show closed 311 cases" is ticked.
   function draw311() {
-    c311.clearLayers();
+    reset311();
     if (!R || !r311Ok) return;
     var showClosed = document.getElementById("t311Closed").checked, showSew = document.getElementById("t311Sew").checked, days = days311, rows = last311;
     var counts = { flooding: 0, other: 0, sewage: 0, closed: 0 }, asOf = "";
@@ -794,6 +805,25 @@ var BUILD = "2026-11-19 10:27 PT";
       if (!open) { counts.closed++; if (!showClosed) return; }
       else if (k.role === "flooding") counts.flooding++; else if (k.role === "sewage") counts.sewage++; else counts.other++;
       if (k.role === "sewage" && !showSew) return;   // still counted in the line below
+      items311.push({ la: la, lo: lo, k: k, open: open, r: r });   // drawn later, as dots or as neighborhood counts
+    });
+    nEl.textContent = R.name + ", last " + days + (days === 1 ? " day" : " days") + ": " + counts.flooding + " open flooding, " + counts.other + (counts.other === 1 ? " open storm drain problem, " : " open storm drain problems, ") + counts.sewage + (counts.sewage === 1 ? " open sewage backup." : " open sewage backups.") +
+      (counts.closed ? " " + counts.closed + " closed " + (counts.closed === 1 ? "is" : "are") + (showClosed ? " shown in a paler color." : " not shown.") : "") + (asOf ? " Updated " + fmt(asOf) + "." : "");
+    sync311();
+  }
+  // ---- Too many dots to read? Show one count per neighborhood instead.
+  // The rule: individual dots always from zoom 15 up. Further out, if more than BUB_MIN drawn 311 cases are
+  // inside the part of the map on screen, each neighborhood gets ONE bubble with its total (all its drawn cases,
+  // placed at their average position). Zoomed so far out that two bubbles would sit on top of each other, the
+  // smaller one is folded into the bigger one ("Mission and 2 nearby neighborhoods"). Zooming in, or tapping
+  // a bubble and then "Zoom in", brings back each neighborhood and then the dots.
+  // The neighborhood name is the city's own, on each 311 row (fields.neighborhood in city.json); nothing is looked up.
+  // Only the drawing changes: the count line, drain colours and Plan a drive keep reading the full list (last311).
+  var BUB_ZOOM = 15, BUB_MIN = 40;
+  function buildDots() {
+    dotsBuilt = true;
+    items311.forEach(function (it) {
+      var la = it.la, lo = it.lo, k = it.k, open = it.open, r = it.r;
       var m = L.circleMarker([la, lo], { radius: k.r, color: "#ffffff", weight: 2, fillColor: open ? k.fill : k.closed, fillOpacity: 0.95, pane: "p311", bubblingMouseEvents: false });
       var det = F.details ? r[F.details] : "";
       m.bindPopup('<span class="tag now">311 report · ' + (open ? "Open" : "Closed") + '</span><br><b>' + esc(k.label) + "</b>" + (det ? ' <span class="small">(' + esc(nice(det)) + ")</span>" : "") + "<br>" +
@@ -801,11 +831,84 @@ var BUILD = "2026-11-19 10:27 PT";
         (/^https:\/\//.test(R.track_url || "") ? '<br><a href="' + esc(R.track_url) + '" target="_blank" rel="noopener">Track on ' + esc(R.name) + "</a>" : "") +
         '<br><span class="small">Case ' + esc(r[F.id]) + " · " + esc(R.source) + "</span>", { maxWidth: 260 });
       m.bindTooltip("311: " + k.label, { sticky: true });
-      m.addTo(c311);
+      m.addTo(dots311);
     });
-    nEl.textContent = R.name + ", last " + days + (days === 1 ? " day" : " days") + ": " + counts.flooding + " open flooding, " + counts.other + (counts.other === 1 ? " open storm drain problem, " : " open storm drain problems, ") + counts.sewage + (counts.sewage === 1 ? " open sewage backup." : " open sewage backups.") +
-      (counts.closed ? " " + counts.closed + " closed " + (counts.closed === 1 ? "is" : "are") + (showClosed ? " shown in a paler color." : " not shown.") : "") + (asOf ? " Updated " + fmt(asOf) + "." : "");
   }
+  function plural(n, one, many) { return n + " " + (n === 1 ? one : many); }
+  function bubSize(n) { return Math.round(Math.max(30, Math.min(60, 24 + 2.4 * Math.sqrt(n)))); }
+  // One entry per neighborhood, biggest first. Done once for each set of rows.
+  function hoods() {
+    if (hoods311) return hoods311;
+    var by = {}, list = [];
+    items311.forEach(function (it) {
+      var named = String(it.r[F.neighborhood] || "").trim(), name = named || "Other parts of the city";
+      var g = by[name]; if (!g) { g = by[name] = { names: [name], solo: !named, n: 0, la: 0, lo: 0, flooding: 0, drain: 0, sewage: 0 }; list.push(g); }
+      g.n++; g.la += it.la; g.lo += it.lo; g[it.k.role === "flooding" || it.k.role === "sewage" ? it.k.role : "drain"]++;
+    });
+    list.sort(function (a, b) { return b.n - a.n; });
+    return (hoods311 = list);
+  }
+  function buildBubbles(z) {
+    bubZoom = z; bub311.clearLayers();
+    var showClosed = items311.some(function (it) { return !it.open; }), groups = [];
+    // biggest first; a neighborhood whose bubble would cover one already placed joins it
+    hoods().forEach(function (h) {
+      var p = map.project([h.la / h.n, h.lo / h.n], z), i, g, dx, dy, lim;
+      for (i = h.solo ? groups.length : 0; i < groups.length; i++) {   // rows with no neighborhood keep their own bubble
+        g = groups[i]; if (g.solo) continue; dx = g.p.x - p.x; dy = g.p.y - p.y; lim = (bubSize(g.n) + bubSize(h.n)) / 2 * 0.9;
+        if (dx * dx + dy * dy < lim * lim) break;
+      }
+      if (i === groups.length) { groups.push({ names: h.names.slice(), solo: h.solo, n: h.n, la: h.la, lo: h.lo, flooding: h.flooding, drain: h.drain, sewage: h.sewage, p: p }); return; }
+      g.names.push(h.names[0]); g.n += h.n; g.la += h.la; g.lo += h.lo; g.flooding += h.flooding; g.drain += h.drain; g.sewage += h.sewage;   // the bubble stays where the biggest one was
+    });
+    var when = "in the last " + (days311 === 1 ? "day" : days311 + " days");
+    groups.forEach(function (g) {
+      var ll = map.unproject(g.p, z), d = bubSize(g.n), more = g.names.length - 1;
+      var name = more === 0 ? g.names[0] : more === 1 ? g.names[0] + " and " + g.names[1] : g.names[0] + " and " + more + " nearby neighborhoods";
+      // the ring: each kind's share of the cases; a kind that is there at all gets at least a sliver you can see
+      var parts = [[g.flooding, ROLE.flooding.fill], [g.drain, ROLE.drain.fill], [g.sewage, ROLE.sewage.fill]].filter(function (q) { return q[0] > 0; });
+      var sh = parts.map(function (q) { return Math.max(q[0] / g.n, 0.07); }), tot = sh.reduce(function (a, b) { return a + b; }, 0), at = 0;
+      var ring = parts.map(function (q, i) { var a = at; at += sh[i] / tot * 100; return q[1] + " " + a.toFixed(1) + "% " + at.toFixed(1) + "%"; }).join(", ");
+      var said = [];
+      if (g.flooding) said.push(g.flooding + " flooding");
+      if (g.drain) said.push(plural(g.drain, "storm drain problem", "storm drain problems"));
+      if (g.sewage) said.push(plural(g.sewage, "sewage backup", "sewage backups"));
+      var label = name + ": " + plural(g.n, "311 report", "311 reports");
+      var m = L.marker(ll, { pane: "p311", zIndexOffset: -g.n, title: label, alt: label,   // smaller ones on top, so every bubble can be tapped
+        icon: L.divIcon({ className: "", iconSize: [d, d], iconAnchor: [d / 2, d / 2], popupAnchor: [0, -d / 2 + 4],
+          html: '<div class="b311' + (g.n >= 100 ? " big" : "") + '" style="width:' + d + "px;height:" + d + "px;background:" + (parts.length > 1 ? "conic-gradient(" + ring + ")" : parts[0][1]) + '"><span>' + g.n + "</span></div>" }) });
+      var el = document.createElement("div");
+      el.innerHTML = '<span class="tag now">311 reports</span><br><b>' + esc(name) + ":</b> " + esc(said.join(", ")) + " reported to 311 " + when + ". " +
+        (showClosed ? "Open and closed cases" : "Open cases only") + '; 311 reports show up about a day late.<div class="pbtns"><button type="button">Zoom in</button></div>';
+      el.querySelector("button").addEventListener("click", function () {
+        map.closePopup();
+        // one neighborhood: far enough in for its dots. Several folded together: far enough to tell them apart.
+        map.setView(ll, more ? Math.min(BUB_ZOOM, map.getZoom() + 2) : Math.max(BUB_ZOOM, map.getZoom() + 1));
+      });
+      m.bindPopup(el, { maxWidth: 230, className: "b311pop", autoPanPadding: [8, 8] });
+      m.on("popupopen", function () { bubOpen = true; });    // opening a pop-up can nudge the map; don't swap the bubble away under it
+      m.on("popupclose", function () { bubOpen = false; setTimeout(sync311, 0); });
+      m.addTo(bub311);
+    });
+  }
+  // Picks dots or neighborhood counts for the current view. Cheap: one pass over the rows; dots are built once,
+  // and the few dozen bubbles are only redone when the zoom level changes.
+  function sync311() {
+    if (bubOpen || !R || !r311Ok) return;
+    var want = "dots", z = map.getZoom();
+    if (F.neighborhood && z < BUB_ZOOM && items311.length > BUB_MIN) {
+      var b = map.getBounds(), s = b.getSouth(), n = b.getNorth(), w = b.getWest(), e = b.getEast(), seen = 0, i, it;
+      for (i = 0; i < items311.length && seen <= BUB_MIN; i++) { it = items311[i]; if (it.la >= s && it.la <= n && it.lo >= w && it.lo <= e) seen++; }
+      if (seen > BUB_MIN) want = "bub";
+    }
+    if (want === "bub" && bubZoom !== z) buildBubbles(z);
+    if (want === mode311) return;
+    mode311 = want; c311.clearLayers();
+    if (want === "bub") c311.addLayer(bub311);
+    else { if (!dotsBuilt) buildDots(); c311.addLayer(dots311); }
+  }
+  map.on("zoomend", function () { if (bubOpen) map.closePopup(); });   // a bubble's pop-up belongs to one zoom level
+  map.on("moveend", sync311);   // a zoom ends with a moveend too
 
 
   // ================= Backend (Supabase): neighbor reports and photos =================
@@ -1257,6 +1360,7 @@ var BUILD = "2026-11-19 10:27 PT";
       '<span class="ldot" style="background:#1565c0"></span>Blue: flooding reported to 311<br>' +
       '<span class="ldot" style="background:#00796b"></span>Teal: blocked or broken storm drain reported to 311<br>' +
       '<span class="ldot" style="background:#6d4c41"></span>Brown: sewage backup reported to 311<br>' +
+      '<span class="lnum">12</span>Number: 311 reports in that neighborhood. Zoom in for each one.<br>' +
       'Open cases only. They show up about a day late.' +
       '<b>Storm drains (dark outline)</b>' +
       '<span class="ldot" style="background:#d81b60;border-color:#222"></span>Check now<br>' +
