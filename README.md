@@ -24,7 +24,7 @@ Then open http://localhost:8931/ in your browser. Use your browser's phone view,
 | `cities/sf/city.json` | San Francisco settings: map bounds, data feeds, phone numbers, links, rain notes. |
 | `cities/sf/past-storms.json` | Places that flooded in past storms, each with a source link. |
 | `flood.html` | Short "About the flood map" page. `today.html` and `walk.html` only redirect. |
-| `flood/`, `walks/`, `drive/` | Short addresses to share: `/flood`, `/walks` and `/drive` open the map on the right tab. |
+| `flood/`, `walks/`, `route/`, `drive/` | Short addresses to share: `/flood`, `/walks` and `/route` open the map on the right tab. `/drive` is the older address for `/route` and still works. |
 | `CNAME` | The site's web address (`sfcommunitymap.org`) for GitHub Pages. |
 | `tools/validate.mjs` | Checks the city files. Run `node tools/validate.mjs` before every pull request. |
 | `supabase/migrations/` | Record of the database setup for neighbor reports. Only Christine applies changes. |
@@ -49,10 +49,10 @@ This is not an official city service or a warning system. In an emergency call 9
 
 ## Pages and links
 
-- `index.html` is the map. `#flood` opens the Storms & flooding view, `#drive` opens it with Plan a drive, `#nature` opens Nature & walks, `#walk` starts planning a walk, `#feedback` opens the bug and idea form.
+- `index.html` is the map. `#flood` opens the Storms & flooding view, `#route` opens it with Plan a route (the older `#drive` does the same), `#nature` opens Nature & walks, `#walk` starts planning a walk, `#feedback` opens the bug and idea form.
 - `flood.html` is a short page titled "SF Flood Map" that says what the flood map is. The link to share for flooding is `sfcommunitymap.org/flood`.
 - `today.html` and `walk.html` only redirect to the map, so old links keep working.
-- Short addresses to share: `sfcommunitymap.org/flood` opens Storms & flooding, `/walks` opens Nature & walks, and `/drive` opens Plan a drive. Each is a tiny page that sends people to the map with `#flood`, `#nature` or `#drive` at the end of the address. `/flood` carries the flood map's own link preview.
+- Short addresses to share: `sfcommunitymap.org/flood` opens Storms & flooding, `/walks` opens Nature & walks, and `/route` opens Plan a route (`/drive` still works and does the same). Each is a tiny page that sends people to the map with `#flood`, `#nature`, `#route` or `#drive` at the end of the address. `/flood` carries the flood map's own link preview.
 - `version.txt` holds the build time. The page shows it in the footer and offers to update when a newer one is published.
 
 ## Cities

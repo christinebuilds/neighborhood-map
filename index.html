@@ -337,6 +337,13 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 #driveStepList { margin: 2px 0 6px; padding-left: 22px; }
 #driveMaps .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0; }
 #driveMaps a { flex: 1 1 0; text-align: center; font-size: 14px; font-weight: 600; padding: 9px 6px; border-radius: 8px; border: 1px solid var(--ink); background: #fff; color: var(--ink); text-decoration: none; white-space: nowrap; }
+#routeBy { display: flex; gap: 8px; margin: 4px 0 6px; }
+#routeBy button { flex: 1 1 0; min-height: 40px; font-size: 15px; font-weight: 600; padding: 6px 10px; border-radius: 99px; border: 1.5px solid var(--ink); background: #fff; color: var(--ink); cursor: pointer; }
+#routeBy button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+#routeHowMore { background: none; border: 0; border-radius: 0; padding: 0; margin: 4px 0; }
+#routeHowMore summary { font-size: 14px; font-weight: 600; min-height: 36px; display: flex; align-items: center; gap: 6px; }
+#routeHowMore summary::before { content: "▸"; font-size: 12px; }
+#routeHowMore[open] summary::before { content: "▾"; }
 #driveStart { width: 100%; margin: 4px 0 2px; font-size: 16px; padding: 11px 14px; }
 #driveBar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1900; background: #fff; border-top: 2px solid var(--ink); padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgba(0,0,0,.25); font-size: 14px; line-height: 1.35; }
 #driveBar[hidden], #driveBar [hidden] { display: none; }
@@ -395,18 +402,20 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
   <div class="ctarow">
     <button class="act only-nature" type="button" id="bPlan" aria-pressed="false">Plan a walk</button>
     <button class="act only-flood" type="button" id="bReport" aria-pressed="false">Report water</button>
-    <button class="act alt only-flood" type="button" id="bDrive" aria-pressed="false">Plan a drive</button>
+    <button class="act alt only-flood" type="button" id="bDrive" aria-pressed="false">Plan a route</button>
     <button type="button" class="layersbtn" id="bLayers" aria-expanded="false" aria-controls="layerPanel">Layers</button>
   </div>
   <p class="small only-flood" id="safety">Not an official service. Emergency: 9-1-1.</p>
   <div id="driveOpts" class="only-flood" hidden>
+    <div id="routeBy" role="group" aria-label="Driving or walking?"><button type="button" id="routeByDrive" aria-pressed="true">Drive</button><button type="button" id="routeByWalk" aria-pressed="false">Walk</button></div>
     <p><span id="driveFromTxt"></span> <button type="button" class="linkish" id="driveFromBtn">Change start</button></p>
     <form id="driveForm" autocomplete="off">
-      <input type="text" id="driveTo" placeholder="Where to? Address or cross streets" aria-label="Where are you driving to? Address, cross streets or place name" maxlength="120">
+      <input type="text" id="driveTo" placeholder="Where to? Address or cross streets" aria-label="Where are you going? Address, cross streets or place name" maxlength="120">
       <button type="submit" id="driveGo">Go</button>
     </form>
     <p class="small" id="driveOr">Or <button type="button" class="linkish" id="driveToBtn">tap the map where you're going</button>.</p>
     <p id="driveMsg" role="status" hidden></p>
+    <p class="small" id="routeHow">Goes around places that flooded in past storms, water neighbors reported in the last 24 hours, and open 311 sewage backup reports. Tries to stay out of the city's flood-risk zone when that adds little time.</p>
     <p id="driveWarnTop" class="dwarn">This map can't see water on the road right now. Never drive through water. Turn around.</p>
   </div>
   <div id="walkOpts" class="only-nature" hidden>
@@ -440,11 +449,13 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
   <p id="radarHint" class="small" hidden>Radar shows best zoomed out. <button type="button" class="linkish" id="radarOut">Zoom out</button></p>
 </div>
 <div id="map" role="application" aria-label="Map of your neighborhood"></div>
-<section id="driveCard" class="only-flood" aria-label="Your drive" hidden>
-  <div class="dhead"><p id="driveHead"></p><button class="act alt" type="button" id="driveClear">Clear drive</button></div>
+<section id="driveCard" class="only-flood" aria-label="Your route" hidden>
+  <div class="dhead"><p id="driveHead"></p><button class="act alt" type="button" id="driveClear">Start over</button></div>
   <ul id="driveFacts"></ul>
   <p id="driveWarn" class="dwarn">This map can't see water on the road right now. Never drive through water. Turn around.</p>
   <button class="act" type="button" id="driveStart">Start driving</button>
+  <p class="small" id="routeLines" hidden></p>
+  <details id="routeHowMore"><summary>How this works</summary><p class="small" id="routeHowCard"></p></details>
   <details id="driveSteps"><summary>Steps</summary><ol id="driveStepList"></ol></details>
   <div id="driveMaps">
     <div class="row"><a id="driveG" target="_blank" rel="noopener" href="#">Open in Google Maps</a><a id="driveA" target="_blank" rel="noopener" href="#">Open in Apple Maps</a></div>
@@ -553,7 +564,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
       <li><b>311 reports (solid dots):</b> blue is flooding, teal a blocked or broken storm drain, brown a sewage backup. Only open cases from the last day show; closed ones are left off. "311: last" in Layers reaches further back. <span id="r311Note"></span></li>
       <li><b>Storm drains:</b> pink means check now (a neighbor flagged it, or an open 311 case is within 60 m). Amber means check first (in the flood zone or a past-flood area). Green was cleared by a neighbor in the last 14 days. This is the map's own rule of thumb, not a city assessment. Tap a drain to mark it cleared or flag it. To adopt one officially: <a id="adoptLink" href="#">the city's adopt-a-drain program</a>.</li>
       <li><b>Neighbor reports (cyan):</b> "water here" posts from the last 24 hours, fainter once they are more than 12 hours old. Unverified.</li>
-      <li><b>Plan a drive (dark line):</b> a driving route that goes around places that flooded in past storms and water neighbors reported in the last 24 hours. The grey dotted line is the usual way. This map can't see water on the road right now. Never drive through water. Turn around.</li>
+      <li><b>Plan a route (dark line):</b> a driving or walking route that goes around places that flooded in past storms, water neighbors reported in the last 24 hours, and open 311 sewage backup reports. It also tries to stay out of the city flood zone when that adds little time. Solid line: this route. Dotted line: the most direct way. This map can't see water on the road right now. Never drive through water. Turn around.</li>
       <li><b>Weather at the top:</b> the hour-by-hour rain (Open-Meteo forecast), any National Weather Service alert, and in this view the next high tide. Heavy rain near high tide drains slowest.</li>
       <li>Dashed lines follow the city's own street lines for the streets named in news reports. Circles are a rough area around a corner. How far the water spread along each street is an estimate. No shading does not mean a street is safe.</li>
     </ul>
@@ -597,7 +608,7 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-19 10:19 PT";
+var BUILD = "2026-11-19 10:22 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -720,7 +731,7 @@ var BUILD = "2026-11-19 10:19 PT";
   var nEl = document.getElementById("n311");
   // How fresh a report must be to show. Old reports on a storm map read as water that is there now.
   // (311 cases: the "311: last" choice in Layers, 1 day to begin with; closed cases stay hidden.)
-  var WATER_HOURS = 24;        // a neighbor's "water here" shows this long (and counts for Plan a drive and Drive mode)
+  var WATER_HOURS = 24;        // a neighbor's "water here" shows this long (and counts for Plan a route and its follow mode)
   var WATER_FAINT_HOURS = 12;  // after this it is drawn fainter
   var ROLE = {
     flooding: { fill: "#1565c0", closed: "#90caf9", r: 9 },
@@ -837,7 +848,7 @@ var BUILD = "2026-11-19 10:19 PT";
   var canvas = L.canvas({ padding: 0.3 });
   var drainsPri = L.layerGroup(), drainsAll = L.layerGroup();
   var drains = [], last311 = [], reports = [], latestByDrain = {};
-  var waterNow = [], repOk = false, r311Ok = false;   // for Plan a drive: the water reports now drawn, and whether each list loaded
+  var waterNow = [], repOk = false, r311Ok = false;   // for Plan a route: the water reports now drawn, and whether each list loaded
   var DCOL = { urgent: "#d81b60", check: "#f9a825", clear: "#2e7d32", ok: "#9aa7ad" };
   var DLAB = { urgent: "CHECK NOW", check: "CHECK FIRST", clear: "CLEARED RECENTLY", ok: "NO FLAGS" };
 
@@ -1253,9 +1264,9 @@ var BUILD = "2026-11-19 10:19 PT";
       '<span class="ldot" style="background:#2e7d32;border-color:#222"></span>Cleared in last 14 days<br>' +
       '<b>Neighbor reports</b>' +
       '<span class="ldot" style="background:#00bcd4;border-color:#004d5a"></span>Water here (unverified)' +
-      '<b>Plan a drive</b>' +
-      '<span class="lline"></span>Route around past flood spots<br>' +
-      '<span class="lline usual"></span>The usual way' + '</details>';
+      '<b>Plan a route</b>' +
+      '<span class="lline"></span>Solid line: route around flood spots<br>' +
+      '<span class="lline usual"></span>Dotted line: the most direct way' + '</details>';
     return d;
   };
 
@@ -1271,8 +1282,8 @@ var BUILD = "2026-11-19 10:19 PT";
   loc.addTo(map);
 
   // ---- Follow me: a live blue dot that keeps the map on you as you walk.
-  // The position stays in this browser and is never stored. It is sent only if you plan a drive from where you are: the routing
-  // service then gets it as the start of the route. In drive mode a tap on Water here posts the spot you are at as the
+  // The position stays in this browser and is never stored. It is sent only if you plan a route from where you are: the routing
+  // service then gets it as the start of the route. While following a route a tap on Water here posts the spot you are at as the
   // water's spot. Drain reports still carry only the drain's spot.
   var fw = { id: null, on: false, center: false, ll: null, dot: null, ring: null, first: true, hideT: null, resume: false };
   function followBtn() {
@@ -1361,8 +1372,9 @@ var BUILD = "2026-11-19 10:19 PT";
       .on("remove", function () { drainPopupOpen = false; if (drainRestylePending) { drainRestylePending = false; setTimeout(restyleDrains, 0); } });
   });
 
-  // ================= Plan a drive =================
-  // A driving route that goes around places that flooded in past storms and water neighbors reported in the last 24 hours.
+  // ================= Plan a route (the IDs still say "drive") =================
+  // A driving or walking route that goes around places that flooded in past storms, water neighbors reported in the last 24 hours
+  // and open 311 sewage backup reports. Separate from the Nature tab's walk planner (stops, loops, trees).
   // The map cannot see water on the road, so the card never calls a route safe. Nothing about the route is stored or sent to our database.
   var DG = (function () {
     var M = 111320;
@@ -1453,7 +1465,22 @@ var BUILD = "2026-11-19 10:19 PT";
     return { blobs: blobs, circleRing: circleRing, siteRing: siteRing, inRing: inRing, perim: perim, siteDist: siteDist, sample: sample, lineDist: lineDist, toValhalla: toValhalla };
   })();
   var VALHALLA = "https://valhalla1.openstreetmap.de/route";
-  var drive = { open: false, start: null, dest: null, pick: "", n: 0, res: null, edit: true, msg: "" };
+  var drive = { open: false, start: null, dest: null, pick: "", n: 0, res: null, edit: true, msg: "", by: store("fm_route_by") === "walk" ? "walk" : "drive" };
+  // Words that differ between driving and walking. The map never calls a route safe or clear: it cannot see water.
+  var BY = {
+    drive: { costing: "auto", google: "driving", apple: "driving", finding: "Finding a driving route…", failed: "Driving directions didn't load. Try again in a few minutes.", start: "Start driving", stop: "Stop driving",
+      foot: "", trip: "drive", zoneMin: 4, zoneMi: 0.8, warn: "This map can't see water on the road right now. Never drive through water. Turn around.",
+      bar: ["Driver: keep your eyes on the road. Ask a passenger to tap, or tap when stopped. ", "Never drive through water. Turn around."] },
+    walk: { costing: "pedestrian", google: "walking", apple: "walking", finding: "Finding a walking route…", failed: "Walking directions didn't load. Try again in a few minutes.", start: "Start walking", stop: "Stop walking",
+      foot: " on foot", trip: "walk", zoneMin: 6, zoneMi: 0.3, warn: "This map can't see water on the road right now. Don't walk through moving water or water you can't see the bottom of.",
+      bar: ["Stop walking before you tap. ", "Don't walk through moving water or water you can't see the bottom of."] }
+  };
+  // Open 311 sewage backup reports inside the chosen "311: last" window, as [lat, lon] with the row as the key.
+  function sewNow() {
+    if (!r311Ok || !R) return [];
+    return last311.filter(function (r) { var k = KINDS[r[F.kind]]; return k && k.role === "sewage" && /open/i.test(r[F.status] || "") && !isNaN(parseFloat(r[F.lat])) && !isNaN(parseFloat(r[F.lon])); })
+      .map(function (r) { return { key: r, ll: [parseFloat(r[F.lat]), parseFloat(r[F.lon])] }; });
+  }
   map.createPane("drive").style.zIndex = 430;          // over the shaded areas, under 311 dots and neighbor reports
   map.getPane("drive").style.pointerEvents = "none";
   var driveLayer = L.layerGroup();
@@ -1558,6 +1585,15 @@ var BUILD = "2026-11-19 10:19 PT";
     drive.pick === "start" ? driveStopPick() : drivePick("start");
   });
   dEl("ToBtn").addEventListener("click", function () { drive.pick === "dest" ? driveStopPick() : drivePick("dest"); });
+  // Drive or walk. The choice is remembered on this phone. With a start and an end already set, the route is found again.
+  [["routeByDrive", "drive"], ["routeByWalk", "walk"]].forEach(function (e) {
+    document.getElementById(e[0]).addEventListener("click", function () {
+      if (drive.by === e[1]) return;
+      drive.by = e[1]; store("fm_route_by", e[1]);
+      driveModeOff();
+      if (drive.start && drive.dest && !drive.pick) driveRoute(); else driveShow();
+    });
+  });
   dEl("Form").addEventListener("submit", function (e) {
     e.preventDefault();
     var q = dEl("To").value.trim(); if (q.length < 3) return;
@@ -1568,10 +1604,11 @@ var BUILD = "2026-11-19 10:19 PT";
       dEl("To").blur(); drive.dest = { ll: r.ll, src: "typed", name: r.name || q, street: !!r.street }; drive.msg = ""; driveNext(); driveName(drive.dest);
     }).catch(function () { if (mine !== drive.n) return; drive.msg = "Address search isn't answering right now. Tap the map where you're going instead."; driveShow(); });
   });
-  function driveAsk(excl) {
-    // Snap to a street, not to a freeway overhead, unless this is a live position.
-    function loc(p) { var o = { lat: Math.round(p.ll[0] * 1e6) / 1e6, lon: Math.round(p.ll[1] * 1e6) / 1e6 }; if (p.src !== "live") o.search_filter = { max_road_class: "trunk" }; return o; }
-    var req = { locations: [loc(drive.start), loc(drive.dest)], costing: "auto", units: "miles" }, ask;
+  function driveAsk(excl, by) {
+    // Driving: snap to a street, not to a freeway overhead, unless this is a live position. On foot the routing service
+    // only snaps to streets and paths people can walk, so no filter is needed.
+    function loc(p) { var o = { lat: Math.round(p.ll[0] * 1e6) / 1e6, lon: Math.round(p.ll[1] * 1e6) / 1e6 }; if (p.src !== "live" && by !== "walk") o.search_filter = { max_road_class: "trunk" }; return o; }
+    var req = { locations: [loc(drive.start), loc(drive.dest)], costing: BY[by].costing, units: "miles" }, ask;
     if (excl && excl.length) {
       req.exclude_polygons = excl.filter(function (x) { return !x.covered; }).map(function (x) { return DG.toValhalla(x.ring); });
       ask = NAT.fetchSoon(VALHALLA, 12000, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(req) });   // too long for a web address
@@ -1586,18 +1623,20 @@ var BUILD = "2026-11-19 10:19 PT";
       return { line: line, minutes: j.trip.summary.time / 60, miles: j.trip.summary.length, steps: steps };
     });
   }
-  // What a route line passes: past-storm places, fresh neighbor water reports, open 311 flooding and sewage reports, feet in the city flood zone.
+  // What a route line passes: past-storm places, fresh neighbor water reports, open 311 sewage reports (each a list),
+  // a count of open 311 flooding reports, and feet in the city flood zone.
   function driveCheck(line) {
-    var S = DG.sample(line, 8), out = { past: [], water: [], n311: null, nSew: null, zoneFt: null }, i;
+    var S = DG.sample(line, 8), out = { past: [], water: [], sewage: [], n311: null, zoneFt: null }, i;
     sites.forEach(function (s) { for (var i = 0; i < S.length; i++) if (DG.siteDist(S[i].ll, s) <= 5) { out.past.push({ key: s, at: S[i].at }); break; } });
     waterNow.forEach(function (w) { var c = [w.lat, w.lon]; for (var i = 0; i < S.length; i++) if (distM(S[i].ll, c) <= 45) { out.water.push({ key: w, at: S[i].at }); break; } });
+    sewNow().forEach(function (w) { for (var i = 0; i < S.length; i++) if (distM(S[i].ll, w.ll) <= 40) { out.sewage.push({ key: w.key, at: S[i].at }); break; } });
     out.past.sort(function (a, b) { return a.at - b.at; }); out.water.sort(function (a, b) { return a.at - b.at; });
     if (r311Ok && R) {
-      out.n311 = 0; out.nSew = 0;
+      out.n311 = 0;
       last311.forEach(function (r) {
         var k = KINDS[r[F.kind]], c = [parseFloat(r[F.lat]), parseFloat(r[F.lon])];
-        if (!k || (k.role !== "flooding" && k.role !== "sewage") || !/open/i.test(r[F.status] || "") || isNaN(c[0]) || isNaN(c[1])) return;
-        for (var i = 0; i < S.length; i++) if (distM(S[i].ll, c) <= 40) { if (k.role === "sewage") out.nSew++; else out.n311++; break; }
+        if (!k || k.role !== "flooding" || !/open/i.test(r[F.status] || "") || isNaN(c[0]) || isNaN(c[1])) return;
+        for (var i = 0; i < S.length; i++) if (distM(S[i].ll, c) <= 40) { out.n311++; break; }
       });
     }
     if (zoneReady && zonePolys.length) {        // an empty answer is not a checked route
@@ -1607,12 +1646,14 @@ var BUILD = "2026-11-19 10:19 PT";
     }
     return out;
   }
-  // Shapes worth steering around: every past-storm place and fresh water report within 600 m of the usual route, nearest first.
+  function driveCount(c) { return c.past.length + c.water.length + c.sewage.length; }
+  // Shapes worth steering around: every past-storm place, fresh water report and open 311 sewage report within 600 m of the most direct route, nearest first.
   function driveNear(line) {
     var S = DG.sample(line, 25), items = [];
     function minD(f) { var b = 1e9; for (var i = 0; i < S.length; i++) b = Math.min(b, f(S[i].ll)); return b; }
     sites.forEach(function (s) { var d = minD(function (ll) { return DG.siteDist(ll, s); }); if (d <= 600) items.push({ kind: "past", key: s, d: d, ring: DG.siteRing(s, 25) }); });
     waterNow.forEach(function (w) { var c = [w.lat, w.lon], d = minD(function (ll) { return distM(ll, c); }) - 60; if (d <= 600) items.push({ kind: "water", key: w, d: d, ring: DG.circleRing(c, 60, 10) }); });
+    sewNow().forEach(function (w) { var d = minD(function (ll) { return distM(ll, w.ll); }) - 50; if (d <= 600) items.push({ kind: "sewage", key: w.key, d: d, ring: DG.circleRing(w.ll, 50, 10) }); });
     items.sort(function (a, b) { return a.d - b.d; });
     items.forEach(function (it) {
       it.atStart = DG.inRing(drive.start.ll, it.ring); it.atDest = DG.inRing(drive.dest.ll, it.ring);
@@ -1620,7 +1661,7 @@ var BUILD = "2026-11-19 10:19 PT";
     });
     return items;
   }
-  // One more try: also keep out of the city's flood zone, when that costs little (4 minutes or 0.8 miles at most).
+  // One more try: also keep out of the city's flood zone, when that costs little (driving: 4 minutes or 0.8 miles at most; on foot: 6 minutes or 0.3 miles).
   function driveZoneTry(res) {
     if (!res || res.zoneTried || !zoneReady || !res.cm.zoneFt || res.cm.zoneFt < 30) return res;
     res.zoneTried = true;
@@ -1633,9 +1674,9 @@ var BUILD = "2026-11-19 10:19 PT";
     base.forEach(function (it) { it.covered = zone.some(function (z) { return it.ring.every(function (q) { return DG.inRing(q, z.ring); }); }); if (!it.covered) left -= DG.perim(it.ring); });
     zone = zone.filter(function (z) { var p = DG.perim(z.ring); if (p > left) return false; left -= p; return true; });
     if (!zone.length) return res;
-    return driveAsk(base.concat(zone)).then(function (r) {
+    return driveAsk(base.concat(zone), res.by).then(function (r) {
       var c = driveCheck(r.line);
-      if (c.zoneFt < res.cm.zoneFt && c.past.length + c.water.length <= res.cm.past.length + res.cm.water.length && r.minutes <= res.main.minutes + 4 && r.miles <= res.main.miles + 0.8) {
+      if (c.zoneFt < res.cm.zoneFt && driveCount(c) <= driveCount(res.cm) && r.minutes <= res.main.minutes + BY[res.by].zoneMin && r.miles <= res.main.miles + BY[res.by].zoneMi) {
         res.main = r; res.cm = c; res.avoided = true; res.zoneOut = true; res.sent = base.concat(zone);
       }
       return res;
@@ -1646,15 +1687,15 @@ var BUILD = "2026-11-19 10:19 PT";
       drive.res = dm.back.res; drive.start = dm.back.start; dm.back = null; drive.edit = false; drive.msg = ""; driveDraw(); driveShow();
       driveBarSay("A new route didn't load. The water report is still ahead."); return;
     }
-    driveModeOff(); drive.res = null; drive.edit = true; drive.msg = "Driving directions didn't load. Try again in a few minutes."; driveDraw(); driveShow();
+    driveModeOff(); drive.res = null; drive.edit = true; drive.msg = BY[drive.by].failed; driveDraw(); driveShow();
   }
   function driveRoute() {
     if (!drive.start || !drive.dest) return;
-    var mine = ++drive.n; if (!(dm.on && dm.back)) drive.res = null; drive.edit = false; drive.msg = "Finding a driving route…"; driveDraw(); driveShow();
-    driveAsk([]).then(function (usual) {
+    var mine = ++drive.n, by = drive.by; if (!(dm.on && dm.back)) drive.res = null; drive.edit = false; drive.msg = BY[by].finding; driveDraw(); driveShow();
+    driveAsk([], by).then(function (usual) {
       if (mine !== drive.n) return;
       var cu = driveCheck(usual.line), near = driveNear(usual.line);
-      var res = { usual: usual, cu: cu, main: usual, cm: cu, avoided: false, tried: false, near: near, sent: [], pastOk: sites.length > 0, repOk: repOk };
+      var res = { by: by, usual: usual, cu: cu, main: usual, cm: cu, avoided: false, tried: false, near: near, sent: [], pastOk: sites.length > 0, repOk: repOk };
       function hit(it) { return cu[it.kind].some(function (p) { return p.key === it.key; }); }
       // The public routing server caps how much outline one request may carry, so send the nearest shapes only.
       var budget = 8000, active = near.filter(function (it) { if (it.atStart || it.atDest) return false; var p = DG.perim(it.ring); if (p > budget) return false; budget -= p; return true; }).slice(0, 12);
@@ -1665,14 +1706,17 @@ var BUILD = "2026-11-19 10:19 PT";
       if (crossed.length < active.length) sets.push(crossed);
       // Still no route? The shape closest to the start or destination is the usual culprit, so try without it.
       if (crossed.length > 1) sets.push(crossed.slice().sort(function (a, b) { return a.endD - b.endD; }).slice(1));
+      // Last try: without the 311 sewage reports, so one of those can't cost the way around a past-storm place or neighbor water.
+      var noSew = crossed.filter(function (it) { return it.kind !== "sewage"; });
+      if (noSew.length && noSew.length < crossed.length) sets.push(noSew);
       function attempt(i) {
         if (i >= sets.length) return null;
-        return driveAsk(sets[i]).then(function (r) { return { r: r, set: sets[i] }; }, function (e) { return e && e.name === "AbortError" ? null : attempt(i + 1); });
+        return driveAsk(sets[i], by).then(function (r) { return { r: r, set: sets[i] }; }, function (e) { return e && e.name === "AbortError" ? null : attempt(i + 1); });
       }
       return Promise.resolve(attempt(0)).then(function (got) {
         if (!got) return res;
         var ca = driveCheck(got.r.line);     // judge the route that came back, not the request that went out
-        if (ca.past.length + ca.water.length < cu.past.length + cu.water.length) { res.main = got.r; res.cm = ca; res.avoided = true; res.sent = got.set; }
+        if (driveCount(ca) < driveCount(cu)) { res.main = got.r; res.cm = ca; res.avoided = true; res.sent = got.set; }
         return res;
       });
     }).then(function (res) { return mine === drive.n ? driveZoneTry(res) : null; }).then(function (res) {
@@ -1714,7 +1758,7 @@ var BUILD = "2026-11-19 10:19 PT";
     function step(legs) {
       var ats = [0].concat(res.stops.map(function (x) { return x.at; }), [total]);
       for (var i = 0; i < legs.length; i++) {
-        var c = driveCheck(legs[i]), bad = driveLeft(c.past, res.cm.past).concat(driveLeft(c.water, res.cm.water));
+        var c = driveCheck(legs[i]), bad = driveLeft(c.past, res.cm.past).concat(driveLeft(c.water, res.cm.water), driveLeft(c.sewage, res.cm.sewage));
         if (!bad.length) continue;
         if (res.stops.length >= 6 || tries >= 7) return done(false);
         var best = -1, bd = 0, leg = legs[i];
@@ -1731,7 +1775,7 @@ var BUILD = "2026-11-19 10:19 PT";
     function ask() {
       tries++;
       var locs = [drive.start].concat(res.stops, [drive.dest]).map(function (p) { return { lat: Math.round(p.ll[0] * 1e6) / 1e6, lon: Math.round(p.ll[1] * 1e6) / 1e6 }; });
-      NAT.fetchSoon(VALHALLA + "?json=" + encodeURIComponent(JSON.stringify({ locations: locs, costing: "auto", units: "miles" })), 12000).then(function (j) {
+      NAT.fetchSoon(VALHALLA + "?json=" + encodeURIComponent(JSON.stringify({ locations: locs, costing: BY[res.by].costing, units: "miles" })), 12000).then(function (j) {
         if (drive.res === res) step((j.trip.legs || []).map(function (leg) { return NAT.decode6(leg.shape); }));
       }).catch(function () { done(false); });
     }
@@ -1744,9 +1788,9 @@ var BUILD = "2026-11-19 10:19 PT";
     if (g.length > 3) g = [a[0], a[Math.floor((a.length - 1) / 2)], a[a.length - 1]];     // Google takes three stops on a phone
     return {
       google: "https://www.google.com/maps/dir/?api=1" + (from ? "&origin=" + encodeURIComponent(from) : "") + "&destination=" + encodeURIComponent(p5(drive.dest.ll)) +
-        (g.length ? "&waypoints=" + encodeURIComponent(g.map(p5).join("|")) : "") + "&travelmode=driving",
+        (g.length ? "&waypoints=" + encodeURIComponent(g.map(p5).join("|")) : "") + "&travelmode=" + BY[r.by].google,
       apple: "https://maps.apple.com/directions?" + (from ? "source=" + from + "&" : "") + "destination=" + p5(drive.dest.ll) +
-        a.map(function (q) { return "&waypoint=" + p5(q); }).join("") + "&mode=driving",
+        a.map(function (q) { return "&waypoint=" + p5(q); }).join("") + "&mode=" + BY[r.by].apple,
       stops: a.length, cut: a.length > 3, own: !from
     };
   }
@@ -1757,7 +1801,7 @@ var BUILD = "2026-11-19 10:19 PT";
   function driveShow() {
     var r = drive.res, edit = drive.edit || !r, facts = dEl("Facts"), steps = dEl("StepList");
     dEl("Opts").hidden = !drive.open; dEl("Card").hidden = !(drive.open && r);
-    bDrive.setAttribute("aria-pressed", drive.open ? "true" : "false"); bDrive.textContent = drive.open ? "Close drive" : "Plan a drive";
+    bDrive.setAttribute("aria-pressed", drive.open ? "true" : "false"); bDrive.textContent = drive.open ? "Close route" : "Plan a route";
     bReport.hidden = !!drive.pick;                       // one long label at a time in the button row
     bDrive.hidden = picking;
     if (!drive.open) return;
@@ -1767,6 +1811,15 @@ var BUILD = "2026-11-19 10:19 PT";
     dEl("ToBtn").textContent = drive.pick === "dest" ? "Cancel" : "tap the map where you're going";
     dEl("Msg").textContent = drive.msg; dEl("Msg").hidden = !drive.msg;
     dEl("WarnTop").hidden = !edit;                       // once a route shows, the same line sits in the card under the map
+    // Drive or walk: the two-choice control and every line that reads differently on foot.
+    var W = BY[r ? r.by : drive.by], bs = dEl("BarSafe"), bb = document.createElement("b");
+    document.getElementById("routeByDrive").setAttribute("aria-pressed", drive.by === "drive" ? "true" : "false");
+    document.getElementById("routeByWalk").setAttribute("aria-pressed", drive.by === "walk" ? "true" : "false");
+    document.getElementById("routeHow").hidden = !edit;
+    dEl("WarnTop").textContent = BY[drive.by].warn; dEl("Warn").textContent = W.warn;
+    dEl("Start").textContent = W.start; dEl("Stop").textContent = W.stop;
+    bs.textContent = W.bar[0]; bb.textContent = W.bar[1]; bs.appendChild(bb);
+    document.getElementById("routeLines").hidden = true;
     facts.textContent = ""; steps.textContent = "";
     dEl("Start").hidden = dm.on;
     if (!r) return;
@@ -1774,20 +1827,25 @@ var BUILD = "2026-11-19 10:19 PT";
     function names(list) { var n = list.map(function (p) { return p.key.name; }); return n.join(n.some(function (x) { return x.indexOf(",") >= 0; }) ? "; " : ", "); }
     function pastN(n) { return n + (n === 1 ? " place" : " places") + " that flooded in past storms"; }
     function waterN(n) { return n + (n === 1 ? " spot where a neighbor reported water" : " spots where neighbors reported water") + " in the last day"; }
-    function both(P, W) {
-      if (P.length && W.length) return pastN(P.length) + " (" + names(P) + ") and " + waterN(W.length);
-      return P.length ? pastN(P.length) + ": " + names(P) : waterN(W.length);
+    function sewN(n) { return n + (n === 1 ? " open 311 sewage backup report" : " open 311 sewage backup reports"); }
+    function both(P, W, S) {
+      if (P.length && !W.length && !(S && S.length)) return pastN(P.length) + ": " + names(P);
+      var a = [];
+      if (P.length) a.push(pastN(P.length) + " (" + names(P) + ")");
+      if (W.length) a.push(waterN(W.length));
+      if (S && S.length) a.push(sewN(S.length));
+      return a.length > 1 ? a.slice(0, -1).join(", ") + " and " + a[a.length - 1] : a[0];
     }
     var left = driveLeft;
     var cu = r.cu, cm = r.cm, min = Math.max(1, Math.round(r.main.minutes)), diff = min - Math.max(1, Math.round(r.usual.minutes));
-    dEl("Head").textContent = "About " + min + " min · " + r.main.miles.toFixed(1) + " miles";
-    var goneP = left(cu.past, cm.past), goneW = left(cu.water, cm.water), around = goneP.length || goneW.length, zf = cm.zoneFt;
-    var time = "About " + min + " min, " + (diff >= 1 ? diff + " min longer than the usual way." : diff <= -1 ? -diff + " min shorter than the usual way." : "about the same as the usual way.");
-    if (around) fact("This route goes around " + both(goneP, goneW) + ". " + time);
-    else if (r.avoided) fact((zf < 30 ? "This route stays out of the city's flood-risk zone. " : "This route keeps more of the drive out of the city's flood-risk zone. ") + time);
-    if (cm.past.length || cm.water.length) fact(r.avoided ? "It still passes " + both(cm.past, cm.water) + "." : (r.tried ? "No way around was found, so this is the usual route. " : "") + "It passes " + both(cm.past, cm.water) + ".");
+    dEl("Head").textContent = "About " + min + " min · " + r.main.miles.toFixed(1) + " miles";   // "on foot" is in the sentence below; here it would wrap the line
+    var goneP = left(cu.past, cm.past), goneW = left(cu.water, cm.water), goneS = left(cu.sewage, cm.sewage), around = goneP.length || goneW.length || goneS.length, zf = cm.zoneFt;
+    var time = "About " + min + " min" + W.foot + ", " + (diff >= 1 ? diff + " min longer than the most direct way." : diff <= -1 ? -diff + " min shorter than the most direct way." : "about the same as the most direct way.");
+    if (around) fact("This route goes around " + both(goneP, goneW, goneS) + ". " + time);
+    else if (r.avoided) fact((zf < 30 ? "This route stays out of the city's flood-risk zone. " : "This route keeps more of the " + W.trip + " out of the city's flood-risk zone. ") + time);
+    if (cm.past.length || cm.water.length) fact(r.avoided ? "It still passes " + both(cm.past, cm.water) + "." : (r.tried ? "No way around was found, so this is the most direct way. " : "") + "It passes " + both(cm.past, cm.water) + ".");
     else if (!around) {
-      var who = r.avoided ? "It" : "The usual route";
+      var who = r.avoided ? "It" : "The most direct way";
       if (r.pastOk && r.repOk) fact(who + " doesn't pass any place that flooded in past storms or that neighbors reported in the last day.");
       else if (r.pastOk) fact(who + " doesn't pass any place that flooded in past storms. Neighbor reports didn't load, so those weren't checked.");
       else fact("The list of places that flooded in past storms didn't load, so this route wasn't checked against it.");
@@ -1799,7 +1857,14 @@ var BUILD = "2026-11-19 10:19 PT";
       if (r.near.some(function (it) { return it[e[0]] && it.kind === "water"; })) fact("A neighbor reported water right by your " + e[1] + " in the last day.");
     });
     if (cm.n311) fact(cm.n311 + (cm.n311 === 1 ? " open 311 flooding report is" : " open 311 flooding reports are") + " close to this route. 311 reports show up about a day late.");
-    if (cm.nSew) fact(cm.nSew + (cm.nSew === 1 ? " open 311 sewage backup report is" : " open 311 sewage backup reports are") + " close to this route. 311 reports show up about a day late.");
+    if (cm.sewage.length) fact(sewN(cm.sewage.length) + (cm.sewage.length === 1 ? " is" : " are") + " close to this route. 311 reports show up about a day late.");
+    else if (goneS.length && !cm.n311) fact("311 reports show up about a day late.");
+    // The dotted line is only drawn when the two lines differ.
+    if (r.avoided) {
+      var rl = document.getElementById("routeLines"); rl.hidden = false;
+      rl.textContent = "Solid line: this route. Dotted line: the most direct way, which " + (around ? "passes the places listed above." : "goes through more of the city's flood-risk zone.");
+    }
+    document.getElementById("routeHowCard").textContent = document.getElementById("routeHow").textContent + " 311 reports are the open ones from the \"311: last\" choice in Layers. " + W.warn;
     r.main.steps.forEach(function (s) { var li = document.createElement("li"); li.textContent = s.text + (s.miles >= 0.1 ? " (" + s.miles.toFixed(1) + " mi)" : ""); steps.appendChild(li); });
     var k = driveLinks(r), wait = r.pin === "wait";
     dEl("G").href = k.google; dEl("A").href = k.apple;
@@ -1810,7 +1875,7 @@ var BUILD = "2026-11-19 10:19 PT";
       (r.pin === "unsure" ? " With these stops it may still pass a flood spot." : k.cut ? " Google Maps takes 3 stops, so there it may still pass a flood spot." : "") + (k.own ? " It starts from where your phone is." : "");
   }
 
-  // ---- Drive mode: follow the dot along the route, with one big "Water here" button.
+  // ---- Follow mode (driving or walking): follow the dot along the route, with one big "Water here" button.
   // The position never leaves the phone. A one-tap report carries only the water's spot, through the same path as Report water.
   var dm = { on: false, startedFollow: false, pend: null, last: null, ahead: null, seen: [], back: null, sayT: null };
   function driveBarSay(t) {
@@ -3140,11 +3205,11 @@ var BUILD = "2026-11-19 10:19 PT";
     place: function () { return place; }, geocode: geocode, fetchSoon: fetchSoon, decode6: decode6 };
   } // end nature
 
-  // A link can pick the tab: #flood and #drive open Storms & flooding (#drive also opens Plan a drive),
+  // A link can pick the tab: #flood, #route and #drive open Storms & flooding (#route and the older #drive also open Plan a route),
   // #nature and #walk open Nature & walks (#walk also opens Plan a walk). With none of these, the last tab used on this device opens.
-  // The short addresses /flood, /walks and /drive are tiny pages that send people here with one of these.
-  function hashMode() { var h = location.hash; return h === "#flood" || h === "#drive" ? "flood" : h === "#nature" || h === "#walk" ? "nature" : ""; }
-  function hashDrive() { if (location.hash === "#drive" && !drive.open) driveOpen(); }
+  // The short addresses /flood, /walks, /route and /drive are tiny pages that send people here with one of these.
+  function hashMode() { var h = location.hash; return h === "#flood" || h === "#drive" || h === "#route" ? "flood" : h === "#nature" || h === "#walk" ? "nature" : ""; }
+  function hashDrive() { if ((location.hash === "#drive" || location.hash === "#route") && !drive.open) driveOpen(); }
   var firstMode = hashMode() || store("fm_mode") || "nature";
   setMode(firstMode, "init");
   NAT = nature(FL);
