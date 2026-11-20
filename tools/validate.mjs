@@ -99,7 +99,7 @@ for (const id of readdirSync(new URL("../cities/", import.meta.url))) {
     });
   });
 
-  // ---- transit.json (optional): bus lines for "Bus or drive?", written by tools/build-transit.py
+  // ---- transit.json (optional): Muni lines for Plan a route's Transit choice, written by tools/build-transit.py
   let transit = null;
   try { transit = JSON.parse(readFileSync(new URL("transit.json", dir), "utf8")); }
   catch (e) { if (e.code !== "ENOENT") fail(`cities/${id}/transit.json`, "is not valid JSON: " + e.message); }

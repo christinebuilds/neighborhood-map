@@ -60,7 +60,7 @@ This is not an official city service or a warning system. In an emergency call 9
 
 Everything local lives in `cities/<id>/`: `city.json` (bounds, data sources, phone numbers, notes) and `past-storms.json`. The engine loads `cities/sf/` by default; add `?city=<id>` to the address to load another folder. San Francisco is the only city for now; other cities are on hold.
 
-`cities/sf/transit.json` holds Muni's lines and stops for "Bus or drive?". It is made by `tools/build-transit.py` from the SFMTA's public schedule feed and is used under the SFMTA Transit Data Feed License Agreement, not this project's MIT license. The notice inside the file must stay with any copy. This project is not affiliated with or endorsed by SFMTA.
+`cities/sf/transit.json` holds Muni's lines and stops for the Transit choice in Plan a route. It is made by `tools/build-transit.py` from the SFMTA's public schedule feed and is used under the SFMTA Transit Data Feed License Agreement, not this project's MIT license. The notice inside the file must stay with any copy. This project is not affiliated with or endorsed by SFMTA.
 
 ## Help improve it
 
