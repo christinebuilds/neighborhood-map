@@ -295,8 +295,8 @@ test("SFMTA's data notice travels with the data and is on the page", () => {
   assert.equal(T.no_liability, noLiability);
   assert.match(T.license, /not covered by this project's open-source license/);
   for (const t of [...notice, noLiability]) assert.ok(page.includes("<p>" + t + "</p>"), t.slice(0, 40));
-  assert.ok(page.includes('<div class="small" id="dataNotice" style="margin:0">Bus lines and stops: SFMTA schedule data. Not affiliated with or endorsed by SFMTA.'));
-  assert.ok(page.includes('<details><summary>Data notice</summary>\n      <div id="dataNoticeText">'));
+  // The credits sit behind one link in the footer, inside the notice.
+  assert.ok(page.includes('<details><summary>Transit data notice (SFMTA, BART)</summary>\n      <div id="dataNoticeText">\n        <p>Bus lines and stops: SFMTA schedule data. Not affiliated with or endorsed by SFMTA.'));
   assert.ok(page.includes("Not affiliated with or endorsed by SFMTA."));
   assert.doesNotMatch(page, /route_color|sfmta\.com\/[^"]*\.(png|svg|jpg)/i);
 });
