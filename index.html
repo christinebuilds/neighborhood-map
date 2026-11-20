@@ -668,7 +668,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
       <li><b>Weather alert areas (navy, off at first):</b> where a National Weather Service alert for San Francisco applies. Turn it on in Layers, or tap Show on map in Forecast.</li>
       <li><b>Outlook line and Forecast:</b> the hour-by-hour rain (Open-Meteo forecast), National Weather Service alerts and the high tides (NOAA). Heavy rain near high tide drains slowest.</li>
       <li>Dashed lines follow the city's own street lines for the streets named in news reports. Circles are a rough area around a corner. How far the water spread along each street is an estimate. No shading does not mean a street is safe.</li>
-      <li><b>Plan a route, Transit (blue line):</b> one Muni ride with no transfer (a bus, Muni Metro, a streetcar or a cable car) between your start and end: the suggested ride (solid blue) and the walk to and from the stop (dotted blue). It picks the ride that passes the fewest places that flooded in past storms, spots where neighbors reported water recently and open 311 sewage backup reports, then the one with the least walking. Parts of a ride that run underground aren't checked. There are no times here: "Times and transfers in Google Maps" opens them. This map can't see water on the road right now.</li>
+      <li><b>Plan a route, Transit (blue line):</b> one Muni or BART ride with no transfer (a bus, Muni Metro, a streetcar, a cable car or BART) between your start and end: the suggested ride (solid blue) and the walk to and from the stop or station (dotted blue). It picks the ride that passes the fewest places that flooded in past storms, spots where neighbors reported water recently and open 311 sewage backup reports, then the one with the least walking. Parts of a ride that run underground aren't checked, and this map only knows flooding in San Francisco. There are no times here: "Times and transfers in Google Maps" opens them. This map can't see water on the road right now.</li>
     </ul>
   </details>
   <details class="fold">
@@ -687,7 +687,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
   <p class="small" style="margin:0">Made by neighbors, not the city. <button type="button" class="linkish fbbtn" id="fbOpen"><span aria-hidden="true">💬</span> Report a problem or share an idea</button>. The page remembers your spot in this browser only.</p>
   <p class="small" style="margin:0">My Neighborhood Map. Version: <span id="ver"></span>. <a href="flood.html">About the flood map</a>.</p>
   <p class="small" style="margin:0">Not an official service. Emergency: 9-1-1. Weather: National Weather Service and Open-Meteo. Radar: NWS via Iowa Environmental Mesonet. Sightings and photos: <a href="https://www.inaturalist.org">iNaturalist</a>, with credit to each photographer. Trees, drains, 311 and flood zone: city open data. Walking and driving directions: Valhalla on OpenStreetMap data. Address search: OpenStreetMap.</p>
-  <div class="small" id="dataNotice" style="margin:0">Bus lines and stops: SFMTA schedule data. Not affiliated with or endorsed by SFMTA.
+  <div class="small" id="dataNotice" style="margin:0">Bus lines and stops: SFMTA schedule data. Not affiliated with or endorsed by SFMTA. BART data: <a href="https://www.bart.gov/schedules/developers">bart.gov</a>. Not affiliated with or endorsed by BART.
     <details><summary>Data notice</summary>
       <div id="dataNoticeText">
         <p>Bus and rail lines here are the usual weekday routes of Muni, San Francisco's transit service, run by the SFMTA. Lines that only run at rush hour are left out. Routes change, and a detour in a storm won't show here. Walk times are straight lines at an easy pace.</p>
@@ -695,6 +695,9 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
         <p>The City and County of San Francisco does not guarantee the accuracy, adequacy, completeness or usefulness of any information. The City and County of San Francisco provides this information "as is," without warranty of any kind, express or implied, including but not limited to warranties of merchantability or fitness for a particular purpose, and assumes no responsibility for anyone's use of the information.</p>
         <p>The SFMTA and its employees, officers, directors and agents shall not be liable for damages of any kind arising from the use of Data or any application that uses the Data including but not limited to direct, indirect, incidental, punitive and consequential, and or special damages.</p>
         <p>My Neighborhood Map is made by neighbors. It is not affiliated with or endorsed by SFMTA or the City and County of San Francisco.</p>
+        <p id="bartNotice">BART lines and stations here are the usual weekday paths of BART's lines in San Francisco and the first few stations past it, with the street entrances. Routes change, and a delay or a closed station won't show here.</p>
+        <p>BART data, from the San Francisco Bay Area Rapid Transit District's GTFS schedule feed, used under BART's Developer License Agreement (https://www.bart.gov/dla). BART grants non-exclusive, limited and revocable rights to use, reproduce, and redistribute BART Data. Data is provided on an "as is" and "as available" basis. BART makes no representations or warranties of any kind, express or implied. BART disclaims all warranties, express or implied, including but not limited to implied warranties of merchantability and fitness for a particular purpose. BART and its employees, officers, directors and agents will not be liable for damages of any kind arising from the use of Data including but not limited to direct, indirect, incidental, punitive and consequential damages. BART maintains title, ownership, rights and interest in and to Data. This file is simplified from the feed and is not from BART.</p>
+        <p>My Neighborhood Map is not affiliated with or endorsed by BART.</p>
       </div>
     </details>
   </div>
@@ -721,7 +724,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-19 16:18 PT";
+var BUILD = "2026-11-19 16:35 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -1509,8 +1512,8 @@ var BUILD = "2026-11-19 16:18 PT";
       '<b>Plan a route</b>' +
       '<span class="lline"></span>Solid line: route around flood spots<br>' +
       '<span class="lline usual"></span>Dotted line: the most direct way<br>' +
-      '<span class="lline bus"></span>Transit: the suggested ride (solid blue)<br>' +
-      '<span class="lline bus walk"></span>Transit: the walk to and from the stop (dotted blue)<br>' +
+      '<span class="lline bus"></span>Transit: the suggested Muni or BART ride (solid blue)<br>' +
+      '<span class="lline bus walk"></span>Transit: the walk to and from the stop or station (dotted blue)<br>' +
       'A small label on each line shows a car, a walker, a bus or a train.' + '</details>';
     return d;
   };
@@ -1720,11 +1723,11 @@ var BUILD = "2026-11-19 16:18 PT";
     walk: { costing: "pedestrian", google: "walking", apple: "walking", finding: "Finding a walking route…", failed: "Walking directions didn't load. Try again in a few minutes.", start: "Start walking", stop: "Stop walking",
       foot: " on foot", trip: "walk", zoneMin: 6, zoneMi: 0.3, warn: "This map can't see water on the road right now. Don't walk through moving water or water you can't see the bottom of.",
       bar: ["Stop walking before you tap. ", "Don't walk through moving water or water you can't see the bottom of."] },
-    // Transit: one direct Muni ride, worked out on the phone from cities/<id>/transit.json. No times here; Google or Apple Maps has them.
+    // Transit: one direct Muni or BART ride, worked out on the phone from cities/<id>/transit.json and bart.json. No times here; Google or Apple Maps has them.
     // There is no follow mode for a ride (no Start button), so start, stop and bar are never shown; they keep the walking words.
-    transit: { google: "transit", apple: "transit", finding: "Finding a Muni ride…", failed: "Muni lines didn't load. Try again in a few minutes.", start: "Start walking", stop: "Stop walking",
+    transit: { google: "transit", apple: "transit", finding: "Finding a Muni or BART ride…", failed: "Muni and BART lines didn't load. Try again in a few minutes.", start: "Start walking", stop: "Stop walking",
       foot: " on foot", trip: "trip", warn: "This map can't see water on the road right now.",
-      how: "Suggests one Muni ride with no transfer: bus, Muni Metro, streetcar or cable car. It picks the ride that passes the fewest places that flooded in past storms, water neighbors reported and open 311 sewage backup reports, then the one with the least walking. No times here: Google Maps has them.",
+      how: "Suggests one Muni or BART ride with no transfer: bus, Muni Metro, streetcar, cable car or BART. It picks the ride that passes the fewest places that flooded in past storms, water neighbors reported and open 311 sewage backup reports, then the one with the least walking. No times here: Google Maps has them.",
       bar: ["Stop walking before you tap. ", "Don't walk through moving water or water you can't see the bottom of."] }
   };
   // Open 311 sewage backup reports inside the chosen "311: last" window, as [lat, lon] with the row as the key.
@@ -1995,12 +1998,16 @@ var BUILD = "2026-11-19 16:18 PT";
     }).catch(function () { if (mine === drive.n) driveFail(); });
   }
   // ---- Transit: one direct Muni ride between the two places, worked out on the phone. Nothing is sent anywhere: the lines
-  // come from a file on this site (cities/<id>/transit.json). Times and transfers are left to Google or Apple Maps.
-  var trData = null, trAsk = null;
+  // come from files on this site (cities/<id>/transit.json for Muni, cities/<id>/bart.json for BART), loaded the first time
+  // Transit is used. Both are needed: without BART the card could say "No direct Muni or BART ride" when BART goes there.
+  // Times and transfers are left to Google or Apple Maps.
+  var trData = null, bartData = null, trAsk = {};
+  function trFile(name, set) {
+    if (!trAsk[name]) trAsk[name] = fetchJson(cityDir + name + "?v=" + encodeURIComponent(BUILD)).then(function (j) { set(j); return j; }, function (e) { trAsk[name] = null; throw e; });
+    return trAsk[name];
+  }
   function trLoad() {
-    if (trData) return Promise.resolve(trData);
-    if (!trAsk) trAsk = fetchJson(cityDir + "transit.json?v=" + encodeURIComponent(BUILD)).then(function (j) { trData = j; return j; }, function (e) { trAsk = null; throw e; });
-    return trAsk;
+    return Promise.all([trData || trFile("transit.json", function (j) { trData = j; }), bartData || trFile("bart.json", function (j) { bartData = j; })]);
   }
   function trRoute() {
     var mine = ++drive.n; drive.res = null; drive.tr = null; drive.edit = false; drive.msg = BY.transit.finding; driveDraw(); driveShow();
@@ -2010,8 +2017,11 @@ var BUILD = "2026-11-19 16:18 PT";
   function trWork(mine, fit) {
     // Without the past-storm places every ride would read "passes none", which would not be true. Say so instead.
     if (!sites.length) { drive.tr = null; drive.edit = true; drive.msg = "The places that flooded in past storms didn't load, so a ride can't be checked. Try again in a few minutes."; driveDraw(); driveShow(); return; }
-    var plan = BUSLOGIC.plan(drive.start.ll, drive.dest.ll, trData, { areas: sites, water: waterNow.map(function (w) { return [w.lat, w.lon]; }),
-      sewage: sewNow().map(function (w) { return w.ll; }), zone: zoneReady && zonePolys.length ? zonePolys : null });
+    // Muni and BART are checked against the same flood places and reports, then ranked together: fewest flood spots,
+    // then least walking, then fewer stops.
+    var flood = { areas: sites, water: waterNow.map(function (w) { return [w.lat, w.lon]; }),
+      sewage: sewNow().map(function (w) { return w.ll; }), zone: zoneReady && zonePolys.length ? zonePolys : null };
+    var plan = BARTLOGIC.merge(BUSLOGIC.plan(drive.start.ll, drive.dest.ll, trData, flood), BARTLOGIC.plan(drive.start.ll, drive.dest.ll, bartData, flood));
     drive.tr = { plan: plan, s: BUSLOGIC.suggest(plan), repOk: repOk }; drive.msg = "";
     driveDraw(); driveShow();
     // fit "zone": the flood zone came in after the ride and may have added a line; fit again only if the card no longer fits.
@@ -2101,20 +2111,22 @@ var BUILD = "2026-11-19 16:18 PT";
       if (r.avoided) badgeLines.push({ line: r.usual.line, kind: "tag", text: "most direct" });
     }
     if (o) {
-      // The ride solid and the walks dotted, in the same blue; a small white dot at each of the two stops.
-      var legs = [[drive.start.ll, o.from.ll], [o.to.ll, drive.dest.ll]];
+      // The ride solid and the walks dotted, in the same blue; a small white dot at each of the two stops. For BART the walk
+      // goes to the nearest street entrance and on to the station, where the ride starts, and the dots sit at the stations.
+      var on = o.from.station || o.from.ll, off = o.to.station || o.to.ll;
+      var legs = [[drive.start.ll, o.from.ll].concat(o.from.station ? [on] : []), (o.to.station ? [off] : []).concat([o.to.ll, drive.dest.ll])];
       legs.forEach(function (w) { L.polyline(w, { pane: "bus", color: "#0d47a1", weight: 4, dashArray: "2 8", lineCap: "round", interactive: false }).addTo(driveLayer); });
       L.polyline(o.ride, { pane: "bus", color: "#fff", weight: 9, opacity: 0.9, interactive: false }).addTo(driveLayer);
       L.polyline(o.ride, { pane: "bus", color: "#0d47a1", weight: 5, interactive: false }).addTo(driveLayer);
       // "Get on" and "Get off" sit on the side away from the walk, so the walk keeps room for its label.
-      [[o.from, "Get on", drive.start.ll], [o.to, "Get off", drive.dest.ll]].forEach(function (e) {
-        var left = e[2][1] > e[0].ll[1];
-        L.circleMarker(e[0].ll, { pane: "bus", radius: 5, color: "#0d47a1", weight: 2, fillColor: "#fff", fillOpacity: 1, interactive: false })
+      [[on, "Get on", drive.start.ll], [off, "Get off", drive.dest.ll]].forEach(function (e) {
+        var left = e[2][1] > e[0][1];
+        L.circleMarker(e[0], { pane: "bus", radius: 5, color: "#0d47a1", weight: 2, fillColor: "#fff", fillOpacity: 1, interactive: false })
           .bindTooltip(e[1], { permanent: true, direction: left ? "left" : "right", offset: [left ? -6 : 6, 0], className: "pin-tip stop-tip" }).addTo(driveLayer);
       });
-      var bb = BUSLOGIC.badge(o);
-      badgeLines.push({ line: o.ride, kind: bb.tram ? "tram" : "bus", text: bb.text, blue: true, dots: [o.from.ll, o.to.ll] });
-      legs.sort(function (a, b) { return BUSLOGIC.distM(b[0], b[1]) - BUSLOGIC.distM(a[0], a[1]); })
+      var bb = BARTLOGIC.badge(o);
+      badgeLines.push({ line: o.ride, kind: bb.tram ? "tram" : "bus", text: bb.text, blue: true, dots: [on, off] });
+      legs.sort(function (a, b) { return BUSLOGIC.distM(b[0], b[b.length - 1]) - BUSLOGIC.distM(a[0], a[a.length - 1]); })
         .forEach(function (w) { badgeLines.push({ line: w, kind: "walk", blue: true }); });
     }
     if (drive.open && drive.start) { pin(drive.start, "Start"); ends.push(drive.start.ll); }
@@ -2175,28 +2187,28 @@ var BUILD = "2026-11-19 16:18 PT";
     dEl("FromTxt").textContent = !drive.start ? "Start: tap the map where you start." : edit || !drive.dest ? "From " + drive.start.name + "." : "From " + drive.start.name + " to " + drive.dest.name + ".";
   }
   var routeHowTxt = document.getElementById("routeHow").textContent, trWalk = document.getElementById("transitWalk");
-  // The Transit card: "Take the 14 Mission", where to get on and off, the walks and what the trip passes, and at most one
+  // The Transit card: "Take the 14 Mission" or "Take BART", where to get on and off, the walks and what the trip passes, and at most one
   // line about a ride with less walking that passes more. No times: the buttons open Google or Apple Maps for those.
   function trShow(t) {
     var s = t.s, o = s.best, facts = dEl("Facts");
     function fact(x) { var li = document.createElement("li"); li.textContent = x; facts.appendChild(li); }
     if (o) {
-      dEl("Head").textContent = BUSLOGIC.take(o);
-      fact("From " + BUSLOGIC.stopsLine(o));
-      fact(BUSLOGIC.sentences(o).join(" "));
+      dEl("Head").textContent = BARTLOGIC.take(o);
+      fact("From " + BARTLOGIC.stopsLine(o));
+      fact(BARTLOGIC.sentences(o).join(" "));
       if (s.altLine) fact(s.altLine);
     } else if (t.plan.short) {
       dEl("Head").textContent = "A short walk";
       fact(t.plan.message); trWalk.hidden = false;
     } else {
-      dEl("Head").textContent = "No direct Muni ride";
+      dEl("Head").textContent = "No direct Muni or BART ride";
       fact(t.plan.message);
     }
     if (!t.repOk) fact("Neighbor reports didn't load, so they aren't counted here.");
     var k = driveLinks({ by: "transit", stops: [] });
     dEl("G").href = k.google; dEl("A").href = k.apple;
     dEl("Maps").querySelector(".row").hidden = !!t.plan.short;
-    dEl("MapsNote").textContent = t.plan.short ? "" : BUSLOGIC.mapsNote(o, k.own);
+    dEl("MapsNote").textContent = t.plan.short ? "" : BARTLOGIC.mapsNote(o, k.own);
   }
   trWalk.addEventListener("click", function () { document.getElementById("routeByWalk").click(); });
   function driveShow() {
@@ -2625,8 +2637,8 @@ var BUILD = "2026-11-19 16:18 PT";
       out.options = options; out.message = options.length ? "" : NONE;
       return out;
     }
-    // "Take BART from 24th St Mission to Civic Center/UN Plaza."
-    function take(o) { return o.bart ? "Take BART from " + o.from.name + " to " + o.to.name + "." : bus().take ? bus().take(o) : "Take the " + o.name; }
+    // The heading: "Take BART", as a Muni row reads "Take the 14 Mission".
+    function take(o) { return o.bart ? "Take BART" : bus().take(o); }
     // The sentences for one row. A Muni row is handed to BUSLOGIC unchanged.
     function sentences(o) {
       var out = bus().sentences(o);
@@ -2635,15 +2647,17 @@ var BUILD = "2026-11-19 16:18 PT";
       if (o.outside) out.push(OUTSIDE);
       return out;
     }
-    // The small line under a row: the stations, how many stops, and which BART lines run there.
-    function stopsLine(o) {
-      if (!o.bart) return bus().stopsLine(o);
-      var n = o.stops + (o.stops === 1 ? " stop" : " stops"), c = o.lines.map(function (l) { return l.replace(/^BART (\w+) line.*$/, "$1"); }).sort();
-      return o.from.name + " to " + o.to.name + ", " + n + ". " + (c.length > 1 ? c.slice(0, -1).join(", ") + " or " + c[c.length - 1] + " line." : c[0] + " line" + (o.toward ? " toward " + o.toward : "") + ".");
+    // Where to get on and off, after "From": "24th St Mission to Civic Center/UN Plaza." No line names or colours.
+    function stopsLine(o) { return o.bart ? o.from.name + " to " + o.to.name + "." : bus().stopsLine(o); }
+    // The small print under the Google Maps and Apple Maps buttons. For BART, the way the train is headed when only one line
+    // runs between the two stations: "Look for BART toward Millbrae." Otherwise "Look for BART." A Muni row reads as before.
+    function mapsNote(o, own) {
+      if (!o || !o.bart) return bus().mapsNote(o, own);
+      return bus().mapsNote(null, own) + " Look for BART" + (o.toward ? " toward " + o.toward : "") + ".";
     }
     // The label on the map: "BART", with the train icon.
-    function badge(o) { return o.bart ? { text: "BART", tram: true, bart: true } : bus().badge ? bus().badge(o) : { text: o.lines.map(function (n) { return n.split(" ")[0]; }).join("/"), tram: o.type !== 3 }; }
-    return { plan: plan, merge: merge, take: take, sentences: sentences, stopsLine: stopsLine, badge: badge, NONE: NONE, OUTSIDE: OUTSIDE, WALK_MAX: WALK_MAX };
+    function badge(o) { return o.bart ? { text: "BART", tram: true, bart: true } : bus().badge(o); }
+    return { plan: plan, merge: merge, take: take, sentences: sentences, stopsLine: stopsLine, mapsNote: mapsNote, badge: badge, NONE: NONE, OUTSIDE: OUTSIDE, WALK_MAX: WALK_MAX };
   })();
   // ==== BART-LOGIC-END ====
 
@@ -2819,7 +2833,8 @@ var BUILD = "2026-11-19 16:18 PT";
     // The small line under an option: where to get on and off.
     function stopsLine(o) { return o.from.name + " to " + o.to.name + (o.stops ? ", " + o.stops + (o.stops === 1 ? " stop." : " stops.") : "."); }
     // The suggestion: the first ride (fewest flood spots, then least walking). alt: the ride with the least walking, named only
-    // when it walks less and passes more, so the one line says something the suggestion doesn't.
+    // when it walks less and passes more, so the one line says something the suggestion doesn't. A BART row (from BARTLOGIC.merge)
+    // reads "BART is closer but ...", a Muni row "The 12 Folsom-Pacific is closer but ...".
     function suggest(r) {
       var best = r.options[0] || null, alt = null;
       r.options.forEach(function (o) { if (o !== best && (!alt || o.walkM < alt.walkM)) alt = o; });
@@ -2829,7 +2844,7 @@ var BUILD = "2026-11-19 16:18 PT";
         var past = alt.busPast.concat(alt.walkPast.filter(function (n) { return alt.busPast.indexOf(n) < 0; })).length, w = alt.busWater + alt.walkWater, sw = alt.busSewage + alt.walkSewage;
         if (past) what.push(pastN(past)); if (w) what.push(waterN(w)); if (sw) what.push(sewN(sw));
       }
-      return { best: best, alt: alt, altLine: alt ? "The " + alt.name + " is closer but passes " + (what.length > 1 ? what.slice(0, -1).join(", ") + " and " + what[what.length - 1] : what[0]) + "." : "" };
+      return { best: best, alt: alt, altLine: alt ? (alt.bart ? "BART" : "The " + alt.name) + " is closer but passes " + (what.length > 1 ? what.slice(0, -1).join(", ") + " and " + what[what.length - 1] : what[0]) + "." : "" };
     }
     // "Take the 14 Mission", "Take the N Judah". When two lines share both stops, the first (shortest) name; the note names both.
     function take(o) { return "Take the " + o.lines[0]; }

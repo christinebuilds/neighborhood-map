@@ -43,7 +43,8 @@ test("24th & Mission to Civic Center: BART or the 14, both sensible", () => {
   assert.ok(/^(BART|14 )/.test(r.options[0].name), r.options[0].name);
   const b = r.options.find((o) => o.bart);
   assert.ok(b, "BART is on the card");
-  assert.equal(BART.take(b), "Take BART from 24th St Mission to Civic Center/UN Plaza.");
+  assert.equal(BART.take(b), "Take BART");
+  assert.equal(BART.stopsLine(b), "24th St Mission to Civic Center/UN Plaza.");
   assert.equal(b.stops, 2);
   assert.ok(B_lines(b).length === 4, "all four lines that run there are one row");
   assert.ok(BART.sentences(b).includes(BUS.UNDER));
@@ -56,16 +57,18 @@ test("Glen Park to Embarcadero: BART comes first", () => {
   const r = trip(GLEN_PARK, EMBARCADERO);
   const first = r.options[0];
   assert.ok(first.bart, first.name);
-  assert.equal(BART.take(first), "Take BART from Glen Park to Embarcadero.");
+  assert.equal(BART.take(first), "Take BART");
   assert.equal(first.spots, 0);
   assert.ok(first.walkToM <= 800 && first.walkFromM <= 800);
-  assert.equal(BART.stopsLine(first), "Glen Park to Embarcadero, 6 stops. Blue, Green, Red or Yellow line.");
+  assert.equal(BART.stopsLine(first), "Glen Park to Embarcadero.");
+  assert.equal(first.toward, "", "four lines run there, so no one direction is named");
+  assert.equal(BART.mapsNote(first, false), "Google or Apple gets your start and end and picks its own route. Look for BART.");
   assert.deepEqual(BART.badge(first), { text: "BART", tram: true, bart: true });
 });
 
 test("the ride goes the right way: Embarcadero to Glen Park rides south", () => {
   const b = trip(EMBARCADERO, GLEN_PARK).options.find((o) => o.bart);
-  assert.equal(BART.take(b), "Take BART from Embarcadero to Glen Park.");
+  assert.equal(BART.stopsLine(b), "Embarcadero to Glen Park.");
   assert.ok(b.ride[0][0] > b.ride[b.ride.length - 1][0]);
 });
 
@@ -104,7 +107,7 @@ test("Balboa Park to Powell: the tunnel out of Glen Park is not checked (real pa
   // The I-280 Monterey Blvd exit place sits over the BART tunnel just south of Glen Park station.
   // If Glen Park to Balboa Park moves to AT_STREET in tools/build-bart.py, this ride picks that place up and this test fails.
   const b = BART.plan([37.7215, -122.4475], [37.7846, -122.4073], Q, flood).options[0];
-  assert.equal(BART.take(b), "Take BART from Balboa Park to Powell St.");
+  assert.equal(BART.stopsLine(b), "Balboa Park to Powell St.");
   assert.deepEqual(b.busPast, []);
   assert.equal(b.under, "all");
   assert.ok(P.areas.some((a) => /Monterey Blvd exit/.test(a.name)), "the I-280 Monterey place is still in past-storms.json");
@@ -112,8 +115,9 @@ test("Balboa Park to Powell: the tunnel out of Glen Park is not checked (real pa
 
 test("a ride to Millbrae says the map only knows San Francisco", () => {
   const b = trip(MISSION_24TH, [37.6000, -122.3868]).options.find((o) => o.bart);
-  assert.equal(BART.take(b), "Take BART from 24th St Mission to Millbrae.");
-  assert.match(BART.stopsLine(b), /Red line toward Millbrae\.$/);
+  assert.equal(BART.take(b), "Take BART");
+  assert.equal(BART.stopsLine(b), "24th St Mission to Millbrae.");
+  assert.equal(BART.mapsNote(b, true), "Google or Apple gets your destination, starts from where your phone is and picks its own route. Look for BART toward Millbrae.");
   assert.ok(BART.sentences(b).includes(BART.OUTSIDE));
 });
 
@@ -143,6 +147,51 @@ test("Muni rows pass through unchanged", () => {
   const m = trip(MISSION_24TH, CIVIC).options.find((o) => !o.bart);
   assert.deepEqual(BART.sentences(m), BUS.sentences(m));
   assert.equal(BART.stopsLine(m), BUS.stopsLine(m));
+  assert.equal(BART.take(m), BUS.take(m));
+  assert.deepEqual(BART.badge(m), BUS.badge(m));
+  for (const own of [false, true]) assert.equal(BART.mapsNote(m, own), BUS.mapsNote(m, own));
+  assert.equal(BART.mapsNote(null, false), BUS.mapsNote(null, false));
+});
+
+test("the closer ride is BART: 'BART is closer but ...', never 'The BART'", () => {
+  // A made-up past-storm place at the 24th St Mission entrance: every BART row walks through it, the 14's walk does not.
+  const b0 = BART.plan(MISSION_24TH, CIVIC, Q, flood).options[0];
+  const fake = { name: "24th St entrance test", shapes: [{ type: "circle", center: b0.from.ll, radius_m: 4 }] };
+  const r = trip(MISSION_24TH, CIVIC, { areas: P.areas.concat([fake]) }), s = BUS.suggest(r);
+  assert.ok(!s.best.bart, s.best.name);
+  assert.ok(s.alt && s.alt.bart, "BART is the closer ride");
+  assert.equal(s.altLine, "BART is closer but passes 1 place that flooded in past storms.");
+  assert.match(BART.mapsNote(s.best, false), /Look for the 14 Mission/);
+});
+
+test("BART suggested, a closer Muni ride passes more: 'The <line> is closer but ...'", () => {
+  // Glen Park to Embarcadero gives BART first; the 14 row is made closer and given a water report, to check the wording only.
+  const r = trip(GLEN_PARK, EMBARCADERO), b = r.options[0], m = { ...r.options.find((o) => o.name === "14 Mission"), walkToMin: 0, walkFromMin: 0, walkM: 0, walkWater: 1, spots: 1 };
+  assert.ok(b.bart);
+  assert.equal(BUS.suggest({ options: [b, m] }).altLine, "The 14 Mission is closer but passes 1 spot where a neighbor reported water recently.");
+});
+
+test("the page wires BART in: loads bart.json with ?v=BUILD, merges, and uses BART wording", () => {
+  const block = page.slice(page.indexOf("// ---- Transit: one direct Muni ride"), page.indexOf("// ---- Labels on the route lines"));
+  assert.match(block, /"bart\.json"/);
+  assert.match(block, /name \+ "\?v=" \+ encodeURIComponent\(BUILD\)/);
+  assert.match(block, /BARTLOGIC\.merge\(BUSLOGIC\.plan\(/);
+  const card = page.slice(page.indexOf("function trShow("), page.indexOf("function driveShow("));
+  for (const f of ["take", "stopsLine", "sentences", "mapsNote"]) assert.match(card, new RegExp("BARTLOGIC\\." + f + "\\("), f);
+  assert.doesNotMatch(card, /BUSLOGIC\.(take|stopsLine|sentences|mapsNote)\(/);
+  assert.match(card, /"No direct Muni or BART ride"/);
+  assert.match(page, /BARTLOGIC\.badge\(o\)/);
+});
+
+test("footer: BART credit, and BART's notice inside the Data notice after the SFMTA notice", () => {
+  const dn = page.slice(page.indexOf('id="dataNotice"'), page.indexOf("</main>"));
+  assert.match(dn, /BART data: <a href="https:\/\/www\.bart\.gov\/schedules\/developers">bart\.gov<\/a>\./);
+  assert.equal(Q.credit, "BART data: bart.gov");
+  assert.equal(Q.credit_url, "https://www.bart.gov/schedules/developers");
+  const sfmta = dn.indexOf("The SFMTA and its employees"), bart = dn.indexOf("<p>" + Q.notice + "</p>");
+  assert.ok(sfmta > 0 && bart > sfmta, "BART's notice, word for word from bart.json, after the SFMTA notice");
+  assert.match(dn, /not affiliated with or endorsed by BART\./);
+  assert.doesNotMatch(page, /bart[^"']*\.(png|svg|jpg)|system map/i, "no BART logo or system map");
 });
 
 test("no banned words in any BART row", () => {
