@@ -62,6 +62,8 @@ Everything local lives in `cities/<id>/`: `city.json` (bounds, data sources, pho
 
 `cities/sf/transit.json` holds Muni's lines and stops for the Transit choice in Plan a route. It is made by `tools/build-transit.py` from the SFMTA's public schedule feed and is used under the SFMTA Transit Data Feed License Agreement, not this project's MIT license. The notice inside the file must stay with any copy. This project is not affiliated with or endorsed by SFMTA.
 
+`cities/sf/bart.json` holds BART's lines and stations in San Francisco, and the first few stations past it, for direct BART rides in Plan a route. It is made by `tools/build-bart.py` from BART's public GTFS schedule feed and is used under BART's Developer License Agreement (https://www.bart.gov/dla), not this project's MIT license. The notice inside the file must stay with any copy. No BART logo, trademark or system map is used. This project is not affiliated with or endorsed by BART. Tests: `node tools/test-bart.mjs`.
+
 ## Help improve it
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Adding a spot in your neighborhood takes one small edit to `cities/sf/past-storms.json`, or you can fill in an issue form with no coding at all. Not a coder? Tap **💬 Feedback** at the top of the map.

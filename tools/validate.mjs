@@ -130,6 +130,44 @@ for (const id of readdirSync(new URL("../cities/", import.meta.url))) {
       }
     });
   }
+
+  // ---- bart.json (optional): BART lines for Plan a route, Transit, written by tools/build-bart.py
+  let bart = null;
+  try { bart = JSON.parse(readFileSync(new URL("bart.json", dir), "utf8")); }
+  catch (e) { if (e.code !== "ENOENT") fail(`cities/${id}/bart.json`, "is not valid JSON: " + e.message); }
+  if (bart) {
+    const wb = `cities/${id}/bart.json`;
+    const src = bart.source || {};
+    if (!isStr(bart.notice, 1500) || !bart.notice.startsWith("BART data, from the San Francisco Bay Area Rapid Transit District's GTFS schedule feed, used under BART's Developer License Agreement") || !/"as is" and "as available"/.test(bart.notice)) fail(wb, "needs the notice from BART's Developer License Agreement (tools/build-bart.py writes it)");
+    if (bart.data !== "BART data, not covered by this repo's MIT license") fail(wb, "needs \"data\": \"BART data, not covered by this repo's MIT license\"");
+    if (!isStr(bart.license, 600) || bart.credit !== "BART data: bart.gov" || !https(bart.credit_url)) fail(wb, "needs \"license\", \"credit\": \"BART data: bart.gov\" and an https:// credit_url");
+    if (!/^[0-9a-f]{64}$/.test(src.sha256 || "") || !https(src.official_url) || !/^\d{4}-\d{2}-\d{2}$/.test(src.service_from || "") || !/^\d{4}-\d{2}-\d{2}$/.test(src.service_to || "")) fail(wb, "source needs official_url, sha256, service_from and service_to");
+    // BART runs past the city, so its stations are checked against the Bay Area; the ones marked sf against the city.
+    const inBay = (p) => pair(p) && p[0] >= 37.3 && p[0] <= 38.1 && p[1] >= -122.6 && p[1] <= -121.7;
+    const st = Array.isArray(bart.stations) ? bart.stations : [];
+    if (!st.length) fail(wb, "needs a \"stations\" list");
+    st.forEach((s, i) => {
+      const ws = `${wb} stations[${i}] (${s && s.name ? s.name : "no name"})`;
+      if (!isStr(s.id, 8) || !isStr(s.name, 60) || typeof s.sf !== "boolean") fail(ws, "needs an id, a name and sf (true or false)");
+      if (!inBay(s.ll) || (s.sf && !inCity(s.ll))) fail(ws, "ll must be [latitude, longitude] in the Bay Area, and inside the city's bounds when sf is true");
+      if (!Array.isArray(s.doors) || !s.doors.every((d) => inBay(d) && Math.abs(d[0] - s.ll[0]) < 0.003 && Math.abs(d[1] - s.ll[1]) < 0.003)) fail(ws, "doors must be [latitude, longitude] entrances near the station");
+    });
+    if (!st.some((s) => s.sf)) fail(wb, "needs at least one station in the city");
+    if (!Array.isArray(bart.routes) || !bart.routes.length) fail(wb, "needs a \"routes\" list");
+    (bart.routes || []).forEach((r, i) => {
+      const wr = `${wb} routes[${i}] (${r && r.name ? r.name : "no name"})`;
+      if (!isStr(r.id, 12) || !isStr(r.name, 80) || !/^BART \w+ line/.test(r.name) || !isStr(r.toward, 60) || r.type !== 1) fail(wr, "needs an id, a plain name (\"BART Yellow line (...)\"), toward, and type 1");
+      if (!Array.isArray(r.line) || r.line.length < 2 || !r.line.every(inBay)) fail(wr, "line must be a list of [latitude, longitude] pairs in the Bay Area");
+      let last = -1;
+      const ok = Array.isArray(r.stops) && r.stops.length >= 2 && r.stops.every((s) => {
+        const good = Array.isArray(s) && Number.isInteger(s[0]) && s[0] >= 0 && s[0] < st.length && Number.isInteger(s[1]) && s[1] > last && s[1] < (r.line || []).length;
+        if (good) last = s[1];
+        return good;
+      });
+      if (!ok) fail(wr, "each stop must be [station number, place on the line], in the order the train runs");
+      if (r.under !== undefined && !(Array.isArray(r.under) && r.under.length > 0 && r.under.every((u) => Array.isArray(u) && u.length === 2 && Number.isInteger(u[0]) && Number.isInteger(u[1]) && u[0] >= 0 && u[1] > u[0] && u[1] < r.line.length))) fail(wr, "under must be [first, last] places on the line");
+    });
+  }
 }
 
 if (errors.length) {
