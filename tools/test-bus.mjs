@@ -1,4 +1,4 @@
-// Tests the "Bus or drive?" working-out. Run with: node tools/test-bus.mjs
+// Tests the working-out behind Plan a route's Transit choice. Run with: node tools/test-bus.mjs
 // It cuts the BUS-LOGIC block out of index.html and runs it against the real
 // cities/sf/transit.json and cities/sf/past-storms.json. No packages needed.
 import { readFileSync } from "node:fs";
@@ -20,7 +20,7 @@ const FOLSOM = ["Folsom St, 14th to 18th", "17th & Folsom", "14th St, Folsom to 
 const allText = (r) => r.options.map((o) => o.name + " " + B.sentences(o).join(" ") + " " + B.stopsLine(o)).join(" ") + " " + r.message;
 const BANNED = /\bsafe|flood-free|faster|quicker|slower|\bAI\b|moderated/i;
 
-const pageBlock = page.slice(page.indexOf("// ==== BUS-PAGE-START ===="), page.indexOf("// ==== BUS-PAGE-END ===="));
+const pageBlock = page.slice(page.indexOf("// ---- Transit: one direct Muni ride"), page.indexOf("// ---- Labels on the route lines"));
 // Castro to Powell: the K, L and M run under Market St; the F streetcar runs on top of it.
 const CASTRO = [37.7626, -122.4352], POWELL = [37.7844, -122.4080], CHURCH = "Market St at Church St";
 
@@ -81,17 +81,69 @@ test("stops are within about 600 m of each end, and walking is 80 m a minute", (
   }
 });
 
-test("no direct bus: says so, and says transfers aren't covered", () => {
+test("no direct ride: says so, and points to Google Maps for a transfer or BART", () => {
   // Ocean Beach to Hunters Point: no single line does this.
   const r = B.plan([37.7600, -122.5080], [37.7290, -122.3720], T, { areas: P.areas });
   assert.deepEqual(r.options, []);
-  assert.equal(r.message, "No direct bus between these two places. Bus trips with a transfer aren't covered yet.");
+  assert.equal(r.short, false);
+  assert.equal(r.message, "No direct Muni ride between these two places. Try Google Maps for trips with a transfer or BART.");
+  assert.equal(B.suggest(r).best, null);
 });
 
-test("two places a short walk apart: no bus offered", () => {
+test("two places a short walk apart: no ride offered", () => {
   const r = B.plan(START, [37.7600, -122.4149], T, { areas: P.areas });
   assert.deepEqual(r.options, []);
-  assert.match(r.message, /^These two places are about 2 min apart on foot/);
+  assert.equal(r.short, true);
+  assert.equal(r.message, "These two places are about 2 min apart on foot.");
+});
+
+test("the suggestion: one ride, and one line about a closer ride only when it passes more", () => {
+  const r = B.plan(START, DEST, T, { areas: P.areas }), s = B.suggest(r);
+  assert.equal(s.best, r.options[0]);
+  assert.equal(B.take(s.best), "Take the 14 Mission");
+  assert.equal(s.best.name, "14 Mission or 14R Mission Rapid");
+  assert.equal(B.sentences(s.best).join(" "), "5 min walk to the stop, 4 min after. Passes none of the places that flooded in past storms.");
+  assert.equal(B.stopsLine(s.best), "Mission St & 20th St to Mission St & 11th St.");
+  assert.match(s.alt.name, /^12 Folsom/);
+  assert.equal(s.altLine, "The 12 Folsom-Pacific is closer but passes 3 places that flooded in past storms.");
+  // with no flood places the closer ride comes first, and there is nothing to add
+  const plain = B.suggest(B.plan(START, DEST, T, { areas: [] }));
+  assert.match(plain.best.name, /^12 Folsom/);
+  assert.equal(plain.alt, null);
+  assert.equal(plain.altLine, "");
+  // Castro to Powell: every ride passes something or nothing; the line is only there when the closer one passes more
+  const cp = B.suggest(B.plan(CASTRO, POWELL, T, { areas: P.areas }));
+  if (cp.alt) assert.ok(cp.alt.spots > cp.best.spots && cp.alt.walkM < cp.best.walkM);
+});
+
+test("the Maps note and the label on the map", () => {
+  const s = B.suggest(B.plan(START, DEST, T, { areas: P.areas }));
+  assert.equal(B.mapsNote(s.best, false), "Google or Apple gets your start and end and picks its own route. Look for the 14 Mission or 14R Mission Rapid.");
+  assert.equal(B.mapsNote(s.best, true), "Google or Apple gets your destination, starts from where your phone is and picks its own route. Look for the 14 Mission or 14R Mission Rapid.");
+  assert.equal(B.mapsNote(null, false), "Google or Apple gets your start and end and picks its own route.");
+  assert.deepEqual(B.badge({ lines: ["14 Mission"], type: 3 }), { text: "14", tram: false });
+  assert.deepEqual(B.badge({ lines: ["14 Mission", "14R Mission Rapid"], type: 3 }), { text: "14", tram: false });
+  assert.deepEqual(B.badge({ lines: ["N Judah"], type: 0 }), { text: "N", tram: true });
+  assert.deepEqual(B.badge({ lines: ["PH Powell-Hyde Cable Car"], type: 5 }), { text: "PH", tram: true });
+  const metro = B.plan(CASTRO, POWELL, T, { areas: P.areas }).options.find((o) => o.under);
+  assert.equal(B.badge(metro).tram, true);
+  assert.match(B.take(metro), /^Take the [JKLMNT] /);
+});
+
+test("open 311 sewage backup reports count like water: on the ride and on the walk", () => {
+  const onFolsom = [37.7700, -122.4157];                 // on Folsom near 13th, on the 12's ride
+  const r = B.plan(START, DEST, T, { areas: [], sewage: [onFolsom] });
+  const folsom = r.options.find((o) => /Folsom/.test(o.name)), mission = r.options.find((o) => /Mission/.test(o.name));
+  assert.equal(folsom.busSewage, 1);
+  assert.ok(B.sentences(folsom).includes("The bus passes 1 open 311 sewage backup report."));
+  assert.equal(mission.busSewage + mission.walkSewage, 0);
+  assert.ok(r.options.indexOf(mission) < r.options.indexOf(folsom), "fewer spots first");
+  const walk = B.plan(START, DEST, T, { areas: [], sewage: [[37.7589, -122.4170]] });   // on 20th St, between Folsom and Shotwell
+  const m = walk.options.find((o) => /Mission/.test(o.name));
+  assert.equal(m.walkSewage, 1);
+  assert.ok(B.sentences(m).includes("Your walk passes 1 open 311 sewage backup report."));
+  assert.equal(B.suggest(B.plan(START, DEST, T, { areas: P.areas, sewage: [onFolsom] })).altLine,
+    "The 12 Folsom-Pacific is closer but passes 3 places that flooded in past storms and 1 open 311 sewage backup report.");
 });
 
 test("fresh neighbor water reports are counted for the ride and for the walk", () => {
@@ -134,21 +186,13 @@ test("honest wording: no trip times, no promises", () => {
     assert.doesNotMatch(text, BANNED);
     assert.doesNotMatch(text, /\d+ min (ride|trip|total|by bus)|min on the bus|arriv|depart/i);
   }
-  assert.equal(B.TIMES, "No bus times here. Check a transit app for times and delays.");
-  assert.equal(B.CANT_SEE, "This map can't see water on the road right now.");
-  assert.equal(B.driveLine(6.2, 0), "Drive around flood spots: about 6 min.");
-  assert.equal(B.driveLine(6.2, 1), "Drive: about 6 min. That route still passes 1 flood spot.");
-  assert.equal(B.driveLine(6.2, 1, "drive"), "Drive: about 6 min. That route still passes 1 flood spot.");
-  assert.doesNotMatch(B.driveLine(6, 0) + B.driveLine(6, 2) + B.TIMES + B.CANT_SEE, BANNED);
-});
-
-test("a walking route from Plan a route is labelled as walking, never as a drive time", () => {
-  assert.equal(B.driveLine(24.6, 0, "walk"), "Walking route around flood spots: about 25 min.");
-  assert.equal(B.driveLine(24.6, 2, "walk"), "Walking route: about 25 min. It still passes 2 flood spots.");
-  assert.equal(B.driveLine(24.6, 1, "walk"), "Walking route: about 25 min. It still passes 1 flood spot.");
-  const w = B.driveLine(24.6, 0, "walk") + B.driveLine(24.6, 3, "walk");
-  assert.doesNotMatch(w, /drive|driving/i);
-  assert.doesNotMatch(w, BANNED);
+  for (const [s, d] of trips) {
+    const r = B.plan(s, d, T, { areas: P.areas, water: [[37.7700, -122.4157]] }), g = B.suggest(r);
+    const text = (g.best ? B.take(g.best) + " " + B.mapsNote(g.best, false) + " " + B.mapsNote(g.best, true) : "") + " " + g.altLine;
+    assert.doesNotMatch(text, BANNED);
+    assert.doesNotMatch(text, /\d+ min (ride|trip|total|by bus)|min on the bus|arriv|depart/i);
+  }
+  assert.doesNotMatch(B.NONE, BANNED);
 });
 
 test("lines that share both stops become one row; the line with the least walking is always shown", () => {
@@ -233,8 +277,10 @@ test("lines that only run at rush hour are left out, and headsigns use a real ap
   assert.ok(T.routes.some((r) => r.toward === "Fisherman's Wharf"));
 });
 
-test("neighbor water: the bus card uses the page's own list and never names a number of hours or days", () => {
+test("neighbor water: the Transit card uses the page's own lists and never names a number of hours or days", () => {
+  assert.ok(pageBlock.length > 500, "the Transit page code is found");
   assert.match(pageBlock, /waterNow/);
+  assert.match(pageBlock, /sewNow\(\)/);
   assert.doesNotMatch(pageBlock, /36e5|created_at/);
   assert.doesNotMatch(code + pageBlock, /last \d+ (h|hours|days)|last 2 days|48 \* /);
 });
@@ -249,7 +295,8 @@ test("SFMTA's data notice travels with the data and is on the page", () => {
   assert.equal(T.no_liability, noLiability);
   assert.match(T.license, /not covered by this project's open-source license/);
   for (const t of [...notice, noLiability]) assert.ok(page.includes("<p>" + t + "</p>"), t.slice(0, 40));
-  assert.ok(page.includes('<details id="busNotice"><summary>Data notice</summary>'));
+  // The credits sit behind one link in the footer, inside the notice.
+  assert.ok(page.includes('<details><summary>Transit data notice (SFMTA, BART)</summary>\n      <div id="dataNoticeText">\n        <p>Bus lines and stops: SFMTA schedule data. Not affiliated with or endorsed by SFMTA.'));
   assert.ok(page.includes("Not affiliated with or endorsed by SFMTA."));
   assert.doesNotMatch(page, /route_color|sfmta\.com\/[^"]*\.(png|svg|jpg)/i);
 });
