@@ -411,34 +411,41 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 #ctl, #bar { display: flex; flex-direction: column; }
 #map { height: 62vh; min-height: 380px; width: 100%; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); scroll-margin-top: 52px; }
 #driveOpts { margin-top: 8px; background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--ink); border-radius: 10px; padding: 6px 12px 8px; font-size: 14px; line-height: 1.35; }
-#driveCard { max-width: 868px; margin: 4px 16px 0; background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--ink); border-radius: 10px; padding: 4px 12px 8px; font-size: 14px; line-height: 1.35; }
+#driveCard { max-width: 868px; margin: 4px 16px 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px 6px; font-size: 14px; line-height: 1.35; }
 @media (min-width: 932px) { #driveCard { margin-left: auto; margin-right: auto; } }
 #driveOpts[hidden], #driveCard[hidden], #driveOpts [hidden], #driveCard [hidden] { display: none; }
 #driveOpts p, #driveCard p { margin: 4px 0; }
 #driveForm { display: flex; gap: 8px; margin: 6px 0 2px; }
 #driveForm input { flex: 1 1 auto; min-width: 0; font-size: 16px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
 #driveForm button { font-size: 15px; font-weight: 600; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--ink); background: var(--ink); color: #fff; cursor: pointer; }
-#driveCard .dhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-#driveHead { font-weight: 700; font-size: 16px; }
-#driveClear { flex: 0 0 auto; font-size: 13px; padding: 5px 10px; }
-#driveFacts { margin: 0 0 2px; padding-left: 18px; }
+/* Plan a route: three equal buttons (drive, walk, Muni or BART), one short line, the buttons for the chosen way, the warning, Details. */
+#routeChoose { display: flex; gap: 6px; margin: 0 0 6px; }
+#routeChoose button { flex: 1 1 0; min-width: 0; min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px 4px; border-radius: 10px; border: 1.5px solid var(--ink); background: #fff; color: var(--ink); font: 700 15px/1.15 system-ui, -apple-system, sans-serif; cursor: pointer; text-align: center; white-space: nowrap; }
+#routeChoose button svg { width: 18px; height: 18px; flex: 0 0 auto; }
+#routeChoose button span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+#routeChoose button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+#routeChoose button#routeTransit[aria-pressed="true"] { background: #0d47a1; border-color: #0d47a1; }
+#routeChoose button:disabled { border-style: dashed; border-color: #8a979d; color: #5f6c72; background: #f1f3f4; font-weight: 600; font-size: 13px; cursor: default; }
+#driveHead { font-weight: 700; font-size: 15px; }
+#driveFacts { margin: 4px 0 2px; padding-left: 18px; }
 .dwarn { font-weight: 600; }
-#driveSteps { background: none; border: 0; border-radius: 0; padding: 0; margin: 4px 0; }
-#driveSteps summary { font-size: 14px; font-weight: 600; min-height: 36px; display: flex; align-items: center; gap: 6px; }
-#driveSteps summary::before { content: "▸"; font-size: 12px; }
-#driveSteps[open] summary::before { content: "▾"; }
 #driveStepList { margin: 2px 0 6px; padding-left: 22px; }
+#driveCard .dfoot { position: relative; }
+#driveClear { position: absolute; top: 0; right: 0; min-height: 36px; font-size: 14px; }
+#driveMaps a.wait { opacity: .45; pointer-events: none; }
+.dpin span { display: block; box-sizing: border-box; width: 18px; height: 18px; margin: 4px; border-radius: 50%; background: #16252d; border: 3px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+.leaflet-tooltip.pin-tip .pchg { margin-left: 1px; color: var(--link); text-decoration: underline; font-weight: 600; }
+.leaflet-tooltip.pin-tip.leaflet-interactive { padding: 4px 8px; }
+.avoidmk svg, .lavoid svg { display: block; width: 20px; height: 18px; }
+.lavoid { display: inline-block; vertical-align: -4px; margin-right: 6px; }
 #driveMaps .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0; }
 #driveMaps .row[hidden] { display: none; }
 #driveMaps a { flex: 1 1 0; text-align: center; font-size: 14px; font-weight: 600; padding: 9px 6px; border-radius: 8px; border: 1px solid var(--ink); background: #fff; color: var(--ink); text-decoration: none; white-space: nowrap; }
-#routeBy { display: flex; gap: 8px; margin: 4px 0 6px; }
-#routeBy button { flex: 1 1 0; min-height: 40px; font-size: 15px; font-weight: 600; padding: 6px 10px; border-radius: 99px; border: 1.5px solid var(--ink); background: #fff; color: var(--ink); cursor: pointer; }
-#routeBy button[aria-pressed="true"] { background: var(--ink); color: #fff; }
 #routeHowMore { background: none; border: 0; border-radius: 0; padding: 0; margin: 4px 0; }
 #routeHowMore summary { font-size: 14px; font-weight: 600; min-height: 36px; display: flex; align-items: center; gap: 6px; }
 #routeHowMore summary::before { content: "▸"; font-size: 12px; }
 #routeHowMore[open] summary::before { content: "▾"; }
-#driveStart { width: 100%; margin: 4px 0 2px; font-size: 16px; padding: 11px 14px; }
+#driveStart { width: 100%; margin: 2px 0 2px; font-size: 16px; padding: 10px 14px; }
 #driveBar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1900; background: #fff; border-top: 2px solid var(--ink); padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgba(0,0,0,.25); font-size: 14px; line-height: 1.35; }
 #driveBar[hidden], #driveBar [hidden] { display: none; }
 #driveBar p { margin: 4px 0 0; }
@@ -463,7 +470,6 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 #whMsg { margin: 0; padding: 4px 2px; }
 .floodkey { max-height: min(330px, 50vh); overflow-y: auto; }   /* stays inside the map on a phone */
 .lline { display: inline-block; width: 18px; height: 0; margin-right: 6px; vertical-align: 3px; border-top: 4px solid #16252d; }
-.lline.usual { border-top: 4px dotted #4a5a62; }
 #pickMsg { position: fixed; top: 58px; left: 50%; transform: translateX(-50%); z-index: 2000; background: #16252d; color: #fff; padding: 8px 14px; border-radius: 99px; font-size: 14px; }
 .credit { font-size: 14px; margin: 0; }
 .credit a { font-weight: 600; }
@@ -478,20 +484,15 @@ button.fbbtn { display: inline-flex; align-items: center; gap: 4px; }
 #dataNotice summary { font-size: 13px; font-weight: 400; text-decoration: underline; cursor: pointer; min-height: 28px; display: flex; align-items: center; }
 #dataNotice details { background: none; border: 0; padding: 0; }
 #dataNoticeText p { margin: 4px 0; font-size: 12.5px; }
-.lline.bus { border-top-color: #0d47a1; }
-.lline.bus.walk { border-top-style: dotted; }
-#driveCard.bus { border-left-color: #0d47a1; }
 #driveCard.bus #driveFacts { list-style: none; padding-left: 0; }
 #driveCard.bus #driveFacts li { margin: 2px 0; }
-#driveCard.bus #driveMaps a { display: flex; align-items: center; justify-content: center; white-space: normal; line-height: 1.2; padding: 6px 8px; }
-#driveCard.bus #driveG { flex: 2 1 0; }
-#transitWalk { width: 100%; margin: 4px 0 2px; font-size: 16px; padding: 9px 14px; }
 .rbadge { display: flex; align-items: center; justify-content: center; gap: 2px; box-sizing: border-box; height: 28px; min-width: 28px; padding: 0 5px; border-radius: 99px; background: #fff; border: 2.5px solid #16252d; color: #16252d; font: 700 13px/1 system-ui, -apple-system, sans-serif; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,.35); pointer-events: none; }
 .rbadge svg { width: 16px; height: 16px; flex: 0 0 auto; }
 .rbadge.bus { border-color: #0d47a1; color: #0d47a1; }
-.rbadge.tag { height: 22px; border-width: 1.5px; border-color: #4a5a62; color: #4a5a62; font-weight: 600; font-size: 12px; padding: 0 7px; }
+.rbadge.dim { opacity: .8; border-width: 1.5px; height: 24px; min-width: 24px; }
+.rbadge.dim svg { width: 14px; height: 14px; }
 .leaflet-tooltip.pin-tip.stop-tip { font-size: 11px; padding: 1px 4px; }
-body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { display: none; }
+body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.mode-nature .leaflet-fade-pane, body.mode-nature .leaflet-avoid-pane, body.mode-nature .leaflet-dpin-pane { display: none; }
 /* ---- Plan a route: Transit and route labels (end) ---- */
 </style>
 </head>
@@ -553,7 +554,6 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
   <p class="small only-flood" id="safety">Not an official service. Emergency: 9-1-1.</p>
   <p class="small only-flood" id="waterNote" hidden></p>
   <div id="driveOpts" class="only-flood" hidden>
-    <div id="routeBy" role="group" aria-label="Drive, walk or transit?"><button type="button" id="routeByDrive" aria-pressed="true">Drive</button><button type="button" id="routeByWalk" aria-pressed="false">Walk</button><button type="button" id="routeByTransit" aria-pressed="false">Transit</button></div>
     <p><span id="driveFromTxt"></span> <button type="button" class="linkish" id="driveFromBtn">Change start</button></p>
     <form id="driveForm" autocomplete="off">
       <input type="text" id="driveTo" placeholder="Where to? Address or cross streets" aria-label="Where are you going? Address, cross streets or place name" maxlength="120">
@@ -561,8 +561,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
     </form>
     <p class="small" id="driveOr">Or <button type="button" class="linkish" id="driveToBtn">tap the map where you're going</button>.</p>
     <p id="driveMsg" role="status" hidden></p>
-    <p class="small" id="routeHow">Goes around places that flooded in past storms, water neighbors reported in the last 24 hours, and open 311 sewage backup reports. Tries to stay out of the city's flood-risk zone when that adds little time.</p>
-    <p id="driveWarnTop" class="dwarn">This map can't see water on the road right now. Never drive through water. Turn around.</p>
+    <p id="driveWarnTop" class="dwarn">Never drive or walk through water. Turn around.</p>
   </div>
   <div id="walkOpts" class="only-nature" hidden>
     <div class="pills" role="group" aria-label="Where the walk ends">
@@ -595,17 +594,21 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
 </div>
 <div id="map" role="application" aria-label="Map of your neighborhood"></div>
 <section id="driveCard" class="only-flood" aria-label="Your route" hidden>
-  <div class="dhead"><p id="driveHead"></p><button class="act alt" type="button" id="driveClear">Start over</button></div>
-  <ul id="driveFacts"></ul>
-  <p id="driveWarn" class="dwarn">This map can't see water on the road right now. Never drive through water. Turn around.</p>
+  <div id="routeChoose" role="group" aria-label="Drive, walk, or Muni and BART"><button type="button" id="routeDrive" aria-pressed="false"></button><button type="button" id="routeWalk" aria-pressed="false"></button><button type="button" id="routeTransit" aria-pressed="false"></button></div>
+  <p id="driveHead" hidden></p>
   <button class="act" type="button" id="driveStart">Start driving</button>
-  <button class="act alt" type="button" id="transitWalk" hidden>Walk there instead</button>
-  <p class="small" id="routeLines" hidden></p>
-  <details id="routeHowMore"><summary>How this works</summary><p class="small" id="routeHowCard"></p></details>
-  <details id="driveSteps"><summary>Steps</summary><ol id="driveStepList"></ol></details>
   <div id="driveMaps">
-    <div class="row"><a id="driveG" target="_blank" rel="noopener" href="#">Open in Google Maps</a><a id="driveA" target="_blank" rel="noopener" href="#">Open in Apple Maps</a></div>
-    <p class="small" id="driveMapsNote"></p>
+    <div class="row"><a id="driveG" target="_blank" rel="noopener" href="#">Open in Google Maps</a><a id="driveA" target="_blank" rel="noopener" href="#">Apple Maps</a></div>
+  </div>
+  <p id="driveWarn" class="dwarn">Never drive or walk through water. Turn around.</p>
+  <div class="dfoot">
+    <details id="routeHowMore"><summary>Details</summary>
+      <ul id="driveFacts"></ul>
+      <div id="driveSteps"><p class="small"><b>Steps</b></p><ol id="driveStepList"></ol></div>
+      <p class="small" id="driveMapsNote"></p>
+      <p class="small" id="routeHowCard"></p>
+    </details>
+    <button type="button" class="linkish" id="driveClear">Start over</button>
   </div>
 </section>
 <div id="driveBar" class="only-flood" hidden>
@@ -717,12 +720,12 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
       <li><b>311 reports (solid dots):</b> blue is flooding, teal a blocked or broken storm drain, brown a sewage backup. Only open cases from the last day show; closed ones are left off. "311: last" in Layers reaches further back. When there are too many dots to read, the map shows one number for each neighborhood instead; tap it or zoom in to see each report. <span id="r311Note"></span></li>
       <li><b>Storm drains:</b> pink means check now (a neighbor flagged it, or an open 311 case is within 60 m). Amber means check first (in the flood zone or a past-flood area). Green was cleared by a neighbor in the last 14 days. This is the map's own rule of thumb, not a city assessment. Tap a drain to mark it cleared or flag it. To adopt one officially: <a id="adoptLink" href="#">the city's adopt-a-drain program</a>.</li>
       <li><b>Neighbor reports (cyan):</b> "water here" posts from the last 24 hours, fainter once they are more than 12 hours old. A brown edge means the neighbor said it looks or smells like sewage. Unverified: this map cannot test the water.</li>
-      <li><b>Plan a route (dark line):</b> a driving or walking route that goes around places that flooded in past storms, water neighbors reported in the last 24 hours, and open 311 sewage backup reports. It also tries to stay out of the city flood zone when that adds little time. Solid line: this route. Dotted line: the most direct way. A small label on each line says what it is: a car, a walker, a bus or a train with the line's name, or "most direct". This map can't see water on the road right now. Never drive through water. Turn around.</li>
+      <li><b>Plan a route:</b> finds a way to drive, a way to walk and one direct Muni or BART ride at the same time. The driving and walking routes go around places that flooded in past storms, water neighbors reported in the last 24 hours, and open 311 sewage backup reports, and try to stay out of the city flood zone when that adds little time. Your route is the bold line; the other two are faded. Tap a button under the map, or a line on the map, to choose. A small label on each line says what it is: a car, a walker, or a bus or train with the line's name. A yellow warning sign marks each flood spot your route goes around. This map can't see water on the road right now. Never drive through water. Turn around.</li>
       <li><b>Weather alert areas (navy, off at first):</b> where a National Weather Service alert for San Francisco applies. Turn it on in Layers, or tap Show on map in Forecast.</li>
       <li><b>Weather at the top (every tab):</b> the hour-by-hour rain (Open-Meteo forecast), the temperature and the best two hours for a walk.</li>
       <li><b>Outlook line and Forecast:</b> National Weather Service alerts and the high tides (NOAA), with the rain. Heavy rain near high tide drains slowest.</li>
       <li>Dashed lines follow the city's own street lines for the streets named in news reports. Circles are a rough area around a corner. How far the water spread along each street is an estimate. No shading does not mean a street is safe.</li>
-      <li><b>Plan a route, Transit (blue line):</b> one Muni or BART ride with no transfer (a bus, Muni Metro, a streetcar, a cable car or BART) between your start and end: the suggested ride (solid blue) and the walk to and from the stop or station (dotted blue). It picks the ride that passes the fewest places that flooded in past storms, spots where neighbors reported water recently and open 311 sewage backup reports, then the one with the least walking. Parts of a ride that run underground aren't checked, and this map only knows flooding in San Francisco. There are no times here: "Times and transfers in Google Maps" opens them. This map can't see water on the road right now.</li>
+      <li><b>Plan a route, Transit (blue line):</b> one Muni or BART ride with no transfer (a bus, Muni Metro, a streetcar, a cable car or BART) between your start and end: the suggested ride (solid blue) and the walk to and from the stop or station (dotted blue). It picks the ride that passes the fewest places that flooded in past storms, spots where neighbors reported water recently and open 311 sewage backup reports, then the one with the least walking. Parts of a ride that run underground aren't checked, and this map only knows flooding in San Francisco. Its time (with "~") is a rough guess: the walks, plus the ride at a usual speed for that bus or train, without the wait. "Times in Google Maps" has the real times. This map can't see water on the road right now.</li>
     </ul>
   </details>
   <details class="fold">
@@ -779,7 +782,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-20 21:35 PT";
+var BUILD = "2026-11-20 22:10 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -1541,6 +1544,8 @@ var BUILD = "2026-11-20 21:35 PT";
   document.getElementById("t311Sew").addEventListener("change", draw311);
 
   // ---- Legend, locate, tile warning
+  // The small warning sign Plan a route puts on each flood spot the chosen route goes around (and in the Legend).
+  var AVOID_SVG = '<svg viewBox="0 0 20 18" aria-hidden="true"><path d="M10 1.2 19 16.8H1z" fill="#ffca28" stroke="#3e2b00" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 6.5v5" stroke="#3e2b00" stroke-width="2.2" stroke-linecap="round"/><circle cx="10" cy="14.2" r="1.25" fill="#3e2b00"/></svg>';
   var legend = L.control({ position: "bottomleft" });
   legend.onAdd = function () {
     var d = L.DomUtil.create("div", "legend floodkey");
@@ -1565,11 +1570,8 @@ var BUILD = "2026-11-20 21:35 PT";
       '<span class="ldot" style="background:#00bcd4;border-color:#004d5a"></span>Water here (unverified)<br>' +
       '<span class="ldot" style="background:#00bcd4;border-color:#6d4c41"></span>Neighbor says it looks or smells like sewage' +
       '<b>Plan a route</b>' +
-      '<span class="lline"></span>Solid line: route around flood spots<br>' +
-      '<span class="lline usual"></span>Dotted line: the most direct way<br>' +
-      '<span class="lline bus"></span>Transit: the suggested Muni or BART ride (solid blue)<br>' +
-      '<span class="lline bus walk"></span>Transit: the walk to and from the stop or station (dotted blue)<br>' +
-      'A small label on each line shows a car, a walker, a bus or a train.' + '</details>';
+      '<span class="lline"></span>Your route: bold line, with a car, walker or bus label. Faded lines are the other two choices.<br>' +
+      '<span class="lavoid">' + AVOID_SVG + '</span>A flood spot your route goes around' + '</details>';
     return d;
   };
 
@@ -1768,23 +1770,31 @@ var BUILD = "2026-11-20 21:35 PT";
     return { blobs: blobs, circleRing: circleRing, siteRing: siteRing, inRing: inRing, perim: perim, siteDist: siteDist, sample: sample, lineDist: lineDist, toValhalla: toValhalla };
   })();
   var VALHALLA = "https://valhalla1.openstreetmap.de/route";
-  // res: a driving or walking route. tr: a Transit suggestion (then res stays empty, so follow mode and its checks never see it).
-  var drive = { open: false, start: null, dest: null, pick: "", n: 0, res: null, tr: null, edit: true, msg: "", by: ["walk", "transit"].indexOf(store("fm_route_by")) >= 0 ? store("fm_route_by") : "drive" };
+  // One tap on Plan a route works out all three ways at once: a driving route, a walking route and one direct Muni or BART ride.
+  // R holds one slot for each. st: "" (not asked), "wait", "ok", "fail" (didn't load), "none" (no direct ride) or "short" (too close
+  // to ride). res: the driving or walking route, or for Transit { plan, s, repOk }.
+  // want: the way this person chose last (kept on this phone as fm_route_by). by: the way drawn bold now; it is want unless want
+  // can't be used, and then the first way that can. res: the chosen driving or walking route, null when a ride is chosen, so follow
+  // mode and its checks never see a ride. tr: the chosen ride.
+  var MODES = ["drive", "walk", "transit"];
+  function slot(st) { return { st: st || "", res: null }; }
+  var want = ["walk", "transit"].indexOf(store("fm_route_by")) >= 0 ? store("fm_route_by") : "drive";
+  var drive = { open: false, start: null, dest: null, pick: "", n: 0, res: null, tr: null, edit: true, msg: "", by: want, want: want, R: { drive: slot(), walk: slot(), transit: slot() } };
   // Words that differ between driving and walking. The map never calls a route safe or clear: it cannot see water.
   var BY = {
-    drive: { costing: "auto", google: "driving", apple: "driving", finding: "Finding a driving route…", failed: "Driving directions didn't load. Try again in a few minutes.", start: "Start driving", stop: "Stop driving",
-      foot: "", trip: "drive", zoneMin: 4, zoneMi: 0.8, warn: "This map can't see water on the road right now. Never drive through water. Turn around.",
+    drive: { costing: "auto", google: "driving", apple: "driving", start: "Start driving", stop: "Stop driving",
+      foot: "", trip: "drive", zoneMin: 4, zoneMi: 0.8, warn: "This map can't see water on the road right now.",
       bar: ["Driver: keep your eyes on the road. Ask a passenger to tap, or tap when stopped. ", "Never drive through water. Turn around."] },
-    walk: { costing: "pedestrian", google: "walking", apple: "walking", finding: "Finding a walking route…", failed: "Walking directions didn't load. Try again in a few minutes.", start: "Start walking", stop: "Stop walking",
+    walk: { costing: "pedestrian", google: "walking", apple: "walking", start: "Start walking", stop: "Stop walking",
       foot: " on foot", trip: "walk", zoneMin: 6, zoneMi: 0.3, warn: "This map can't see water on the road right now. Don't walk through moving water or water you can't see the bottom of.",
       bar: ["Stop walking before you tap. ", "Don't walk through moving water or water you can't see the bottom of."] },
-    // Transit: one direct Muni or BART ride, worked out on the phone from cities/<id>/transit.json and bart.json. No times here; Google or Apple Maps has them.
-    // There is no follow mode for a ride (no Start button), so start, stop and bar are never shown; they keep the walking words.
-    transit: { google: "transit", apple: "transit", finding: "Finding a Muni or BART ride…", failed: "Muni and BART lines didn't load. Try again in a few minutes.", start: "Start walking", stop: "Stop walking",
-      foot: " on foot", trip: "trip", warn: "This map can't see water on the road right now.",
-      how: "Suggests one Muni or BART ride with no transfer: bus, Muni Metro, streetcar, cable car or BART. It picks the ride that passes the fewest places that flooded in past storms, water neighbors reported and open 311 sewage backup reports, then the one with the least walking. No times here: Google Maps has them.",
-      bar: ["Stop walking before you tap. ", "Don't walk through moving water or water you can't see the bottom of."] }
+    // Transit: one direct Muni or BART ride, worked out on the phone from cities/<id>/transit.json and bart.json. Its time is a rough
+    // guess (see trMinutes); Google or Apple Maps has the real times. There is no follow mode for a ride (no Start button).
+    transit: { google: "transit", apple: "transit", warn: "This map can't see water on the road right now.",
+      how: "Suggests one Muni or BART ride with no transfer: bus, Muni Metro, streetcar, cable car or BART. It picks the ride that passes the fewest places that flooded in past storms, water neighbors reported and open 311 sewage backup reports, then the one with the least walking. Its time is a rough guess: the walks, plus the ride at a usual speed for that bus or train, without the wait. Google Maps has the real times." }
   };
+  var ROUTE_HOW = "The driving and walking routes go around places that flooded in past storms, water neighbors reported in the last 24 hours, and open 311 sewage backup reports. They try to stay out of the city's flood-risk zone when that adds little time.";
+  var NOWAY = "Directions didn't load. Try again in a few minutes.";
   // Open 311 sewage backup reports inside the chosen "311: last" window, as [lat, lon] with the row as the key.
   function sewNow() {
     if (!r311Ok || !R) return [];
@@ -1799,6 +1809,13 @@ var BUILD = "2026-11-20 21:35 PT";
   map.getPane("bus").style.pointerEvents = "none";
   map.createPane("badge").style.zIndex = 455;
   map.getPane("badge").style.pointerEvents = "none";
+  // The two ways not chosen are drawn thin and faded, under everything else. The warning signs on the flood spots the chosen route
+  // goes around take no taps, so the place under one stays tappable. The Start and End pins sit on top: they can be dragged.
+  map.createPane("fade").style.zIndex = 389;
+  map.getPane("fade").style.pointerEvents = "none";
+  map.createPane("avoid").style.zIndex = 436;
+  map.getPane("avoid").style.pointerEvents = "none";
+  map.createPane("dpin").style.zIndex = 457;
   var driveLayer = L.layerGroup();
   var bDrive = document.getElementById("bDrive");
   function dEl(id) { return document.getElementById("drive" + id); }
@@ -1860,16 +1877,18 @@ var BUILD = "2026-11-20 21:35 PT";
       if (drive.start === p || drive.dest === p) driveFrom();
     }).catch(function () {});                            // no name: the line keeps what it said
   }
-  function driveStopPick() { if (!drive.pick) return; drive.pick = ""; pickMsg.hidden = true; pickMsg.textContent = ""; driveShow(); }
+  function driveStopPick() { if (!drive.pick) return; drive.pick = ""; pickMsg.hidden = true; pickMsg.textContent = ""; if (!drive.edit) driveDraw(); driveShow(); }
   function drivePick(which, stay) {
     setPicking(false); map.closePopup(); drive.pick = which;
-    pickMsg.textContent = which === "start" ? "Tap the map where you start" : stay ? "Start set. Now tap where you're going" : "Tap the map where you're going"; pickMsg.hidden = false;
+    pickMsg.textContent = which === "start" ? "Tap the map where you start" : stay && !drive.dest ? "Start set. Now tap where you're going" : "Tap the map where you're going"; pickMsg.hidden = false;
     if (!stay) document.getElementById("map").scrollIntoView({ block: "center" });   // "stay": the finger is already on the map
+    if (!drive.edit) driveDraw();                        // the Start or End label now reads Cancel
     driveShow();
   }
   // Taken at the container, before Leaflet, like Report water: a shaded area or drain under the finger must not swallow the tap.
+  // A tap on the Start or End label is left to the label (it cancels).
   map.getContainer().addEventListener("click", function (ev) {
-    if (!drive.pick || (ev.target.closest && ev.target.closest(".leaflet-control, .leaflet-popup"))) return;
+    if (!drive.pick || (ev.target.closest && ev.target.closest(".leaflet-control, .leaflet-popup, .pin-tip.leaflet-interactive"))) return;
     if (map.dragging && map.dragging.moved && map.dragging.moved()) return;
     ev.stopPropagation(); ev.preventDefault();
     var q = map.mouseEventToLatLng(ev), ll = [q.lat, q.lng], which = drive.pick;
@@ -1878,9 +1897,10 @@ var BUILD = "2026-11-20 21:35 PT";
     if (which === "start") drive.start = p; else drive.dest = p;
     driveNext(); driveName(p);                           // the route never waits for the name
   }, true);
+  function driveReset() { MODES.forEach(function (m) { drive.R[m] = slot(); }); driveSync(); }
   function driveNext() {
     if (drive.start && drive.dest) { driveRoute(); return; }
-    drive.res = null; drive.tr = null; driveDraw(); driveShow();
+    driveReset(); driveDraw(); driveShow();
     // A start with no end yet: the very next tap on the map is the end. No scrolling back up to a button.
     if (drive.start && !drive.dest && drive.open) drivePick("dest", true);
   }
@@ -1892,7 +1912,7 @@ var BUILD = "2026-11-20 21:35 PT";
   }
   function driveClear() {
     driveModeOff();
-    drive.n++; drive.open = false; drive.start = null; drive.dest = null; drive.res = null; drive.tr = null; drive.edit = true; drive.msg = "";
+    drive.n++; drive.open = false; drive.start = null; drive.dest = null; drive.edit = true; drive.msg = ""; driveReset();
     dEl("To").value = ""; driveStopPick(); driveDraw(); driveShow();
   }
   bDrive.addEventListener("click", function () { drive.open ? driveClear() : driveOpen(); });
@@ -1902,15 +1922,62 @@ var BUILD = "2026-11-20 21:35 PT";
     drive.pick === "start" ? driveStopPick() : drivePick("start");
   });
   dEl("ToBtn").addEventListener("click", function () { drive.pick === "dest" ? driveStopPick() : drivePick("dest"); });
-  // Drive, walk or transit. The choice is remembered on this phone. With a start and an end already set, the route is found again.
-  [["routeByDrive", "drive"], ["routeByWalk", "walk"], ["routeByTransit", "transit"]].forEach(function (e) {
-    document.getElementById(e[0]).addEventListener("click", function () {
-      if (drive.by === e[1]) return;
-      drive.by = e[1]; store("fm_route_by", e[1]);
-      driveModeOff();
-      if (drive.start && drive.dest && !drive.pick) driveRoute(); else driveShow();
+  // The way drawn bold: the one this person chose last, or, while that one can't be used (it didn't load, or there is no direct
+  // ride), the first way that can. While it is still being worked out, nothing is bold yet.
+  function driveSync() {
+    var R = drive.R, by = drive.want;
+    if (R[by].st !== "ok" && R[by].st !== "wait") by = MODES.filter(function (m) { return R[m].st === "ok"; })[0] || drive.want;
+    drive.by = by;
+    drive.res = by !== "transit" && R[by].st === "ok" ? R[by].res : null;
+    drive.tr = by === "transit" && R.transit.st === "ok" ? R.transit.res : null;
+    if (drive.res && !drive.res.pin) drivePin(drive.res);   // the Maps links' stops are worked out only for the route shown bold
+  }
+  // A tap on one of the three buttons, or on a line on the map: that way is drawn bold, and remembered on this phone.
+  function driveChoose(m) {
+    if (drive.R[m].st !== "ok" || (m === drive.by && m === drive.want)) return;
+    driveModeOff();                                      // following one route, then choosing another: stop following first
+    drive.want = m; store("fm_route_by", m); driveSync(); driveDraw(); driveShow();
+  }
+  var CH = { drive: document.getElementById("routeDrive"), walk: document.getElementById("routeWalk"), transit: document.getElementById("routeTransit") };
+  MODES.forEach(function (m) { CH[m].addEventListener("click", function () { driveChoose(m); }); });
+  // The lines each way draws, for fitting the map and for finding the line under a finger.
+  function modeLines(m) {
+    var s = drive.R[m]; if (s.st !== "ok") return [];
+    if (m !== "transit") return [s.res.main.line];
+    var o = s.res.s.best;
+    return [o.ride, [drive.start.ll, o.from.ll].concat(o.from.station ? [o.from.station] : []), (o.to.station ? [o.to.station] : []).concat([o.to.ll, drive.dest.ll])];
+  }
+  // Which way's line (or label) is under a point on the map: within 18 px of its line. Where two lines share a street, the bold one wins.
+  function routeAt(pt) {
+    var hit = null;
+    badgeMarks.forEach(function (mk) {
+      var el = mk.getElement(), c = map.getContainer().getBoundingClientRect(), q = el && el.getBoundingClientRect();
+      if (q && q.width && pt.x >= q.left - c.left - 4 && pt.x <= q.right - c.left + 4 && pt.y >= q.top - c.top - 4 && pt.y <= q.bottom - c.top + 4) hit = hit || mk.options.mode;
     });
-  });
+    if (hit) return hit;
+    var d = {};
+    MODES.forEach(function (m) {
+      d[m] = 1e9;
+      modeLines(m).forEach(function (l) {
+        var px = l.map(function (ll) { return map.latLngToContainerPoint(ll); });
+        for (var i = 1; i < px.length; i++) d[m] = Math.min(d[m], L.LineUtil.pointToSegmentDistance(pt, px[i - 1], px[i]));
+      });
+    });
+    var best = MODES.slice().sort(function (a, b) { return d[a] - d[b]; })[0];
+    if (d[best] > 18) return null;
+    return d[drive.by] <= d[best] + 4 ? drive.by : best;
+  }
+  // A tap on a faded line chooses it. Taken at the container, before Leaflet, so the flood zone under the line doesn't open
+  // instead. Taps on the map's buttons, pop-ups, labels of Start and End, 311 dots and neighbor reports are left alone.
+  map.getContainer().addEventListener("click", function (ev) {
+    if (ev.defaultPrevented || !drive.open || drive.edit || drive.pick || picking || dm.on || !map.hasLayer(driveLayer)) return;   // a tap that just picked a start or an end
+    if (ev.target.closest && ev.target.closest(".leaflet-control, .leaflet-popup, .leaflet-tooltip, .leaflet-marker-icon.leaflet-interactive, .leaflet-reports-pane, .leaflet-p311-pane")) return;
+    if (map.dragging && map.dragging.moved && map.dragging.moved()) return;
+    var m = routeAt(map.mouseEventToContainerPoint(ev));
+    if (!m || m === drive.by) return;
+    ev.stopPropagation(); ev.preventDefault(); map.closePopup();
+    driveChoose(m);
+  }, true);
   dEl("Form").addEventListener("submit", function (e) {
     e.preventDefault();
     var q = dEl("To").value.trim(); if (q.length < 3) return;
@@ -1940,13 +2007,16 @@ var BUILD = "2026-11-20 21:35 PT";
       return { line: line, minutes: j.trip.summary.time / 60, miles: j.trip.summary.length, steps: steps };
     });
   }
-  // What a route line passes: past-storm places, fresh neighbor water reports, open 311 sewage reports (each a list),
-  // a count of open 311 flooding reports, and feet in the city flood zone.
+  // What a route line passes: past-storm places, fresh neighbor water reports, open 311 sewage reports (each a list, with ll:
+  // where the warning sign goes if a route goes around it), a count of open 311 flooding reports, and feet in the city flood zone.
   function driveCheck(line) {
     var S = DG.sample(line, 8), out = { past: [], water: [], sewage: [], n311: null, zoneFt: null }, i;
-    sites.forEach(function (s) { for (var i = 0; i < S.length; i++) if (DG.siteDist(S[i].ll, s) <= 5) { out.past.push({ key: s, at: S[i].at }); break; } });
-    waterNow.forEach(function (w) { var c = [w.lat, w.lon]; for (var i = 0; i < S.length; i++) if (distM(S[i].ll, c) <= 45) { out.water.push({ key: w, at: S[i].at }); break; } });
-    sewNow().forEach(function (w) { for (var i = 0; i < S.length; i++) if (distM(S[i].ll, w.ll) <= 40) { out.sewage.push({ key: w.key, at: S[i].at }); break; } });
+    sites.forEach(function (s) {
+      var inS = S.filter(function (p) { return DG.siteDist(p.ll, s) <= 5; });   // the stretch of the line inside the place: the sign goes in its middle
+      if (inS.length) out.past.push({ key: s, at: inS[0].at, ll: inS[Math.floor(inS.length / 2)].ll });
+    });
+    waterNow.forEach(function (w) { var c = [w.lat, w.lon]; for (var i = 0; i < S.length; i++) if (distM(S[i].ll, c) <= 45) { out.water.push({ key: w, at: S[i].at, ll: c }); break; } });
+    sewNow().forEach(function (w) { for (var i = 0; i < S.length; i++) if (distM(S[i].ll, w.ll) <= 40) { out.sewage.push({ key: w.key, at: S[i].at, ll: w.ll }); break; } });
     out.past.sort(function (a, b) { return a.at - b.at; }); out.water.sort(function (a, b) { return a.at - b.at; });
     if (r311Ok && R) {
       out.n311 = 0;
@@ -1999,17 +2069,24 @@ var BUILD = "2026-11-20 21:35 PT";
       return res;
     }, function () { return res; });
   }
-  function driveFail() {
-    if (dm.on && dm.back) {      // a new route on the move didn't load: keep the one we had
-      drive.res = dm.back.res; drive.start = dm.back.start; dm.back = null; drive.edit = false; drive.msg = ""; driveDraw(); driveShow();
-      driveBarSay("A new route didn't load. The water report is still ahead."); return;
-    }
-    driveModeOff(); drive.res = null; drive.edit = true; drive.msg = BY[drive.by].failed; driveDraw(); driveShow();
-  }
-  function driveRoute() {
+  // Plan a route: all three ways at once, in parallel. Each button shows its time as its answer comes in; the map is fitted once
+  // they have all answered. only: while following a route, "Go around it" finds that one way again, from where the phone is.
+  function driveRoute(only) {
     if (!drive.start || !drive.dest) return;
-    if (drive.by === "transit") { trRoute(); return; }
-    var mine = ++drive.n, by = drive.by; if (!(dm.on && dm.back)) drive.res = null; drive.tr = null; drive.edit = false; drive.msg = BY[by].finding; driveDraw(); driveShow();
+    var mine = ++drive.n, keep = dm.on && dm.back, ways = only ? [only] : MODES;
+    ways.forEach(function (m) { if (!(keep && m === drive.by)) drive.R[m] = slot("wait"); });   // on the move, the old route stays until a new one comes
+    drive.edit = false; drive.msg = ""; driveSync(); driveDraw(); driveShow();
+    if (!dm.on) document.getElementById("map").scrollIntoView({ block: "start" });   // map on top, the buttons right under it
+    ways.forEach(function (m) { m === "transit" ? trRoute(mine) : roadRoute(mine, m); });
+  }
+  // Once every way has answered: fit all three into the part of the map that shows. Nothing usable at all: back to the form, with a message.
+  function driveSettled(mine) {
+    if (mine !== drive.n || MODES.some(function (m) { return drive.R[m].st === "wait"; })) return;
+    if (!MODES.some(function (m) { return drive.R[m].st === "ok"; })) { driveModeOff(); drive.edit = true; drive.msg = NOWAY; driveDraw(); driveShow(); return; }
+    if (!dm.on) driveFit();
+  }
+  // A driving or walking route that goes around flood spots.
+  function roadRoute(mine, by) {
     driveAsk([], by).then(function (usual) {
       if (mine !== drive.n) return;
       var cu = driveCheck(usual.line), near = driveNear(usual.line);
@@ -2039,23 +2116,35 @@ var BUILD = "2026-11-20 21:35 PT";
       });
     }).then(function (res) { return mine === drive.n ? driveZoneTry(res) : null; }).then(function (res) {
       if (!res || mine !== drive.n) return;
-      drive.res = res; drive.msg = ""; drivePin(res); driveDraw(); driveShow();
-      if (dm.on) { dm.back = null; dm.ahead = null; dm.seen = waterNow.map(function (w) { return w.id; }); driveModeShow();   // the map keeps following the dot
+      res.stops = []; res.pin = "";
+      drive.R[by] = { st: "ok", res: res }; driveSync(); driveDraw(); driveShow();
+      if (dm.on && by === drive.by) { dm.back = null; dm.ahead = null; dm.seen = waterNow.map(function (w) { return w.id; }); driveModeShow();   // the map keeps following the dot
         driveBarSay(res.cm.water.length ? "No way around was found. Water is still reported on your route." : "New route."); }
-      else map.fitBounds(L.latLngBounds(res.main.line).pad(0.15));
-      document.getElementById("map").scrollIntoView({ block: "start" });   // map on top, the drive card right under it
+      driveSettled(mine);
       // The flood zone arrived after the route: check the route against it now, and make the same extra try.
       if (!zoneReady) zoneWaiters.push(function () {
-        if (drive.res !== res) return;
-        res.cm = driveCheck(res.main.line); driveShow();
-        Promise.resolve(driveZoneTry(res)).then(function () { if (drive.res === res) { drivePin(res); driveDraw(); driveShow(); } });
+        if (drive.R[by].res !== res) return;
+        res.cm = driveCheck(res.main.line); var was = res.main;
+        Promise.resolve(driveZoneTry(res)).then(function () {
+          if (drive.R[by].res !== res) return;
+          if (res.main !== was) { res.pin = ""; res.stops = []; driveSync(); }   // a new line: its Maps links are worked out again
+          driveDraw(); driveShow();
+        });
       });
-    }).catch(function () { if (mine === drive.n) driveFail(); });
+    }).catch(function () {
+      if (mine !== drive.n) return;
+      if (dm.on && dm.back && by === drive.by) {      // a new route on the move didn't load: keep the one we had
+        drive.R[by] = { st: "ok", res: dm.back.res }; drive.start = dm.back.start; dm.back = null; driveSync(); driveDraw(); driveShow();
+        driveBarSay("A new route didn't load. The water report is still ahead."); return;
+      }
+      if (by === drive.by) driveModeOff();
+      drive.R[by] = slot("fail"); driveSync(); driveDraw(); driveShow(); driveSettled(mine);
+    });
   }
   // ---- Transit: one direct Muni ride between the two places, worked out on the phone. Nothing is sent anywhere: the lines
   // come from files on this site (cities/<id>/transit.json for Muni, cities/<id>/bart.json for BART), loaded the first time
-  // Transit is used. Both are needed: without BART the card could say "No direct Muni or BART ride" when BART goes there.
-  // Times and transfers are left to Google or Apple Maps.
+  // a route is planned. Both are needed: without BART the button could say "no direct ride" when BART goes there.
+  // Real times and transfers are left to Google or Apple Maps.
   var trData = null, bartData = null, trAsk = {};
   function trFile(name, set) {
     if (!trAsk[name]) trAsk[name] = fetchJson(cityDir + name + "?v=" + encodeURIComponent(BUILD)).then(function (j) { set(j); return j; }, function (e) { trAsk[name] = null; throw e; });
@@ -2064,41 +2153,52 @@ var BUILD = "2026-11-20 21:35 PT";
   function trLoad() {
     return Promise.all([trData || trFile("transit.json", function (j) { trData = j; }), bartData || trFile("bart.json", function (j) { bartData = j; })]);
   }
-  function trRoute() {
-    var mine = ++drive.n; drive.res = null; drive.tr = null; drive.edit = false; drive.msg = BY.transit.finding; driveDraw(); driveShow();
-    trLoad().then(function () { if (mine === drive.n) trWork(mine, true); },
-      function () { if (mine !== drive.n) return; drive.edit = true; drive.msg = BY.transit.failed; driveShow(); });
+  function trRoute(mine) {
+    trLoad().then(function () { if (mine === drive.n) trWork(mine); },
+      function () { if (mine !== drive.n) return; drive.R.transit = slot("fail"); driveSync(); driveDraw(); driveShow(); driveSettled(mine); });
   }
-  function trWork(mine, fit) {
-    // Without the past-storm places every ride would read "passes none", which would not be true. Say so instead.
-    if (!sites.length) { drive.tr = null; drive.edit = true; drive.msg = "The places that flooded in past storms didn't load, so a ride can't be checked. Try again in a few minutes."; driveDraw(); driveShow(); return; }
+  function trWork(mine, late) {
+    // Without the past-storm places every ride would read "passes none", which would not be true. The button says "didn't load".
+    if (!sites.length) { drive.R.transit = slot("fail"); driveSync(); driveDraw(); driveShow(); driveSettled(mine); return; }
     // Muni and BART are checked against the same flood places and reports, then ranked together: fewest flood spots,
     // then least walking, then fewer stops.
     var flood = { areas: sites, water: waterNow.map(function (w) { return [w.lat, w.lon]; }),
       sewage: sewNow().map(function (w) { return w.ll; }), zone: zoneReady && zonePolys.length ? zonePolys : null };
     var plan = BARTLOGIC.merge(BUSLOGIC.plan(drive.start.ll, drive.dest.ll, trData, flood), BARTLOGIC.plan(drive.start.ll, drive.dest.ll, bartData, flood));
-    drive.tr = { plan: plan, s: BUSLOGIC.suggest(plan), repOk: repOk }; drive.msg = "";
-    driveDraw(); driveShow();
-    // fit "zone": the flood zone came in after the ride and may have added a line; fit again only if the card no longer fits.
-    if (fit === true || (fit === "zone" && dEl("Card").getBoundingClientRect().bottom > innerHeight)) trFit();
-    if (!zoneReady) { zoneWaiters.push(function () { if (mine === drive.n && drive.tr) trWork(mine, "zone"); }); loadZone(); }
+    var t = { plan: plan, s: BUSLOGIC.suggest(plan), repOk: repOk };
+    drive.R.transit = { st: t.s.best ? "ok" : plan.short ? "short" : "none", res: t };
+    driveSync(); driveDraw(); driveShow();
+    if (!late) driveSettled(mine);
+    // late: the flood zone came in after the ride, and may have added a sentence in Details. The map stays where it is.
+    if (!zoneReady) { zoneWaiters.push(function () { if (mine === drive.n && drive.R.transit.res === t) trWork(mine, true); }); loadZone(); }
+  }
+  // Rough minutes for a ride, for its button: the two walks, plus the ride's length at a usual average speed for its kind, stops
+  // included but not the wait. There are no schedules on this page, so the button says "~" and Google Maps has the real times.
+  // Speeds (km/h): Muni buses about 12 (SFMTA puts its buses at about 8 mph on average, slower downtown); Muni Metro and the
+  // F streetcar about 15 (quick in the Market St subway, slow on the street); cable cars about 8 (the cable runs at 9.5 mph and the
+  // cars stop at nearly every corner); BART about 40 in the city (stations about a mile apart; its average over the whole line is higher).
+  var RIDE_KMH = { 3: 12, 0: 15, 5: 8, 1: 40 };
+  function trMinutes(o) {
+    var m = 0; for (var i = 1; i < o.ride.length; i++) m += BUSLOGIC.distM(o.ride[i - 1], o.ride[i]);
+    return o.walkToMin + o.walkFromMin + Math.max(1, Math.round(m / 1000 / (RIDE_KMH[o.type] || 12) * 60));
   }
   // Map and card on one screen: the map's top edge may go under the tabs, the page moves up only as far as the card needs,
-  // and the ride is fitted into the part of the map that is still showing.
-  function trFit() {
-    var m = document.getElementById("map"), o = drive.tr && drive.tr.s.best;
+  // and all three ways are fitted into the part of the map that is still showing.
+  function driveFit() {
+    var m = document.getElementById("map"), pts = [drive.start.ll, drive.dest.ll];
+    MODES.forEach(function (k) { modeLines(k).forEach(function (l) { pts = pts.concat(l); }); });
     m.scrollIntoView({ block: "start" });
-    var mr = m.getBoundingClientRect(), over = dEl("Card").getBoundingClientRect().bottom + 8 - innerHeight;
+    var mr = m.getBoundingClientRect(), card = dEl("Card"), over = card.hidden ? 0 : card.getBoundingClientRect().bottom + 8 - innerHeight;
     if (over > 0) { window.scrollBy(0, Math.min(over, mr.height - 260)); mr = m.getBoundingClientRect(); }
     var tabs = document.getElementById("tabs"), top = Math.max(0, (tabs ? tabs.getBoundingClientRect().bottom : 0) - mr.top), bottom = Math.max(0, mr.bottom - innerHeight);
-    var pts = [drive.start.ll, drive.dest.ll].concat(o ? o.ride : []);
     map.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [36, 36 + top], paddingBottomRight: [36, 36 + bottom], maxZoom: 16, animate: false });
   }
 
   // ---- Labels on the route lines, so each line says what it is without the Legend: a car on a driving route, a walker on a
-  // walking route and on the walks to and from a stop, a bus or a tram with the line's name on a Muni ride, and "most direct"
-  // on the dotted line. Each sits on its own line, clear of the other labels, the Start and End labels and the map's buttons.
-  // A line too short on the screen to hold its label goes without one until the map is zoomed in.
+  // walking route and on the walks to and from a stop, a bus or a tram with the line's name on a Muni ride. The faded ways get a
+  // smaller label. Each sits on its own line, clear of the other labels, the Start and End labels, the warning signs and the
+  // map's buttons; the bold way's labels are placed first. A line too short on the screen to hold its label goes without one
+  // until the map is zoomed in. Labels take no taps: a tap on one lands on the map, which chooses that way (see routeAt).
   var badgeLines = [], badgeMarks = [], badgeSize = {};
   var ICON = {
     car: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5.6 10.2 7.2 6a2 2 0 0 1 1.9-1.3h5.8A2 2 0 0 1 16.8 6l1.6 4.2a2.2 2.2 0 0 1 2.1 2.2V17a1 1 0 0 1-1 1h-.8a2.3 2.3 0 0 1-4.5 0H9.8a2.3 2.3 0 0 1-4.5 0h-.8a1 1 0 0 1-1-1v-4.6a2.2 2.2 0 0 1 2.1-2.2zm1.9 0h9l-1.2-3.3a.8.8 0 0 0-.8-.5H9.5a.8.8 0 0 0-.8.5z"/></svg>',
@@ -2106,8 +2206,8 @@ var BUILD = "2026-11-20 21:35 PT";
     bus: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="2.5" width="16" height="16" rx="3" fill="currentColor"/><rect x="6.3" y="5.5" width="11.4" height="5.5" rx="1" fill="#fff"/><circle cx="8.3" cy="15" r="1.4" fill="#fff"/><circle cx="15.7" cy="15" r="1.4" fill="#fff"/><rect x="5.5" y="18" width="3.2" height="3.5" rx="1" fill="currentColor"/><rect x="15.3" y="18" width="3.2" height="3.5" rx="1" fill="currentColor"/></svg>',
     tram: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 1.8h8M12 1.8v2.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="5" y="4.2" width="14" height="14" rx="3.5" fill="currentColor"/><rect x="7.2" y="7" width="9.6" height="5" rx="1" fill="#fff"/><circle cx="9" cy="15.2" r="1.3" fill="#fff"/><circle cx="15" cy="15.2" r="1.3" fill="#fff"/><path d="M8.5 18.5 6.5 22M15.5 18.5l2 3.5M7.2 21h9.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
   };
-  function badgeHtml(b) { return b.kind === "tag" ? esc(b.text) : ICON[b.kind] + (b.text ? "<span>" + esc(b.text) + "</span>" : ""); }
-  function badgeClass(b) { return "rbadge " + b.kind + (b.blue ? " bus" : ""); }
+  function badgeHtml(b) { return ICON[b.kind] + (b.text ? "<span>" + esc(b.text) + "</span>" : ""); }
+  function badgeClass(b) { return "rbadge " + b.kind + (b.blue ? " bus" : "") + (b.dim ? " dim" : ""); }
   function badgeMeasure(b) {
     var key = badgeClass(b) + "|" + badgeHtml(b);
     if (!badgeSize[key]) {
@@ -2128,6 +2228,7 @@ var BUILD = "2026-11-20 21:35 PT";
       var q = el.getBoundingClientRect(); if (q.width && q.height) taken.push({ x: q.left - box.left - 3, y: q.top - box.top - 3, w: q.width + 6, h: q.height + 6 });
     });
     badgeLines.forEach(function (b) { (b.dots || []).forEach(function (ll) { var p = map.latLngToContainerPoint(ll); taken.push({ x: p.x - 8, y: p.y - 8, w: 16, h: 16 }); }); });
+    avoidAt.forEach(function (ll) { var p = map.latLngToContainerPoint(ll); taken.push({ x: p.x - 12, y: p.y - 11, w: 24, h: 22 }); });
     var FR = [0.5]; for (var k = 1; k <= 12; k++) FR.push(0.5 - k * 0.04, 0.5 + k * 0.04);
     badgeLines.forEach(function (b) {
       var px = b.line.map(function (ll) { return map.latLngToContainerPoint(ll); }), at = [0], i;
@@ -2144,9 +2245,9 @@ var BUILD = "2026-11-20 21:35 PT";
         var r = { x: x - w / 2, y: y - h / 2, w: w, h: h };
         if (r.x < 4 || r.y < 4 || r.x + w > W - 4 || r.y + h > H - 4 || hit(r)) continue;
         taken.push({ x: r.x - 3, y: r.y - 3, w: w + 6, h: h + 6 });
-        var m = L.marker(map.containerPointToLatLng([x, y]), { pane: "badge", interactive: false, keyboard: false,
+        var m = L.marker(map.containerPointToLatLng([x, y]), { pane: "badge", interactive: false, keyboard: false, mode: b.mode,
           icon: L.divIcon({ className: badgeClass(b), html: badgeHtml(b), iconSize: [w, h] }) }).addTo(driveLayer);
-        var el = m.getElement(); el.setAttribute("aria-hidden", "true"); el.setAttribute("data-badge", b.kind + (b.text && b.kind !== "tag" ? " " + b.text : ""));
+        var el = m.getElement(); el.setAttribute("aria-hidden", "true"); el.setAttribute("data-badge", b.kind + (b.text ? " " + b.text : "")); el.setAttribute("data-mode", b.mode);
         badgeMarks.push(m);
         return;
       }
@@ -2154,40 +2255,100 @@ var BUILD = "2026-11-20 21:35 PT";
   }
   map.on("moveend resize", placeBadges);
 
+  // All three ways on the map: the chosen one bold with its labels, the other two thin and faded underneath. Warning signs on the
+  // flood spots the chosen way goes around. Start and End pins; once the ways are shown, each can be dragged, or its label tapped
+  // ("Change") to pick that end again with a tap on the map.
+  var avoidAt = [];
   function driveDraw() {
-    driveLayer.clearLayers(); badgeMarks = []; badgeLines = [];
-    var r = drive.res, t = drive.tr, o = t && t.s.best, ends = [];
-    function pin(p, label) { L.circleMarker(p.ll, { pane: "drive", radius: 8, color: "#fff", weight: 3, fillColor: "#16252d", fillOpacity: 1, interactive: false }).bindTooltip(label, { permanent: true, direction: "top", offset: [0, -8], className: "pin-tip" }).addTo(driveLayer); }
-    if (r) {
-      if (r.avoided) L.polyline(r.usual.line, { pane: "drive", color: "#4a5a62", weight: 4, opacity: 0.9, dashArray: "1 9", lineCap: "round", interactive: false }).addTo(driveLayer);
-      L.polyline(r.main.line, { pane: "drive", color: "#fff", weight: 10, opacity: 0.95, interactive: false }).addTo(driveLayer);
-      L.polyline(r.main.line, { pane: "drive", color: "#16252d", weight: 5, opacity: 1, interactive: false }).addTo(driveLayer);
-      badgeLines.push({ line: r.main.line, kind: r.by === "walk" ? "walk" : "car" });
-      if (r.avoided) badgeLines.push({ line: r.usual.line, kind: "tag", text: "most direct" });
-    }
-    if (o) {
-      // The ride solid and the walks dotted, in the same blue; a small white dot at each of the two stops. For BART the walk
-      // goes to the nearest street entrance and on to the station, where the ride starts, and the dots sit at the stations.
-      var on = o.from.station || o.from.ll, off = o.to.station || o.to.ll;
-      var legs = [[drive.start.ll, o.from.ll].concat(o.from.station ? [on] : []), (o.to.station ? [off] : []).concat([o.to.ll, drive.dest.ll])];
-      legs.forEach(function (w) { L.polyline(w, { pane: "bus", color: "#0d47a1", weight: 4, dashArray: "2 8", lineCap: "round", interactive: false }).addTo(driveLayer); });
-      L.polyline(o.ride, { pane: "bus", color: "#fff", weight: 9, opacity: 0.9, interactive: false }).addTo(driveLayer);
-      L.polyline(o.ride, { pane: "bus", color: "#0d47a1", weight: 5, interactive: false }).addTo(driveLayer);
-      // "Get on" and "Get off" sit on the side away from the walk, so the walk keeps room for its label.
-      [[on, "Get on", drive.start.ll], [off, "Get off", drive.dest.ll]].forEach(function (e) {
-        var left = e[2][1] > e[0][1];
-        L.circleMarker(e[0], { pane: "bus", radius: 5, color: "#0d47a1", weight: 2, fillColor: "#fff", fillOpacity: 1, interactive: false })
-          .bindTooltip(e[1], { permanent: true, direction: left ? "left" : "right", offset: [left ? -6 : 6, 0], className: "pin-tip stop-tip" }).addTo(driveLayer);
-      });
-      var bb = BARTLOGIC.badge(o);
-      badgeLines.push({ line: o.ride, kind: bb.tram ? "tram" : "bus", text: bb.text, blue: true, dots: [on, off] });
-      legs.sort(function (a, b) { return BUSLOGIC.distM(b[0], b[b.length - 1]) - BUSLOGIC.distM(a[0], a[a.length - 1]); })
-        .forEach(function (w) { badgeLines.push({ line: w, kind: "walk", blue: true }); });
-    }
-    if (drive.open && drive.start) { pin(drive.start, "Start"); ends.push(drive.start.ll); }
-    if (drive.open && drive.dest) { pin(drive.dest, "End"); ends.push(drive.dest.ll); }
+    driveLayer.clearLayers(); badgeMarks = []; badgeLines = []; avoidAt = [];
+    var R = drive.R, by = drive.by, ends = [], mine = [], rest = [];
+    MODES.filter(function (m) { return m !== by; }).concat([by]).forEach(function (m) {
+      if (R[m].st !== "ok") return;
+      var on = m === by, bl = on ? mine : rest;
+      if (m === "transit") drawRide(R.transit.res.s.best, on, bl); else drawRoad(R[m].res, on, bl);
+    });
+    avoidSpots().forEach(function (ll) {
+      avoidAt.push(ll);
+      var mk = L.marker(ll, { pane: "avoid", interactive: false, keyboard: false, icon: L.divIcon({ className: "avoidmk", html: AVOID_SVG, iconSize: [20, 18], iconAnchor: [10, 12] }) }).addTo(driveLayer);
+      mk.getElement().setAttribute("data-avoid", "1");
+    });
+    if (drive.open && drive.start) { pin(drive.start, "start"); ends.push(drive.start.ll); }
+    if (drive.open && drive.dest) { pin(drive.dest, "dest"); ends.push(drive.dest.ll); }
+    badgeLines = mine.concat(rest);
     if (badgeLines.length) badgeLines[0].dots = (badgeLines[0].dots || []).concat(ends);
     placeBadges();
+  }
+  function pin(p, which) {
+    var live = !drive.edit && !dm.on && !!drive.start && !!drive.dest, label = which === "start" ? "Start" : "End";
+    var mk = L.marker(p.ll, { pane: "dpin", draggable: live, interactive: live, keyboard: false, autoPan: true,
+      icon: L.divIcon({ className: "dpin", html: "<span></span>", iconSize: [26, 26], iconAnchor: [13, 13] }) });
+    mk.bindTooltip(live ? esc(label) + ' <span class="pchg">' + (drive.pick === which ? "Cancel" : "Change") + "</span>" : label,
+      { permanent: true, direction: "top", offset: [0, -12], className: "pin-tip", interactive: live });
+    mk.addTo(driveLayer);
+    if (!live) return;
+    mk.on("dragend", function () {
+      var q = mk.getLatLng(), np = { ll: [q.lat, q.lng], src: "tap", name: "the spot you tapped" };
+      if (which === "start") drive.start = np; else drive.dest = np;
+      driveStopPick(); driveRoute(); driveName(np);
+    });
+    var tip = mk.getTooltip().getElement();
+    if (tip) { tip.setAttribute("role", "button"); tip.setAttribute("aria-label", (drive.pick === which ? "Cancel: " : "Change ") + (which === "start" ? "the start" : "the end"));
+      L.DomEvent.disableClickPropagation(tip);
+      L.DomEvent.on(tip, "click", function (e) { L.DomEvent.stop(e); drive.pick === which ? driveStopPick() : drivePick(which, true); }); }
+  }
+  function drawRoad(r, on, bl) {
+    if (on) {
+      L.polyline(r.main.line, { pane: "drive", color: "#fff", weight: 10, opacity: 0.95, interactive: false }).addTo(driveLayer);
+      L.polyline(r.main.line, { pane: "drive", color: "#16252d", weight: 5, opacity: 1, interactive: false }).addTo(driveLayer);
+    } else L.polyline(r.main.line, { pane: "fade", color: "#16252d", weight: 3, opacity: 0.4, interactive: false }).addTo(driveLayer);
+    bl.push({ line: r.main.line, kind: r.by === "walk" ? "walk" : "car", mode: r.by, dim: !on });
+  }
+  function drawRide(o, on, bl) {
+    // The ride solid and the walks dotted, in the same blue; a small white dot at each of the two stops. For BART the walk
+    // goes to the nearest street entrance and on to the station, where the ride starts, and the dots sit at the stations.
+    var st = drive.start.ll, en = drive.dest.ll, gOn = o.from.station || o.from.ll, gOff = o.to.station || o.to.ll, bb = BARTLOGIC.badge(o);
+    var legs = [[st, o.from.ll].concat(o.from.station ? [gOn] : []), (o.to.station ? [gOff] : []).concat([o.to.ll, en])];
+    if (!on) {
+      legs.forEach(function (w) { L.polyline(w, { pane: "fade", color: "#0d47a1", weight: 3, opacity: 0.4, dashArray: "2 7", lineCap: "round", interactive: false }).addTo(driveLayer); });
+      L.polyline(o.ride, { pane: "fade", color: "#0d47a1", weight: 3, opacity: 0.45, interactive: false }).addTo(driveLayer);
+      bl.push({ line: o.ride, kind: bb.tram ? "tram" : "bus", text: bb.text, blue: true, dim: true, mode: "transit" });
+      return;
+    }
+    legs.forEach(function (w) { L.polyline(w, { pane: "bus", color: "#0d47a1", weight: 4, dashArray: "2 8", lineCap: "round", interactive: false }).addTo(driveLayer); });
+    L.polyline(o.ride, { pane: "bus", color: "#fff", weight: 9, opacity: 0.9, interactive: false }).addTo(driveLayer);
+    L.polyline(o.ride, { pane: "bus", color: "#0d47a1", weight: 5, interactive: false }).addTo(driveLayer);
+    // "Get on" and "Get off" sit on the side away from the walk, so the walk keeps room for its label.
+    [[gOn, "Get on", st], [gOff, "Get off", en]].forEach(function (e) {
+      var left = e[2][1] > e[0][1];
+      L.circleMarker(e[0], { pane: "bus", radius: 5, color: "#0d47a1", weight: 2, fillColor: "#fff", fillOpacity: 1, interactive: false })
+        .bindTooltip(e[1], { permanent: true, direction: left ? "left" : "right", offset: [left ? -6 : 6, 0], className: "pin-tip stop-tip" }).addTo(driveLayer);
+    });
+    bl.push({ line: o.ride, kind: bb.tram ? "tram" : "bus", text: bb.text, blue: true, dots: [gOn, gOff], mode: "transit" });
+    legs.sort(function (a, b) { return BUSLOGIC.distM(b[0], b[b.length - 1]) - BUSLOGIC.distM(a[0], a[a.length - 1]); })
+      .forEach(function (w) { bl.push({ line: w, kind: "walk", blue: true, mode: "transit" }); });
+  }
+  // Where the warning signs go: each flood spot the chosen way goes around, on the spot itself, when it is within 600 m of the
+  // chosen way (the same corridor the route looks in for spots worth steering around, see driveNear). Driving or walking: the past-storm places, neighbor water and 311 sewage
+  // reports the most direct way passes and this route doesn't. A ride: the past-storm places the closer ride passes and this one doesn't.
+  function avoidSpots() {
+    var out = [], by = drive.by, s = drive.R[by];
+    if (s.st !== "ok") return out;
+    var lines = modeLines(by);
+    function near(ll) { return lines.some(function (l) { return DG.lineDist(ll, l) <= 600; }); }
+    if (by !== "transit") {
+      var r = s.res;
+      ["past", "water", "sewage"].forEach(function (k) { driveLeft(r.cu[k], r.cm[k]).forEach(function (p) { if (p.ll && near(p.ll)) out.push(p.ll); }); });
+      return out;
+    }
+    var best = s.res.s.best, alt = s.res.s.alt;
+    if (!alt) return out;
+    var mineP = best.busPast.concat(best.walkPast), S = DG.sample(alt.ride, 8);
+    alt.busPast.forEach(function (name) {
+      var site = sites.filter(function (x) { return x.name === name; })[0]; if (!site || mineP.indexOf(name) >= 0) return;
+      var inS = S.filter(function (p) { return DG.siteDist(p.ll, site) <= 5; });
+      if (inS.length && near(inS[Math.floor(inS.length / 2)].ll)) out.push(inS[Math.floor(inS.length / 2)].ll);
+    });
+    return out;
   }
   function driveLeft(a, b) { return a.filter(function (p) { return !b.some(function (q) { return q.key === p.key; }); }); }
   // Stops for another maps app, so that app stays on this route instead of cutting back through a flood spot.
@@ -2197,7 +2358,7 @@ var BUILD = "2026-11-20 21:35 PT";
     res.stops = []; res.pin = res.avoided ? "wait" : "none";
     if (!res.avoided) return;
     var S = DG.sample(res.main.line, 15), total = S[S.length - 1].at, tries = 0;
-    function done(ok) { if (drive.res === res) { res.pin = ok ? "ok" : "unsure"; driveShow(); } }
+    function done(ok) { if (drive.R[res.by].res === res) { res.pin = ok ? "ok" : "unsure"; driveShow(); } }
     function step(legs) {
       var ats = [0].concat(res.stops.map(function (x) { return x.at; }), [total]);
       for (var i = 0; i < legs.length; i++) {
@@ -2219,7 +2380,7 @@ var BUILD = "2026-11-20 21:35 PT";
       tries++;
       var locs = [drive.start].concat(res.stops, [drive.dest]).map(function (p) { return { lat: Math.round(p.ll[0] * 1e6) / 1e6, lon: Math.round(p.ll[1] * 1e6) / 1e6 }; });
       NAT.fetchSoon(VALHALLA + "?json=" + encodeURIComponent(JSON.stringify({ locations: locs, costing: BY[res.by].costing, units: "miles" })), 12000).then(function (j) {
-        if (drive.res === res) step((j.trip.legs || []).map(function (leg) { return NAT.decode6(leg.shape); }));
+        if (drive.R[res.by].res === res) step((j.trip.legs || []).map(function (leg) { return NAT.decode6(leg.shape); }));
       }).catch(function () { done(false); });
     }
     step([res.usual.line]);
@@ -2238,66 +2399,72 @@ var BUILD = "2026-11-20 21:35 PT";
     };
   }
   function driveFrom() {
-    var edit = drive.edit || !(drive.res || drive.tr);
-    dEl("FromTxt").textContent = !drive.start ? "Start: tap the map where you start." : edit || !drive.dest ? "From " + drive.start.name + "." : "From " + drive.start.name + " to " + drive.dest.name + ".";
+    dEl("FromTxt").textContent = !drive.start ? "Start: tap the map where you start." : "From " + drive.start.name + ".";
   }
-  var routeHowTxt = document.getElementById("routeHow").textContent, trWalk = document.getElementById("transitWalk");
-  // The Transit card: "Take the 14 Mission" or "Take BART", where to get on and off, the walks and what the trip passes, and at most one
-  // line about a ride with less walking that passes more. No times: the buttons open Google or Apple Maps for those.
+  // The chosen ride, under the buttons: "Take the 14 Mission at Mission St & 20th St." or "Take BART at 24th St Mission.", and how many
+  // flood spots it still passes. In Details: where to get on and off, the walks and what the trip passes, at most one line about a
+  // ride with less walking that passes more, and how its time is guessed. The Maps buttons open Google or Apple Maps for real times.
   function trShow(t) {
     var s = t.s, o = s.best, facts = dEl("Facts");
     function fact(x) { var li = document.createElement("li"); li.textContent = x; facts.appendChild(li); }
-    if (o) {
-      dEl("Head").textContent = BARTLOGIC.take(o);
-      fact("From " + BARTLOGIC.stopsLine(o));
-      fact(BARTLOGIC.sentences(o).join(" "));
-      if (s.altLine) fact(s.altLine);
-    } else if (t.plan.short) {
-      dEl("Head").textContent = "A short walk";
-      fact(t.plan.message); trWalk.hidden = false;
-    } else {
-      dEl("Head").textContent = "No direct Muni or BART ride";
-      fact(t.plan.message);
-    }
+    dEl("Head").textContent = BARTLOGIC.take(o) + " at " + o.from.name + "." + (o.spots ? " It passes " + o.spots + (o.spots === 1 ? " flood spot." : " flood spots.") : "");
+    dEl("Head").hidden = false;
+    fact("From " + BARTLOGIC.stopsLine(o));
+    fact(BARTLOGIC.sentences(o).join(" "));
+    if (s.altLine) fact(s.altLine);
     if (!t.repOk) fact("Neighbor reports didn't load, so they aren't counted here.");
+    fact(BY.transit.warn);
     var k = driveLinks({ by: "transit", stops: [] });
     dEl("G").href = k.google; dEl("A").href = k.apple;
-    dEl("Maps").querySelector(".row").hidden = !!t.plan.short;
-    dEl("MapsNote").textContent = t.plan.short ? "" : BARTLOGIC.mapsNote(o, k.own);
+    dEl("MapsNote").textContent = BARTLOGIC.mapsNote(o, k.own);
+    document.getElementById("routeHowCard").textContent = BY.transit.how;
   }
-  trWalk.addEventListener("click", function () { document.getElementById("routeByWalk").click(); });
+  // The Transit button: "14 · ~16 min" with a bus or a train, or greyed with a word or two when there is no ride to take:
+  // "no direct ride" (No direct Muni or BART ride), "walk it" (too close to ride) or "didn't load".
+  function trButton(s) {
+    var o = s.st === "ok" && s.res.s.best;
+    if (o) { var bb = BARTLOGIC.badge(o), min = trMinutes(o); return { icon: bb.tram ? ICON.tram : ICON.bus, text: bb.text + " · ~" + min + " min", aria: (o.bart ? "BART" : "Muni " + o.lines[0]) + ", about " + min + " min with the walks" }; }
+    var why = { wait: ["…", "Muni or BART: still looking"], fail: ["didn't load", "Muni and BART: didn't load"], none: ["no direct ride", "No direct Muni or BART ride"], short: ["walk it", "Muni or BART: too close to ride, walk it"] }[s.st] || ["", "Muni or BART"];
+    return { icon: ICON.bus, text: why[0], aria: why[1] };
+  }
+  function roadButton(m, s) {
+    var name = m === "drive" ? "Drive" : "Walk", icon = ICON[m === "drive" ? "car" : "walk"];
+    if (s.st === "ok") { var min = Math.max(1, Math.round(s.res.main.minutes)); return { icon: icon, text: min + " min", aria: name + ", about " + min + " min" }; }
+    return s.st === "fail" ? { icon: icon, text: "didn't load", aria: name + ": directions didn't load" } : { icon: icon, text: s.st === "wait" ? "…" : "", aria: name + ": still looking" };
+  }
   function driveShow() {
-    var r = drive.res, t = drive.tr, edit = drive.edit || !(r || t), facts = dEl("Facts"), steps = dEl("StepList");
-    dEl("Opts").hidden = !drive.open; dEl("Card").hidden = !(drive.open && (r || t));
+    var r = drive.res, t = drive.tr, facts = dEl("Facts"), steps = dEl("StepList");
+    dEl("Opts").hidden = !drive.open || !drive.edit; dEl("Card").hidden = !drive.open || drive.edit;
     bDrive.setAttribute("aria-pressed", drive.open ? "true" : "false"); bDrive.textContent = drive.open ? "Close route" : "Plan a route";
     bReport.hidden = !!drive.pick;                       // one long label at a time in the button row
     bDrive.hidden = picking;
     whSync();
     if (!drive.open) return;
     driveFrom();
-    dEl("FromBtn").textContent = !edit ? "Change" : drive.pick === "start" ? "Cancel" : "Change start";
-    dEl("Form").hidden = !edit; dEl("Or").hidden = !edit;
+    dEl("FromBtn").textContent = drive.pick === "start" ? "Cancel" : "Change start";
     dEl("ToBtn").textContent = drive.pick === "dest" ? "Cancel" : "tap the map where you're going";
     dEl("Msg").textContent = drive.msg; dEl("Msg").hidden = !drive.msg;
-    dEl("WarnTop").hidden = !edit;                       // once a route shows, the same line sits in the card under the map
-    // Drive or walk: the two-choice control and every line that reads differently on foot.
-    var W = BY[r ? r.by : drive.by], bs = dEl("BarSafe"), bb = document.createElement("b");
-    document.getElementById("routeByDrive").setAttribute("aria-pressed", drive.by === "drive" ? "true" : "false");
-    document.getElementById("routeByWalk").setAttribute("aria-pressed", drive.by === "walk" ? "true" : "false");
-    document.getElementById("routeByTransit").setAttribute("aria-pressed", drive.by === "transit" ? "true" : "false");
-    document.getElementById("routeHow").hidden = !edit;
-    document.getElementById("routeHow").textContent = drive.by === "transit" ? BY.transit.how : routeHowTxt;
-    dEl("WarnTop").textContent = BY[drive.by].warn; dEl("Warn").textContent = W.warn;
+    // The follow bar's words, for the way being followed. The map never calls a route safe or clear: it cannot see water.
+    var W = BY[r ? r.by : "drive"], bs = dEl("BarSafe"), bb = document.createElement("b");
     dEl("Start").textContent = W.start; dEl("Stop").textContent = W.stop;
     bs.textContent = W.bar[0]; bb.textContent = W.bar[1]; bs.appendChild(bb);
-    document.getElementById("routeLines").hidden = true;
-    facts.textContent = ""; steps.textContent = "";
-    dEl("Start").hidden = dm.on || drive.by === "transit";            // a ride has no follow mode: the Maps buttons are the hand-off
-    // Transit uses the same card, with fewer parts: no Steps, no "How this works", and the Maps buttons ask for times.
+    if (drive.edit) return;
+    // The three buttons: each way's time as it comes in; a way that can't be used is greyed with a word or two.
+    MODES.forEach(function (m) {
+      var s = drive.R[m], b = m === "transit" ? trButton(s) : roadButton(m, s), btn = CH[m];
+      btn.innerHTML = b.icon + "<span>" + esc(b.text) + "</span>";
+      btn.setAttribute("aria-label", b.aria);
+      btn.disabled = s.st !== "ok" && s.st !== "wait";
+      btn.setAttribute("aria-pressed", m === drive.by && s.st === "ok" ? "true" : "false");
+    });
+    // Under them, only what the chosen way needs: one line at most, its buttons, the warning. Everything else is in Details.
+    facts.textContent = ""; steps.textContent = ""; dEl("Head").textContent = ""; dEl("Head").hidden = true;
+    dEl("MapsNote").textContent = ""; document.getElementById("routeHowCard").textContent = "";
+    dEl("Start").hidden = dm.on || !r;
     dEl("Card").classList.toggle("bus", !!t);
-    trWalk.hidden = true; dEl("Steps").hidden = !!t; document.getElementById("routeHowMore").hidden = !!t;
-    dEl("Maps").querySelector(".row").hidden = false;
-    dEl("G").textContent = t ? "Times and transfers in Google Maps" : "Open in Google Maps"; dEl("A").textContent = t ? "Apple Maps" : "Open in Apple Maps";
+    dEl("Steps").hidden = !r; dEl("Maps").hidden = !(r || t); document.getElementById("routeHowMore").hidden = !(r || t);
+    dEl("G").textContent = t ? "Times in Google Maps" : "Open in Google Maps"; dEl("A").textContent = "Apple Maps";
+    [dEl("G"), dEl("A")].forEach(function (a) { a.classList.remove("wait"); a.removeAttribute("aria-disabled"); });
     if (t) { trShow(t); return; }
     if (!r) return;
     function fact(t) { var li = document.createElement("li"); li.textContent = t; facts.appendChild(li); }
@@ -2315,7 +2482,6 @@ var BUILD = "2026-11-20 21:35 PT";
     }
     var left = driveLeft;
     var cu = r.cu, cm = r.cm, min = Math.max(1, Math.round(r.main.minutes)), diff = min - Math.max(1, Math.round(r.usual.minutes));
-    dEl("Head").textContent = "About " + min + " min · " + r.main.miles.toFixed(1) + " miles";   // "on foot" is in the sentence below; here it would wrap the line
     var goneP = left(cu.past, cm.past), goneW = left(cu.water, cm.water), goneS = left(cu.sewage, cm.sewage), around = goneP.length || goneW.length || goneS.length, zf = cm.zoneFt;
     var time = "About " + min + " min" + W.foot + ", " + (diff >= 1 ? diff + " min longer than the most direct way." : diff <= -1 ? -diff + " min shorter than the most direct way." : "about the same as the most direct way.");
     if (around) fact("This route goes around " + both(goneP, goneW, goneS) + ". " + time);
@@ -2336,16 +2502,20 @@ var BUILD = "2026-11-20 21:35 PT";
     if (cm.n311) fact(cm.n311 + (cm.n311 === 1 ? " open 311 flooding report is" : " open 311 flooding reports are") + " close to this route. 311 reports show up about a day late.");
     if (cm.sewage.length) fact(sewN(cm.sewage.length) + (cm.sewage.length === 1 ? " is" : " are") + " close to this route. 311 reports show up about a day late.");
     else if (goneS.length && !cm.n311) fact("311 reports show up about a day late.");
-    // The dotted line is only drawn when the two lines differ.
-    if (r.avoided) {
-      var rl = document.getElementById("routeLines"); rl.hidden = false;
-      rl.textContent = "Solid line: this route. Dotted line: the most direct way, which " + (around ? "passes the places listed above." : "goes through more of the city's flood-risk zone.");
+    // Said under the buttons too, not only in Details: the route still passes a flood spot (no way around was found).
+    if (cm.water.length || cm.past.length) {
+      var n = cm.past.length; dEl("Head").hidden = false;
+      dEl("Head").textContent = cm.water.length ? "Water was reported on this route." : "This route passes " + (n === 1 ? "1 place" : n + " places") + " that flooded before.";
     }
-    document.getElementById("routeHowCard").textContent = document.getElementById("routeHow").textContent + " 311 reports are the open ones from the \"311: last\" choice in Layers. " + W.warn;
+    fact(W.warn);
+    document.getElementById("routeHowCard").textContent = ROUTE_HOW + " 311 reports are the open ones from the \"311: last\" choice in Layers. Tap a button under the map, or a line on the map, to see another way.";
     r.main.steps.forEach(function (s) { var li = document.createElement("li"); li.textContent = s.text + (s.miles >= 0.1 ? " (" + s.miles.toFixed(1) + " mi)" : ""); steps.appendChild(li); });
     var k = driveLinks(r), wait = r.pin === "wait";
-    dEl("G").href = k.google; dEl("A").href = k.apple;
-    dEl("Maps").querySelector(".row").hidden = wait;      // no link to tap until its stops are worked out
+    // No link to tap until its stops are worked out: the buttons are greyed until then.
+    [[dEl("G"), k.google], [dEl("A"), k.apple]].forEach(function (e) {
+      e[0].classList.toggle("wait", wait);
+      if (wait) { e[0].removeAttribute("href"); e[0].setAttribute("aria-disabled", "true"); } else e[0].href = e[1];
+    });
     dEl("MapsNote").textContent = wait ? "Getting the Google Maps and Apple Maps links ready…"
       : (k.stops ? "Opens the other app and shares these points with Google or Apple. The points are added as stops so the app stays on this route. That app still picks its own roads between stops."
         : "Opens the other app and shares your destination with Google or Apple. That app picks its own roads.") +
@@ -2373,7 +2543,7 @@ var BUILD = "2026-11-20 21:35 PT";
     if (t) dm.sayT = setTimeout(function () { m.hidden = true; m.textContent = ""; }, 8000);
   }
   function driveModeShow() {
-    dEl("Bar").hidden = !dm.on; dEl("Start").hidden = dm.on || drive.by === "transit";
+    dEl("Bar").hidden = !dm.on; dEl("Start").hidden = dm.on || !drive.res;
     dEl("Ahead").hidden = !dm.ahead; dEl("Sent").hidden = !dm.pend;
     whSync();
   }
@@ -2382,7 +2552,7 @@ var BUILD = "2026-11-20 21:35 PT";
     dm.on = true; dm.ahead = null; dm.back = null; dm.seen = waterNow.map(function (w) { return w.id; });
     if (!fw.on) { dm.startedFollow = true; followStart(); }
     else { dm.startedFollow = false; fw.center = true; followBtn(); if (fw.ll) map.setView(fw.ll, Math.max(map.getZoom(), 17)); }
-    driveBarSay(""); driveModeShow();
+    driveBarSay(""); driveModeShow(); driveDraw();        // while following, the pins can't be dragged and a tap on a line chooses nothing
     document.getElementById("map").scrollIntoView({ block: "start" });
   }
   function driveModeOff() {
@@ -2390,7 +2560,7 @@ var BUILD = "2026-11-20 21:35 PT";
     driveSendNow();                                      // a report still waiting out its Undo time is sent, not lost
     dm.on = false; dm.ahead = null; dm.back = null;
     if (dm.startedFollow && fw.on) followStop();
-    driveModeShow();
+    driveModeShow(); driveDraw();
   }
   function driveSendNow() {
     var p = dm.pend; if (!p) return;
@@ -2430,7 +2600,7 @@ var BUILD = "2026-11-20 21:35 PT";
     dm.back = { res: drive.res, start: drive.start };
     if (fw.ll) drive.start = { ll: fw.ll.slice(), src: "live", name: "where you are now" };
     dm.ahead = null; driveModeShow(); driveBarSay("Finding a way around…");
-    driveRoute();
+    driveRoute(drive.by);
   });
 
   // ---- "Water here" on the map, on both tabs: one tap reports water where the phone is.
