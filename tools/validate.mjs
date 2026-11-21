@@ -1,5 +1,6 @@
-// Checks every city folder under cities/. Run with: node tools/validate.mjs
-import { readFileSync, readdirSync } from "node:fs";
+// Checks every city folder under cities/, and that the script inside each page has no syntax error. Run with: node tools/validate.mjs
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import vm from "node:vm";
 
 const errors = [];
 const fail = (where, msg) => errors.push(`${where}: ${msg}`);
@@ -170,8 +171,37 @@ for (const id of readdirSync(new URL("../cities/", import.meta.url))) {
   }
 }
 
+// ---- Pages: the script written inside each page must at least be valid JavaScript.
+// One stray quote stops the whole page from starting, and nothing else here would notice. Each script is only compiled
+// (vm.Script), never run. Scripts loaded from a file (src=) and data blocks (type="application/json" and the like) are skipped.
+let scripts = 0;
+const root = new URL("../", import.meta.url);
+const pages = readdirSync(root).filter((f) => f.endsWith(".html"));
+for (const d of readdirSync(root, { withFileTypes: true })) {
+  if (d.isDirectory() && !d.name.startsWith(".") && d.name !== "vendor" && d.name !== "node_modules" && existsSync(new URL(`${d.name}/index.html`, root))) pages.push(`${d.name}/index.html`);
+}
+if (!pages.includes("index.html")) fail("index.html", "is missing");
+for (const page of pages) {
+  const html = readFileSync(new URL(page, root), "utf8");
+  const re = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
+  let m, found = 0;
+  while ((m = re.exec(html))) {
+    const type = (/\btype\s*=\s*["']?([^"'\s>]+)/i.exec(m[1]) || [])[1];
+    if (/\bsrc\s*=/i.test(m[1]) || (type && !/^(text|application)\/javascript$/i.test(type))) continue;
+    found++; scripts++;
+    const line = html.slice(0, m.index + m[0].indexOf(">") + 1).split("\n").length;   // the page line the script starts on, so the error names the right line
+    try { new vm.Script(m[2], { filename: page, lineOffset: line - 1 }); }
+    catch (e) {
+      const at = new RegExp(page.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ":(\\d+)").exec(String(e.stack || ""));
+      fail(page, `the script in this page has a syntax error${at ? " near line " + at[1] : ""} and would not run: ${e.message}`);
+    }
+  }
+  if (page === "index.html" && !found) fail(page, "no script found inside the page");
+}
+
 if (errors.length) {
   console.error("Problems found:\n- " + errors.join("\n- "));
   process.exit(1);
 }
 console.log(`OK: ${total} past-storm areas checked.`);
+console.log(`OK: ${scripts} page scripts in ${pages.length} pages have no syntax error.`);
