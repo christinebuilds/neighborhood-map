@@ -65,6 +65,7 @@ a { color: var(--link); }
 .when { font-weight: 600; }
 .legend { background: rgba(255,255,255,.96); color: #16252d; padding: 8px 10px; border-radius: 6px; font-size: 12px; line-height: 1.8; box-shadow: 0 1px 4px rgba(0,0,0,.3); max-width: 230px; }
 .legend b { display: block; }
+.legend b[hidden] { display: none; }
 .legend details { background: none; border: 0; padding: 0; border-radius: 0; }
 .legend summary { font-size: 13px; margin: -8px -10px; padding: 8px 10px; min-height: 40px; box-sizing: border-box; }   /* the whole box is the place to tap */
 .lsw { display: inline-block; width: 16px; height: 10px; margin-right: 6px; border-radius: 2px; vertical-align: -1px; border: 2px dashed; }
@@ -107,7 +108,6 @@ button.act.alt { background: #fff; color: var(--ink); }
 .nabout { margin: 6px 0 0; }
 .tag.nat { background: #e3f1e6; color: #1e5a31; }
 #mapMsg { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 2000; background: #16252d; color: #fff; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.35; width: max-content; max-width: 88vw; box-shadow: 0 2px 10px rgba(0,0,0,.3); }
-.leaflet-control-layers-toggle, .leaflet-retina .leaflet-control-layers-toggle { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cg fill='none' stroke='%2316252d' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M13 4 3 9.5 13 15l10-5.5z'/%3E%3Cpath d='M3 13.5 13 19l10-5.5M3 17.5 13 23l10-5.5'/%3E%3C/g%3E%3C/svg%3E"); background-size: 26px 26px; }
 /* Touch screens have no hover: a hover label would stick on top of the pop-up. */
 @media (hover: none) { .leaflet-tooltip:not(.pin-tip) { display: none; } }
 .leaflet-popup-content { overflow-wrap: anywhere; }
@@ -414,6 +414,12 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 #layerPanel input[type=checkbox] { width: 20px; height: 20px; }
 #layerPanel select { font-size: 16px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); }
 #ctl, #bar { display: flex; flex-direction: column; }
+/* Map style: the choice of map background, at the bottom of Layers on every tab. */
+#mapStyle { display: flex; flex-direction: column; border-top: 1px solid var(--line); margin-top: 4px; padding: 8px 0 2px; }
+#mapStyleLbl { font-weight: 600; }
+#mapStyle .pills { margin-top: 6px; flex-wrap: wrap; }
+#mapStyle .pills button { flex: 1 1 auto; min-height: 40px; white-space: nowrap; }
+#mapStyle .pills button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); }
 #map { height: 62vh; min-height: 380px; width: 100%; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); scroll-margin-top: 52px; }
 #driveOpts { margin-top: 8px; background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--ink); border-radius: 10px; padding: 6px 12px 8px; font-size: 14px; line-height: 1.35; }
 #driveCard { max-width: 868px; margin: 4px 16px 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px 6px; font-size: 14px; line-height: 1.35; }
@@ -477,7 +483,13 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 #whTip { max-width: min(250px, 64vw); background: #16252d; color: #fff; border-radius: 12px; padding: 8px 12px; font-size: 14px; line-height: 1.35; font-weight: 600; box-shadow: 0 2px 12px rgba(0,0,0,.4); }
 #whTip[hidden] { display: none; }
 .floodkey { max-height: min(330px, 50vh); overflow-y: auto; }   /* stays inside the map on a phone */
-.lline { display: inline-block; width: 18px; height: 0; margin-right: 6px; vertical-align: 3px; border-top: 4px solid #16252d; }
+/* The Legend lists only what is drawn on the map right now (see legendSync), so it is short and seldom needs to scroll. */
+.floodkey b { line-height: 1.35; margin-top: 4px; }
+.floodkey .lr { line-height: 1.3; padding: 1.5px 0; }
+/* While a route shows, 311 dots and neighborhood numbers step back so they do not bury it. The numbers also let taps through
+   to the route under them; single dots can still be tapped. Warning signs, neighbor reports and past flood spots stay as they are. */
+#map.routeon .leaflet-p311-pane { opacity: .4; }
+#map.routeon .leaflet-p311-pane .leaflet-marker-icon.leaflet-interactive { pointer-events: none; }
 #pickMsg { position: fixed; top: 58px; left: 50%; transform: translateX(-50%); z-index: 2000; background: #16252d; color: #fff; padding: 8px 14px; border-radius: 99px; font-size: 14px; }
 /* Report water's one tip sits at the top of the map, where the tap goes, and lets taps through. It scrolls with the map, so it can't land on the Cancel button. */
 #pickTip { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 900; box-sizing: border-box; width: max-content; max-width: calc(100% - 130px); background: #16252d; color: #fff; padding: 8px 14px; border-radius: 16px; font-size: 14px; line-height: 1.35; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,.3); pointer-events: none; }
@@ -594,12 +606,21 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
       <label><input type="checkbox" id="tZone" checked><span class="sw" style="border:2px solid #5e35b1;background:rgba(94,53,177,.2)"></span>City flood zone</label>
       <label><input type="checkbox" id="tHist" checked><span class="sw"></span>Past storms (news)</label>
       <label><input type="checkbox" id="t311" checked><span class="dt"></span>311 reports</label>
-      <label><input type="checkbox" id="t311Sew" checked><span class="dt" style="background:#6d4c41"></span>Sewage backups (311)</label>
+      <label hidden><input type="checkbox" id="t311Sew" checked><span class="dt" style="background:#6d4c41"></span>Sewage backups (311)</label>
       <label hidden><input type="checkbox" id="t311Closed"><span class="dt" style="background:#90caf9"></span>Show closed 311 cases</label>
       <label><input type="checkbox" id="tDrain" checked><span class="ddot" style="background:#d81b60"></span>Storm drains</label>
       <label><input type="checkbox" id="tRep" checked><span class="ddot" style="background:#00bcd4"></span>Neighbor reports</label>
       <label><input type="checkbox" id="tAlertArea"><span class="sw asw"></span>Weather alert areas</label>
       <label>311: last <select id="days"><option value="1" selected>1 day</option><option value="3">3 days</option><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label>
+    </div>
+    <div id="mapStyle">
+      <span id="mapStyleLbl">Map style</span>
+      <div class="pills" role="group" aria-labelledby="mapStyleLbl">
+        <button type="button" id="msStreets" aria-pressed="true">Streets</button>
+        <button type="button" id="msTopo" aria-pressed="false">Contour terrain</button>
+        <button type="button" id="msSat" aria-pressed="false">Satellite</button>
+      </div>
+      <label><input type="checkbox" id="tHill" checked autocomplete="off">Hill shading</label>
     </div>
   </div>
 </div>
@@ -728,7 +749,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
     <ul>
       <li><b>City flood zone (purple):</b> <span id="zoneNote"></span></li>
       <li><b>Past storms (dashed):</b> places news reports say flooded before. Red is a repeat hotspot, orange was reported once or twice. An estimate, not a record of this week.</li>
-      <li><b>311 reports (solid dots):</b> blue is flooding, teal a blocked or broken storm drain, brown a sewage backup. Only open cases from the last day show; closed ones are left off. "311: last" in Layers reaches further back. When there are too many dots to read, the map shows one number for each neighborhood instead; tap it or zoom in to see each report. <span id="r311Note"></span></li>
+      <li><b>311 reports (solid dots):</b> blue is flooding, teal a blocked or broken storm drain, brown a sewage backup. Only open cases from the last day show; closed ones are left off. "311: last" in Layers reaches further back. When there are too many dots to read, the map shows one number for each neighborhood instead; tap it or zoom in to see each report. While a route is showing, these dots and numbers are drawn faint so the route is easy to see. <span id="r311Note"></span></li>
       <li><b>Storm drains:</b> pink means check now (a neighbor flagged it, or an open 311 case is within 60 m). Amber means check first (in the flood zone or a past-flood area). Green was cleared by a neighbor in the last 14 days. This is the map's own rule of thumb, not a city assessment. Tap a drain to mark it cleared or flag it. To adopt one officially: <a id="adoptLink" href="#">the city's adopt-a-drain program</a>.</li>
       <li><b>Neighbor reports (cyan):</b> "water here" posts from the last 24 hours, fainter once they are more than 12 hours old. A brown edge means the neighbor said it looks or smells like sewage. Unverified: this map cannot test the water.</li>
       <li><b>Plan a route:</b> finds a way to drive, a way to walk and one direct Muni or BART ride at the same time. The driving and walking routes go around places that flooded in past storms, water neighbors reported in the last 24 hours, and open 311 sewage backup reports, and try to stay out of the city flood zone when that adds little time. Your route is the bold line; the other two are faded. Tap a button under the map, or a line on the map, to choose. A small label on each line says what it is: a car, a walker, or a bus or train with the line's name. A yellow warning sign marks each flood spot your route goes around. This map can't see water on the road right now. Never drive through water. Turn around.</li>
@@ -793,7 +814,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-21 01:32 PT";
+var BUILD = "2026-11-21 02:43 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -873,10 +894,21 @@ var BUILD = "2026-11-21 01:32 PT";
   var streets = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "&copy; OpenStreetMap contributors" });
   var topo = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17, attribution: "Map data: &copy; OpenStreetMap contributors, SRTM | Style: &copy; OpenTopoMap (CC-BY-SA)" });
   var imagery = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "Imagery &copy; Esri" });
-  var hill = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16, opacity: 0.5, attribution: "Hillshade &copy; Esri" });
+  var hill = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16, opacity: 0.5, zIndex: 4, attribution: "Hillshade &copy; Esri" });   // zIndex: the shading stays on top of whichever background is chosen
   streets.addTo(map);
   hill.addTo(map);
-  L.control.layers({ "Streets": streets, "Contour terrain": topo, "Satellite": imagery }, { "Hillshade": hill }, { collapsed: true }).addTo(map);
+  // The map background is chosen under "Map style" at the bottom of Layers, the one layers control. (It used to be a second
+  // control, a stack icon on the map, which also covered the heading of pop-ups near it.) The choice lasts for the visit, as before.
+  var BASES = { msStreets: streets, msTopo: topo, msSat: imagery };
+  function setBase(id) {
+    Object.keys(BASES).forEach(function (k) {
+      var on = k === id;
+      on ? BASES[k].addTo(map) : map.removeLayer(BASES[k]);
+      document.getElementById(k).setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+  Object.keys(BASES).forEach(function (k) { document.getElementById(k).addEventListener("click", function () { setBase(k); }); });
+  document.getElementById("tHill").addEventListener("change", function () { this.checked ? hill.addTo(map) : map.removeLayer(hill); });
 
   // ---- Layer 1: estimated from past storms (news). Dashed outline, soft fill.
   var hist = L.featureGroup();
@@ -901,9 +933,10 @@ var BUILD = "2026-11-21 01:32 PT";
     g.bindTooltip(s.name + " (past storms)", { sticky: true });
     g.on("mouseover", function () { g.setStyle({ fillOpacity: 0.5 }); });
     g.on("mouseout", function () { g.setStyle({ fillOpacity: 0.3 }); });
+    g.tier = hot ? "hot" : "once";                       // for the Legend
     g.addTo(hist);
   });
-  setTimeout(raiseDrains, 0);
+  setTimeout(raiseDrains, 0); legendSoon();
   }
   // Drains share one canvas with the past-storm shapes and the flood zone, and on a canvas the shape drawn last
   // takes the tap. Whenever those shapes are (re)added, e.g. when switching back to this tab, put the drains back on top.
@@ -935,6 +968,7 @@ var BUILD = "2026-11-21 01:32 PT";
   function reset311() {   // forget what was drawn, so rows from an earlier window can never come back
     c311.clearLayers(); dots311.clearLayers(); bub311.clearLayers();
     items311 = []; hoods311 = null; mode311 = ""; dotsBuilt = bubOpen = false; bubZoom = -1;
+    legendSoon();
   }
   map.createPane("p311").style.zIndex = 440;   // above the drains' canvas (which swallows taps), just under neighbor reports
   var nEl = document.getElementById("n311");
@@ -1104,6 +1138,7 @@ var BUILD = "2026-11-21 01:32 PT";
     mode311 = want; c311.clearLayers();
     if (want === "bub") c311.addLayer(bub311);
     else { if (!dotsBuilt) buildDots(); c311.addLayer(dots311); }
+    legendSoon();
   }
   map.on("zoomend", function () { if (bubOpen) map.closePopup(); });   // a bubble's pop-up belongs to one zoom level
   map.on("moveend", sync311);   // a zoom ends with a moveend too
@@ -1238,7 +1273,7 @@ var BUILD = "2026-11-21 01:32 PT";
         drainPopupOpen = false;
         if (drainRestylePending) { drainRestylePending = false; setTimeout(restyleDrains, 0); }
       });
-      d.m = m; m.addTo(pri ? drainsPri : drainsAll);
+      d.m = m; m.dk = s.k; m.addTo(pri ? drainsPri : drainsAll);
     });
     nearSync();
     document.getElementById("nDrain").textContent = "Drains in view: " + n.urgent + " check now, " + n.check + " check first, " + n.clear + " cleared.";
@@ -1248,6 +1283,7 @@ var BUILD = "2026-11-21 01:32 PT";
     var on = MODE === "flood" && document.getElementById("tDrain").checked, z = map.getZoom();
     (on && z >= 15) ? drainsPri.addTo(map) : map.removeLayer(drainsPri);
     (on && z >= 17) ? drainsAll.addTo(map) : map.removeLayer(drainsAll);
+    legendSoon();
   }
   function syncDrains() {
     var on = MODE === "flood" && document.getElementById("tDrain").checked, z = map.getZoom();
@@ -1326,7 +1362,7 @@ var BUILD = "2026-11-21 01:32 PT";
       .catch(function () { return fetchJson(base); })
       .then(function (gj) {
         zoneLayer.addData(gj); if (map.hasLayer(zoneLayer)) zoneLayer.bringToBack();
-        indexZone(gj); drains.forEach(function (d) { delete d.inZ; }); restyleDrains();
+        indexZone(gj); drains.forEach(function (d) { delete d.inZ; }); restyleDrains(); legendSoon();
         zoneWaiters.forEach(function (f) { f(); }); zoneWaiters = [];
       }).catch(function (e) { zoneAsked = false; document.getElementById("tileMsg").textContent = "The city flood zone layer did not load (" + e.message + ")."; });
   }
@@ -1367,7 +1403,7 @@ var BUILD = "2026-11-21 01:32 PT";
           var pu = photoUrl(r.photo_path);
           var old = hrs > WATER_FAINT_HOURS;   // fainter: it may have drained by now
           var sew = r.sewage === true;   // a neighbor ticked "Looks or smells like sewage": brown edge, the same brown as 311 sewage backups
-          L.circleMarker([r.lat, r.lon], { pane: "reports", bubblingMouseEvents: false, radius: 12, color: sew ? "#6d4c41" : "#004d5a", weight: sew ? 5 : old ? 2 : 3, opacity: old ? 0.55 : 1, fillColor: "#00bcd4", fillOpacity: old ? 0.35 : 0.9 })
+          L.circleMarker([r.lat, r.lon], { pane: "reports", sewage: sew, bubblingMouseEvents: false, radius: 12, color: sew ? "#6d4c41" : "#004d5a", weight: sew ? 5 : old ? 2 : 3, opacity: old ? 0.55 : 1, fillColor: "#00bcd4", fillOpacity: old ? 0.35 : 0.9 })
             .bindPopup(function () {
               var el = document.createElement("div");
               el.innerHTML = '<span class="tag" style="background:#00bcd4;color:#00323b">NEIGHBOR REPORT · UNVERIFIED</span><br><b>Water here</b><br>Reported ' + esc(ago(r.created_at)) + ' <span class="small">· ' + fmt(r.created_at) + '</span>' +
@@ -1386,7 +1422,7 @@ var BUILD = "2026-11-21 01:32 PT";
             }, { maxWidth: 260 })
             .addTo(repLayer);
         });
-        waterNow = shown; repOk = true; driveAheadCheck(); whShow();
+        waterNow = shown; repOk = true; driveAheadCheck(); whShow(); legendSoon();
         document.getElementById("nRep").textContent = "Neighbor water reports, last " + WATER_HOURS + " hours: " + nW + ".";
         restyleDrains();
       }).catch(function (e) { document.getElementById("nRep").textContent = "Neighbor reports did not load (" + e.message + ")."; repOk = false; });
@@ -1572,6 +1608,15 @@ var BUILD = "2026-11-21 01:32 PT";
 
   document.getElementById("tDrain").addEventListener("change", syncDrains);
   ["tZone", "tRep", "tHist", "t311"].forEach(function (id) { document.getElementById(id).addEventListener("change", showFlood); });
+  // One switch, "311 reports", shows every kind of 311 report, sewage backups too. The older sewage box (t311Sew) stays in the
+  // page, hidden, and is kept the same as the 311 switch, so anything that reads it still works. A browser can bring back an old
+  // unticked box when the page is reloaded, so this is checked every time the layers are shown, not only on a tap.
+  function sew311Sync() {
+    var all = document.getElementById("t311"), sew = document.getElementById("t311Sew");
+    if (sew.checked === all.checked) return;
+    sew.checked = all.checked;
+    if (all.checked) draw311();                          // the brown dots were left out while the box was unticked: draw them again
+  }
 
   // ---- Toggles
   document.getElementById("days").addEventListener("change", load311);
@@ -1581,34 +1626,64 @@ var BUILD = "2026-11-21 01:32 PT";
   // ---- Legend, locate, tile warning
   // The small warning sign Plan a route puts on each flood spot the chosen route goes around (and in the Legend).
   var AVOID_SVG = '<svg viewBox="0 0 20 18" aria-hidden="true"><path d="M10 1.2 19 16.8H1z" fill="#ffca28" stroke="#3e2b00" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 6.5v5" stroke="#3e2b00" stroke-width="2.2" stroke-linecap="round"/><circle cx="10" cy="14.2" r="1.25" fill="#3e2b00"/></svg>';
-  var legend = L.control({ position: "bottomleft" });
+  // The Legend lists only what is drawn on the map right now: the layer is switched on in Layers and something of that kind is on
+  // the part of the map in view. Each row keeps its heading, which says where it comes from: the city (official), an estimate from
+  // past storms, 311, or neighbors. Rows for other things stay in the page, hidden. Plan a route's lines are not listed: each line
+  // has its own label on the map and in the route card. Only the warning sign is, first in the list, while one is on the map.
+  // That 311 shows open cases only and a day late is said in the count line under the map and in "What the colors mean".
+  var legend = L.control({ position: "bottomleft" }), legendEl = null, legendT = null;
+  function lrow(k, html) { return '<div class="lr" data-k="' + k + '" hidden>' + html + "</div>"; }
   legend.onAdd = function () {
     var d = L.DomUtil.create("div", "legend floodkey");
     L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
-    d.innerHTML = '<details' + (window.innerWidth >= 700 ? " open" : "") + '><summary>Legend</summary><b>City model (official)</b>' +
-      '<span class="lsw" style="background:rgba(94,53,177,.2);border:2px solid #5e35b1"></span>Modeled flood zone<br>' +
-      '<b>Weather Service (official)</b><span class="lsw asw"></span>Weather alert area, when on in Layers<br>' +
-      '<b>Estimated from past storms</b>' +
-      '<span class="lsw" style="background:rgba(192,57,43,.3);border-color:#c0392b"></span>Repeat hotspot<br>' +
-      '<span class="lsw" style="background:rgba(224,138,30,.3);border-color:#e08a1e"></span>Reported once or twice<br>' +
-      '<b>Reported to 311</b>' +
-      '<span class="ldot" style="background:#1565c0"></span>Blue: flooding reported to 311<br>' +
-      '<span class="ldot" style="background:#00796b"></span>Teal: blocked or broken storm drain reported to 311<br>' +
-      '<span class="ldot" style="background:#6d4c41"></span>Brown: sewage backup reported to 311<br>' +
-      '<span class="lnum">12</span>Number: 311 reports in that neighborhood. Zoom in for each one.<br>' +
-      'Open cases only. The city\'s 311 list updates each morning.' +
-      '<b>Storm drains (dark outline)</b>' +
-      '<span class="ldot" style="background:#d81b60;border-color:#222"></span>Check now<br>' +
-      '<span class="ldot" style="background:#f9a825;border-color:#222"></span>Check first<br>' +
-      '<span class="ldot" style="background:#2e7d32;border-color:#222"></span>Cleared in last 14 days<br>' +
-      '<b>Neighbor reports</b>' +
-      '<span class="ldot" style="background:#00bcd4;border-color:#004d5a"></span>Water here (unverified)<br>' +
-      '<span class="ldot" style="background:#00bcd4;border-color:#6d4c41"></span>Neighbor says it looks or smells like sewage' +
-      '<b>Plan a route</b>' +
-      '<span class="lline"></span>Your route: bold line, with a car, walker or bus label. Faded lines are the other two choices.<br>' +
-      '<span class="lavoid">' + AVOID_SVG + '</span>A flood spot your route goes around' + '</details>';
+    d.innerHTML = '<details' + (window.innerWidth >= 700 ? " open" : "") + '><summary>Legend</summary>' +
+      lrow("avoid", '<span class="lavoid">' + AVOID_SVG + '</span>A flood spot your route goes around') +
+      '<b data-g="zone" hidden>City model (official)</b>' +
+      lrow("zone", '<span class="lsw" style="background:rgba(94,53,177,.2);border:2px solid #5e35b1"></span>Modeled flood zone') +
+      '<b data-g="alert" hidden>Weather Service (official)</b>' + lrow("alert", '<span class="lsw asw"></span>Weather alert area') +
+      '<b data-g="hot once" hidden>Estimated from past storms</b>' +
+      lrow("hot", '<span class="lsw" style="background:rgba(192,57,43,.3);border-color:#c0392b"></span>Repeat hotspot') +
+      lrow("once", '<span class="lsw" style="background:rgba(224,138,30,.3);border-color:#e08a1e"></span>Reported once or twice') +
+      '<b data-g="flooding drain sewage num" hidden>Reported to 311</b>' +
+      lrow("flooding", '<span class="ldot" style="background:#1565c0"></span>Blue: flooding reported to 311') +
+      lrow("drain", '<span class="ldot" style="background:#00796b"></span>Teal: blocked or broken storm drain reported to 311') +
+      lrow("sewage", '<span class="ldot" style="background:#6d4c41"></span>Brown: sewage backup reported to 311') +
+      lrow("num", '<span class="lnum">12</span>Number: 311 reports in that neighborhood. Zoom in for each one.') +
+      '<b data-g="urgent check clear" hidden>Storm drains (dark outline)</b>' +
+      lrow("urgent", '<span class="ldot" style="background:#d81b60;border-color:#222"></span>Check now') +
+      lrow("check", '<span class="ldot" style="background:#f9a825;border-color:#222"></span>Check first') +
+      lrow("clear", '<span class="ldot" style="background:#2e7d32;border-color:#222"></span>Cleared in last 14 days') +
+      '<b data-g="water wsew" hidden>Neighbor reports</b>' +
+      lrow("water", '<span class="ldot" style="background:#00bcd4;border-color:#004d5a"></span>Water here (unverified)') +
+      lrow("wsew", '<span class="ldot" style="background:#00bcd4;border-color:#6d4c41"></span>Neighbor says it looks or smells like sewage') +
+      lrow("none", "Nothing is drawn on this part of the map. Move the map, or check Layers.") + '</details>';
+    legendEl = d; legendSync();
     return d;
   };
+  legend.onRemove = function () { legendEl = null; };
+  // Which rows show. Cheap: one pass over what is on the map. Shapes are judged by the box around them, dots by their own spot.
+  function legendSync() {
+    if (!legendEl) return;
+    var v = map.getBounds(), on = {};
+    function has(layer) { return map.hasLayer(layer); }
+    function boxIn(b) { return !!b && b.isValid() && v.intersects(b); }
+    function mark(layer, key) { layer.eachLayer(function (m) { var k = key(m); if (k && !on[k] && v.contains(m.getLatLng())) on[k] = true; }); }
+    if (has(zoneLayer)) on.zone = zonePolys.some(function (p) { return p.b[0] <= v.getEast() && p.b[2] >= v.getWest() && p.b[1] <= v.getNorth() && p.b[3] >= v.getSouth(); });
+    if (has(alertLayer)) on.alert = boxIn(alertLayer.getBounds());
+    if (has(hist)) hist.eachLayer(function (g) { if (!on[g.tier] && boxIn(g.getBounds())) on[g.tier] = true; });
+    if (has(c311) && mode311 === "bub") mark(bub311, function () { return "num"; });
+    else if (has(c311)) items311.forEach(function (it) { var k = it.k.role === "flooding" || it.k.role === "sewage" ? it.k.role : "drain"; if (!on[k] && v.contains([it.la, it.lo])) on[k] = true; });
+    [drainsPri, drainsAll].forEach(function (g) { if (has(g)) mark(g, function (m) { return m.dk === "ok" ? "" : m.dk; }); });
+    if (has(repLayer)) mark(repLayer, function (m) { return m.options.sewage ? "wsew" : "water"; });
+    if (has(driveLayer)) on.avoid = avoidAt.some(function (ll) { return v.contains(ll); });
+    var any = false;
+    legendEl.querySelectorAll(".lr").forEach(function (r) { var k = r.getAttribute("data-k"), show = !!on[k]; if (k !== "none") { r.hidden = !show; any = any || show; } });
+    legendEl.querySelectorAll("b[data-g]").forEach(function (b) { b.hidden = !b.getAttribute("data-g").split(" ").some(function (k) { return on[k]; }); });
+    legendEl.querySelector('.lr[data-k="none"]').hidden = any;
+  }
+  // Asked for from wherever the map's contents change; runs once, a moment later, when several things change together.
+  function legendSoon() { if (!legendEl || legendT) return; legendT = setTimeout(function () { legendT = null; legendSync(); }, 60); }
+  map.on("moveend", legendSoon);
 
   var loc = L.control({ position: "topleft" });
   loc.onAdd = function () {
@@ -1848,7 +1923,7 @@ var BUILD = "2026-11-21 01:32 PT";
   // goes around take no taps, so the place under one stays tappable. The Start and End pins sit on top: they can be dragged.
   map.createPane("fade").style.zIndex = 389;
   map.getPane("fade").style.pointerEvents = "none";
-  map.createPane("avoid").style.zIndex = 436;
+  map.createPane("avoid").style.zIndex = 445;           // over the 311 dots and numbers, which are faded while a route shows; under neighbor reports
   map.getPane("avoid").style.pointerEvents = "none";
   map.createPane("dpin").style.zIndex = 457;
   var driveLayer = L.layerGroup();
@@ -2312,6 +2387,9 @@ var BUILD = "2026-11-21 01:32 PT";
     badgeLines = mine.concat(rest);
     if (badgeLines.length) badgeLines[0].dots = (badgeLines[0].dots || []).concat(ends);
     placeBadges();
+    // While any way is drawn, 311 dots and neighborhood numbers are faded (see #map.routeon in the styles); Start over brings them back.
+    map.getContainer().classList.toggle("routeon", MODES.some(function (m) { return R[m].st === "ok"; }));
+    legendSoon();
   }
   function pin(p, which) {
     var live = !drive.edit && !dm.on && !!drive.start && !!drive.dest, label = which === "start" ? "Start" : "End";
@@ -2791,6 +2869,7 @@ var BUILD = "2026-11-21 01:32 PT";
   function showFlood() {
     var f = MODE === "flood";
     function on(id) { return f && document.getElementById(id).checked; }
+    sew311Sync();
     layerOn(zoneLayer, on("tZone")); if (map.hasLayer(zoneLayer)) zoneLayer.bringToBack();
     layerOn(hist, on("tHist")); layerOn(c311, on("t311")); layerOn(repLayer, on("tRep"));
     layerOn(driveLayer, f); layerOn(alertLayer, on("tAlertArea"));
