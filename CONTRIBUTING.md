@@ -6,7 +6,7 @@ The map is in **public beta**. You do not need permission to help, and you do no
 
 ## Help without code
 
-- **On the map:** tap **Beta** or **💬 Feedback** at the top, or **💬 Report a problem or share an idea** at the bottom (or open [the map's feedback form](https://sfcommunitymap.org/#feedback) directly). It is anonymous and a volunteer reads every note. This is the best place for "this looked wrong on my phone".
+- **On the map:** tap **💬 Feedback** at the top, or **💬 Report a problem or share an idea** at the bottom (or open [the map's feedback form](https://sfcommunitymap.org/#feedback) directly). It is anonymous and a volunteer reads every note. This is the best place for "this looked wrong on my phone".
 - **On GitHub:** [open an issue](https://github.com/christinebuilds/neighborhood-map/issues/new/choose) and pick **Something is broken**, **Feature idea** or **Suggest a spot that floods**. Plain words are fine.
 - **Add a spot that floods:** use the **Suggest a spot that floods** form. Give the cross streets and, if you can, a link to a news report. Someone will add it to the map.
 
