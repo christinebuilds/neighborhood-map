@@ -10,7 +10,7 @@ Hi neighbors! I made a little map for our part of SF: trees, birds, walks and fl
 - Plan a walk to something spotted this week
 - When it storms, check a drain or report water
 
-It's a beta made by a neighbor, not the city. For emergencies, call 911. Tap "Beta" at the top to tell me what works and what doesn't.
+It's a beta built by a neighbor, inspired by SF's Adopt a Drain program. It's not an official city service. For emergencies, call 911. Tap "Beta" at the top to tell me what works and what doesn't.
 
 https://sfcommunitymap.org/
 
