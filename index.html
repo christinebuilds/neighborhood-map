@@ -150,9 +150,8 @@ button.act.alt { background: #fff; color: var(--ink); }
 button.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--link); text-decoration: underline; cursor: pointer; }
 /* ---- one page, two views: body.mode-nature or body.mode-flood ---- */
 body.mode-nature .only-flood, body.mode-flood .only-nature, body.mode-forecast .only-flood, body.mode-forecast .only-nature, body:not(.mode-forecast) .only-cast { display: none !important; }
-/* ---- third view, body.mode-forecast: no map. The weather strip moves into #fcPanel; Flooding shows one outlook line instead. ---- */
-body.mode-flood #day, body.mode-forecast #day, body.mode-forecast #cta, body.mode-forecast #map, body.mode-forecast #stat, body.mode-forecast #nAlert { display: none !important; }
-body.mode-nature #rainSoFar.dry, body.mode-nature .cmpx { display: none; }
+/* ---- third view, body.mode-forecast: no map. The day strip (#day: the weather line and the day chart) stays at the top of all three tabs. ---- */
+body.mode-flood #nAlert, body.mode-forecast #cta, body.mode-forecast #map, body.mode-forecast #stat, body.mode-forecast #nAlert { display: none !important; }
 .sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
 #wx { max-width: 900px; margin: 0 auto; padding: 0 16px 6px; }
 .now { font-size: 17px; margin: 0 0 6px; }
@@ -214,9 +213,6 @@ button.act[aria-pressed="true"] { background: #1d6a4f; border-color: #1d6a4f; co
 #seasonKey[hidden] { display: none; }
 .kchip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 2px 9px; }
 .kchip .nsw { border-radius: 50%; }
-.radarkey .ramp { display: block; width: 150px; height: 9px; border-radius: 3px; background: linear-gradient(90deg, #04e9e7, #02fd02, #01c501, #fdf802, #fd9500, #fd0000, #bc0000); }
-.radarkey .radarnote { display: block; max-width: 170px; font-size: 11px; line-height: 1.35; margin-top: 4px; color: #33444d; }
-.radarkey .rampw { display: flex; justify-content: space-between; width: 150px; font-size: 11px; line-height: 1.4; }
 /* ---- compact pop-up cards ---- */
 .leaflet-interactive:focus { outline: none; }
 .leaflet-popup-content { margin: 10px 12px; }
@@ -310,7 +306,8 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 #rsfSay span { font-weight: 400; }
 #rsfSay:empty { display: none; }
 #rsfNote { font-size: 12px; }
-#rsfNote svg { display: inline-block; vertical-align: -2px; margin-right: 6px; }
+#rsfNote { margin-top: 4px !important; }
+#rsfNote svg { display: inline-block; vertical-align: -9px; margin-right: 6px; }
 #rainSoFar.lv1, #rainSoFar.lv2 { background: #fff4e0; border-left: 4px solid var(--one); border-radius: 6px; padding: 4px 8px; margin-left: -12px; margin-right: -8px; }
 #rainSoFar.lv1 #rsfLine, #rainSoFar.lv2 #rsfLine { color: var(--ink); font-weight: 600; }
 #rainSoFar.lv2 { border-left-color: var(--hot); }
@@ -324,27 +321,76 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 #fcPanel { max-width: 900px; margin: 0 auto; padding: 10px 16px 0; display: flex; flex-direction: column; gap: 14px; }
 #fcPanel h2 { font-size: 16px; margin: 0 0 4px; }
 #fcPanel ul { margin: 0; padding: 0; list-style: none; }
-#fcOutlook { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--muted); border-radius: 10px; padding: 8px 12px; }
+#fcOutlook { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--muted); border-radius: 10px; padding: 10px 12px; }
 #fcOutlook.worse { border-left-color: var(--hot); }
 #fcOutlook.better { border-left-color: #2f8a4a; }
-#fcHead { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.3; }
-#fcWhy li { font-size: 14px; margin-top: 2px; }
-#fcWhy li::before { content: "· "; color: var(--muted); }
-#fcPanel .words { font-size: 16px; line-height: 1.35; font-weight: 600; margin: 0 0 6px; }
-#fcPanel .words #now { font-weight: 400; color: var(--muted); }
-#fcPanel .words .nb { white-space: nowrap; }
-#fcPanel #live { margin: 0 0 4px; font-size: 14px; color: var(--ink); }
-#fcTides li, #fcWin li, #fcAlerts li { font-size: 14px; line-height: 1.35; padding: 6px 0; border-top: 1px solid var(--line); }
-#fcTides li:first-child, #fcWin li:first-child, #fcAlerts li:first-child { border-top: 0; }
+#fcIcon { flex: 0 0 auto; width: 44px; height: 44px; }
+#fcIcon:empty { display: none; }
+#fcIcon svg { display: block; }
+#fcHead { flex: 1 1 0; min-width: 0; margin: 0; font-size: 21px; font-weight: 700; line-height: 1.2; }
+#fcWhy { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+#fcWhy:empty { display: none; }
+#fcWhy li { font-size: 13px; font-weight: 600; line-height: 1.3; background: #f1f4f5; border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px; }
+#fcWhy li.w { background: #fff4e0; border-color: var(--one); color: #8a3b00; }
+#fcWhy li.a { background: #fdecea; border-color: #f3c2bb; color: #8e2a1f; }
+#fcWhy li.b { background: #e3f1e6; border-color: #9cc9a8; color: #1e5a31; }
+.fchead { display: flex; align-items: baseline; gap: 8px; margin: 0 0 6px; }
+.fchead h2 { margin: 0 !important; flex: 1 1 auto; }
+#fcRadarTime { font-size: 13px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.fcplay { font: inherit; font-size: 13px; font-weight: 600; padding: 4px 10px; min-height: 32px; border-radius: 99px; border: 1px solid var(--ink); background: #fff; color: var(--ink); cursor: pointer; align-self: center; }
+.fcplay[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.fcplay[hidden] { display: none; }
+#fcRadar { height: 240px; border-radius: 12px; border: 1px solid var(--line); overflow: hidden; background: #e6ecee; z-index: 0; }
+#fcRadar .basetile { filter: grayscale(1) contrast(.85) brightness(1.08); }
+#fcRadar .leaflet-control-attribution { font-size: 9px; }
+.fcrkey { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; margin-top: 4px; font-size: 12px; color: var(--muted); }
+.fcrkey .ramp { width: 90px; height: 8px; border-radius: 3px; background: linear-gradient(90deg, #04e9e7, #02fd02, #01c501, #fdf802, #fd9500, #fd0000, #bc0000); order: 1; }
+.fcrkey span:nth-child(2) { order: 0; }
+.fcrkey span:nth-child(3) { order: 2; }
+.fcrkey .radarnote { order: 3; flex-basis: 100%; color: var(--ink); }
+.fcrkey .radarnote[hidden] { display: none; }
+.fcbay { font-size: 12px; font-weight: 700; color: #00695c; background: #e0f2f1; border-radius: 99px; padding: 1px 8px; }
+.fcbay[hidden] { display: none; }
+#fcChart { background: var(--card); border: 1px solid var(--line); border-radius: 12px; min-height: 172px; }
+#fcChart svg { display: block; width: 100%; height: auto; }
+#fcChart text { font-family: inherit; font-size: 10.5px; fill: var(--muted); }
+#fcChart text.hi { fill: #00695c; font-weight: 700; }
+#fcChart text.hi.r { fill: #b8440f; }
+#fcChart text.fl { fill: #8e2a1f; font-weight: 600; }
+#fcChart text.wn { fill: #8a3b00; font-weight: 700; }
+#fcChart text.rv { fill: #1565c0; font-weight: 600; }
+#fcChart text.nw, #fcChart text.dy { fill: var(--ink); font-weight: 700; }
+#fcChart p { margin: 0; padding: 10px 12px; font-size: 13px; color: var(--muted); }
+.fckey { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+.fckey i { display: inline-block; vertical-align: middle; margin-right: 4px; }
+.fckey .kr { width: 6px; height: 11px; border-radius: 2px 2px 0 0; background: #1565c0; opacity: .85; }
+.fckey .kt { width: 14px; height: 0; border-top: 2.5px solid #00897b; }
+.fckey .kf { width: 14px; height: 0; border-top: 2px dashed #c0392b; }
+.fckey .kw { width: 12px; height: 11px; border-radius: 2px; background: rgba(224,138,30,.3); }
+#fcAlerts li { padding: 6px 0; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
+#fcAlerts li:first-child { border-top: 0; }
+#fcAlerts .arow { flex: 1 1 auto; min-width: 0; text-align: left; font: inherit; font-size: 14px; color: #8e2a1f; background: #fdecea; border: 1px solid #f3c2bb; border-radius: 8px; padding: 5px 10px; min-height: 36px; cursor: pointer; }
+#fcAlerts .arow b { font-weight: 700; }
+#fcAlerts .ah { flex-basis: 100%; font-size: 12px; color: var(--muted); }
+#fcAlerts .ah[hidden] { display: none; }
+#fcAlerts .amap { font-size: 14px; min-height: 36px; }
+#fcAlertMsg { margin: 0; }
+#rsfLine .rsn { display: inline-flex; flex-direction: column; min-width: 70px; margin-right: 10px; font-size: 12px; color: var(--muted); line-height: 1.2; }
+#rsfLine .rsn b { font-size: 20px; color: var(--ink); }
+#fcAbout { border-left: 1px solid var(--line); padding: 8px 12px; }
+#fcAbout summary { font-size: 15px; }
+#fcAbout h3 { font-size: 14px; margin: 10px 0 2px; }
+#fcAbout ul { margin: 6px 0 0; padding: 0; list-style: none; }
+#fcAbout p { margin: 6px 0 0; }
+#fcWhyFull li { font-size: 14px; margin: 0 0 2px; }
+#fcTides li, #fcWin li { font-size: 14px; line-height: 1.35; padding: 4px 0; border-top: 1px solid var(--line); margin: 0; }
+#fcTides li:first-child, #fcWin li:first-child { border-top: 0; }
 #fcTides .tt { font-weight: 700; }
 #fcTides .tv { color: var(--muted); }
 .tflag { display: inline-block; margin-left: 6px; font-size: 12px; font-weight: 700; padding: 0 7px; border-radius: 99px; background: #fff4e0; color: #8a3b00; border: 1px solid var(--one); }
 .tflag.f2, .tflag.f3, .tflag.f4 { background: #fdecea; color: #8e2a1f; border-color: var(--hot); }
 #fcTideNote { margin: 4px 0 0; }
 #fcTideNote[hidden], #fcAlertMsg[hidden] { display: none; }
-#fcAlerts .ah { font-size: 12px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-#fcAlerts button { margin-top: 2px; font-size: 14px; min-height: 32px; }
-#fcAlertMsg { margin: 0; }
 #fcSrc { margin: 0; }
 .sw.asw { border: 2px dashed #1a237e; background: rgba(57,73,171,.15); }
 .lsw.asw { border-color: #1a237e; background: rgba(57,73,171,.15); }
@@ -363,7 +409,6 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 #layerPanel input[type=checkbox] { width: 20px; height: 20px; }
 #layerPanel select { font-size: 16px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); }
 #ctl, #bar { display: flex; flex-direction: column; }
-#radarHint { margin: 6px 0 0; }
 #map { height: 62vh; min-height: 380px; width: 100%; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); scroll-margin-top: 52px; }
 #driveOpts { margin-top: 8px; background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--ink); border-radius: 10px; padding: 6px 12px 8px; font-size: 14px; line-height: 1.35; }
 #driveCard { max-width: 868px; margin: 4px 16px 0; background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--ink); border-radius: 10px; padding: 4px 12px 8px; font-size: 14px; line-height: 1.35; }
@@ -473,20 +518,30 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
 <section id="day" aria-label="Weather today">
   <p class="words"><span id="now">Loading the weather…</span><span id="dayWords"></span></p>
   <div id="dayWrap"><div id="daySvg" tabindex="0" role="group" aria-label="Hour by hour. Swipe or use the arrow keys to see more hours."></div><span id="dayHint" aria-hidden="true" hidden></span></div>
-  <div id="rainSoFar" hidden><p id="rsfLine"></p><p id="rsfSay"></p><p id="rsfNote"></p></div>
   <div id="alerts"><button type="button" id="nAlert" class="alertline" aria-expanded="false" hidden></button><p id="fcAlertMsg" class="small only-cast" hidden></p><ul id="fcAlerts" class="only-cast"></ul></div>
-  <p id="live" class="only-cast"><span id="cTide">Tide: loading…</span></p>
 </section>
 <p id="outlookLine" class="only-flood" hidden><a href="#forecast" id="outlookLink"></a></p>
-<!-- Forecast tab: no map. The weather words, chart, rain so far, alerts box and tide line above move in here while it shows (same IDs). -->
+<!-- Forecast tab: no map of its own, mostly pictures. The day strip above stays put on every tab. Only the alerts box moves in here while Forecast shows (same IDs).
+     Order: outlook (icon, headline, chips), rain radar, next 48 hours chart, alerts, rain so far, then the words behind "About this forecast". -->
 <section id="fcPanel" class="only-cast" role="tabpanel" aria-labelledby="mCast">
-  <div id="fcOutlook"><p id="fcHead">Loading the forecast…</p><ul id="fcWhy"></ul></div>
-  <div class="fcsec"><h2>When it rains</h2><div id="fcRainSlot"></div></div>
-  <div class="fcsec"><h2>Bay and tides</h2><div id="fcTideSlot"></div><ul id="fcTides"></ul><p class="small" id="fcTideNote" hidden></p></div>
-  <div class="fcsec"><h2>Rain at high tide</h2><ul id="fcWin"></ul></div>
+  <div id="fcOutlook"><span id="fcIcon" aria-hidden="true"></span><p id="fcHead">Loading the forecast…</p><ul id="fcWhy" aria-label="Why"></ul></div>
+  <div class="fcsec" id="fcRadarSec">
+    <div class="fchead"><h2>Rain radar</h2><span id="fcRadarTime"></span><button type="button" id="fcRadarPlay" class="fcplay" aria-pressed="false" hidden>Play last hour</button></div>
+    <div id="fcRadar" role="img" aria-label="Rain radar map of San Francisco and the bay"></div>
+    <div class="fcrkey"><span class="ramp" aria-hidden="true"></span><span>light</span><span>heavy</span><span class="radarnote" id="radarNote" hidden></span></div>
+  </div>
+  <div class="fcsec"><div class="fchead"><h2>Next 48 hours</h2><span id="fcBay" class="fcbay" hidden></span></div><div id="fcChart"></div>
+    <p class="fckey" aria-hidden="true"><span><i class="kr"></i>Rain</span><span><i class="kt"></i>Tide</span><span><i class="kf"></i>Flood level</span><span><i class="kw"></i>Rain at high tide</span></p></div>
   <div class="fcsec"><h2>Weather alerts</h2><div id="fcAlertSlot"></div></div>
-  <div class="fcsec" id="fcSoFar"><div id="fcRsfSlot"></div></div>
-  <p class="small" id="fcSrc">Rain: NWS and Open-Meteo. Tides: NOAA. Alerts: National Weather Service. Not an official warning service.</p>
+  <div class="fcsec" id="fcSoFar"><h2>Rain so far</h2><div id="fcRsfSlot"><div id="rainSoFar" hidden><p id="rsfLine"></p><p id="rsfSay"></p><p id="rsfNote"></p></div></div></div>
+  <details id="fcAbout"><summary>About this forecast</summary>
+    <ul id="fcWhyFull"></ul>
+    <h3>High tides</h3><div id="fcTideSlot"><p id="live"><span id="cTide">Tide: loading…</span></p></div><ul id="fcTides"></ul><p class="small" id="fcTideNote" hidden></p>
+    <h3>Rain at high tide</h3><ul id="fcWin"></ul>
+    <p class="small">The chart's tide line is NOAA's tide table for San Francisco, raised or lowered by how far the bay is running from it right now. Rain so far and the rain bars are estimates from weather models, not a rain gauge. The radar shows the last hour in 5-minute steps; light drizzle and fog often don't show up.</p>
+    <p class="small">Rain: NWS and Open-Meteo. Tides: NOAA. Alerts: National Weather Service. Radar: NWS NEXRAD via Iowa Environmental Mesonet.</p>
+  </details>
+  <p class="small" id="fcSrc">Not an official warning service.</p>
 </section>
 <div id="cta">
   <div class="ctarow">
@@ -521,7 +576,6 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
   </div>
   <div class="walkbtns only-nature"><button class="act alt" type="button" id="bDone" hidden>Done</button><button class="act alt" type="button" id="bClear" hidden>Clear walk</button></div>
   <div id="layerPanel" hidden>
-    <label><input type="checkbox" id="tRadar">Rain radar (live)</label>
     <div id="ctl" class="only-nature">
       <label><input type="checkbox" id="tWild" checked><span class="kb" style="border-color:#2b6cb0">🐦</span>Wildlife</label>
       <label><input type="checkbox" id="tTree" checked><span class="nsw" style="background:#3f9a56"></span>Trees</label>
@@ -538,7 +592,6 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
       <label>311: last <select id="days"><option value="1" selected>1 day</option><option value="3">3 days</option><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label>
     </div>
   </div>
-  <p id="radarHint" class="small" hidden>Radar shows best zoomed out. <button type="button" class="linkish" id="radarOut">Zoom out</button></p>
 </div>
 <div id="map" role="application" aria-label="Map of your neighborhood"></div>
 <section id="driveCard" class="only-flood" aria-label="Your route" hidden>
@@ -666,7 +719,8 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
       <li><b>Neighbor reports (cyan):</b> "water here" posts from the last 24 hours, fainter once they are more than 12 hours old. A brown edge means the neighbor said it looks or smells like sewage. Unverified: this map cannot test the water.</li>
       <li><b>Plan a route (dark line):</b> a driving or walking route that goes around places that flooded in past storms, water neighbors reported in the last 24 hours, and open 311 sewage backup reports. It also tries to stay out of the city flood zone when that adds little time. Solid line: this route. Dotted line: the most direct way. A small label on each line says what it is: a car, a walker, a bus or a train with the line's name, or "most direct". This map can't see water on the road right now. Never drive through water. Turn around.</li>
       <li><b>Weather alert areas (navy, off at first):</b> where a National Weather Service alert for San Francisco applies. Turn it on in Layers, or tap Show on map in Forecast.</li>
-      <li><b>Outlook line and Forecast:</b> the hour-by-hour rain (Open-Meteo forecast), National Weather Service alerts and the high tides (NOAA). Heavy rain near high tide drains slowest.</li>
+      <li><b>Weather at the top (every tab):</b> the hour-by-hour rain (Open-Meteo forecast), the temperature and the best two hours for a walk.</li>
+      <li><b>Outlook line and Forecast:</b> National Weather Service alerts and the high tides (NOAA), with the rain. Heavy rain near high tide drains slowest.</li>
       <li>Dashed lines follow the city's own street lines for the streets named in news reports. Circles are a rough area around a corner. How far the water spread along each street is an estimate. No shading does not mean a street is safe.</li>
       <li><b>Plan a route, Transit (blue line):</b> one Muni or BART ride with no transfer (a bus, Muni Metro, a streetcar, a cable car or BART) between your start and end: the suggested ride (solid blue) and the walk to and from the stop or station (dotted blue). It picks the ride that passes the fewest places that flooded in past storms, spots where neighbors reported water recently and open 311 sewage backup reports, then the one with the least walking. Parts of a ride that run underground aren't checked, and this map only knows flooding in San Francisco. There are no times here: "Times and transfers in Google Maps" opens them. This map can't see water on the road right now.</li>
     </ul>
@@ -725,7 +779,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane { displ
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-19 18:38 PT";
+var BUILD = "2026-11-20 21:35 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -2516,13 +2570,10 @@ var BUILD = "2026-11-19 18:38 PT";
     loadZone(); loadReports(); load311();
     setInterval(loadReports, 120000);
   }
-  // The weather words, chart, rain so far, alerts box and tide line live in #day (Nature) and move into the Forecast panel while it shows.
-  // Same elements, same IDs; Flooding shows neither, only the one outlook line.
-  var daySec = document.getElementById("day"), dayParts = [daySec.querySelector(".words"), "dayWrap", "rainSoFar", "alerts", "live"].map(function (x) { return typeof x === "string" ? document.getElementById(x) : x; });
-  function placeDay(m) {
-    var slots = ["fcRainSlot", "fcRainSlot", "fcRsfSlot", "fcAlertSlot", "fcTideSlot"];
-    dayParts.forEach(function (el, i) { (m === "forecast" ? document.getElementById(slots[i]) : daySec).appendChild(el); });
-  }
+  // The day strip (the weather line and the day chart) stays at the top of every tab and never moves.
+  // Only the alerts box moves: under the strip on Nature (the one alert line), into the Forecast panel while it shows (the full list). Same element, same IDs.
+  var daySec = document.getElementById("day"), alertsBox = document.getElementById("alerts");
+  function placeDay(m) { (m === "forecast" ? document.getElementById("fcAlertSlot") : daySec).appendChild(alertsBox); }
   var TABS = [["mNature", "nature"], ["mFlood", "flood"], ["mCast", "forecast"]];
   function setMode(m, quiet) {
     m = m === "flood" || m === "forecast" ? m : "nature";
@@ -2937,7 +2988,7 @@ var BUILD = "2026-11-19 18:38 PT";
     var x = hr(a), y = hr(b), ax = x.split(" "), by = y.split(" ");
     return (ax[1] === by[1] ? ax[0] : x) + "–" + y;
   }
-  // One weather alert line on Nature: each kind of alert named once, tap to read the whole line. Forecast lists them in full.
+  // One weather alert line on Nature, under the day strip: each kind of alert named once, tap to read the whole line. Forecast lists them in full.
   var nAlert = document.getElementById("nAlert");
   nAlert.addEventListener("click", function () { nAlert.setAttribute("aria-expanded", nAlert.getAttribute("aria-expanded") === "true" ? "false" : "true"); });
   function showAlerts(ev) {
@@ -3002,12 +3053,11 @@ var BUILD = "2026-11-19 18:38 PT";
     if (!m || now - wx.rainAt > 45 * 6e4) { line.textContent = "Rain so far didn't load."; return; }
     var t1 = inches(rainOver(m, 1, now)), t6 = inches(rainOver(m, 6, now)), t24 = inches(rainOver(m, 24, now));
     var h = +t1, d = +t24;
-    if (!d && !+t6 && !h) { rsfBox.className = "dry"; line.textContent = "No rain in the last 24 hours (an estimate)."; return; }   // dry: one quiet line, on Forecast only
-    note.textContent = "Estimate from weather models, not a rain gauge.";
-    var b = document.createElement("b"); b.textContent = "Rain so far:"; line.appendChild(b);
-    [[t1, "last hour"], [t6, "6 hrs"], [t24, "24 hrs"]].forEach(function (x, n) {
-      var sp = document.createElement("span"); sp.className = "nb"; sp.textContent = (+x[0] ? x[0] + " in " : "none in ") + x[1];
-      line.appendChild(document.createTextNode(n ? " · " : " ")); line.appendChild(sp);
+    if (!d && !+t6 && !h) { rsfBox.className = "dry"; line.textContent = "No rain in the last 24 hours (an estimate)."; return; }   // dry: one quiet line (Rain so far is on Forecast only)
+    // Three numbers, big, each over its few words; the sparkline below. (That it is a model estimate is said in About this forecast.)
+    [[t1, "last hour"], [t6, "6 hrs"], [t24, "24 hrs"]].forEach(function (x) {
+      var sp = document.createElement("span"), n = document.createElement("b"); sp.className = "rsn";
+      n.textContent = x[0] + " in"; sp.appendChild(n); sp.appendChild(document.createTextNode(x[1])); line.appendChild(sp);
     });
     var words = [], lv = 0;
     if (RS.hour_very_heavy_in && h >= RS.hour_very_heavy_in) { words.push("Very heavy rain in the last hour: streets can flood fast."); lv = 2; }
@@ -3017,7 +3067,7 @@ var BUILD = "2026-11-19 18:38 PT";
     // Next to a storm people remember, once there is enough rain for that to mean something.
     var C = RS.compare, r = C && C.inches > 0 && RS.day_soaking_in && d >= RS.day_soaking_in ? d / C.inches : 0;
     say.textContent = words.join(" ");
-    if (r >= 0.2) {   // on Forecast only, in plain weight
+    if (r >= 0.2) {   // in plain weight
       var cmp = document.createElement("span"); cmp.className = "cmpx";
       cmp.textContent = " " + (r < 0.29 ? "About a quarter of" : r < 0.42 ? "About a third of" : r < 0.58 ? "About half of" : r < 0.71 ? "About two thirds of" : r < 0.88 ? "About three quarters of" : r < 1.15 ? "About as much as" : "More than")
         + " the " + C.label + " storm (" + C.inches + " in that day).";
@@ -3027,16 +3077,16 @@ var BUILD = "2026-11-19 18:38 PT";
     // Hour by hour, oldest on the left: the same blue bars as the chart above, very small.
     var ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg"), k0 = Math.floor(now / 36e5), top = 0.1, i;
     for (i = 1; i <= 24; i++) top = Math.max(top, m[k0 - i] || 0);
-    svg.setAttribute("width", 72); svg.setAttribute("height", 14); svg.setAttribute("viewBox", "0 0 72 14"); svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("width", 144); svg.setAttribute("height", 28); svg.setAttribute("viewBox", "0 0 72 14"); svg.setAttribute("aria-hidden", "true");
     for (i = 24; i >= 1; i--) {
       var v = m[k0 - i] || 0, bh = v >= 0.005 ? Math.max(2, v / top * 13) : 1, bar = document.createElementNS(ns, "rect");
       bar.setAttribute("x", (24 - i) * 3); bar.setAttribute("y", 14 - bh); bar.setAttribute("width", 2); bar.setAttribute("height", bh); bar.setAttribute("rx", 0.5);
       bar.setAttribute("fill", v >= 0.005 ? "#1565c0" : "#d3dde1"); bar.setAttribute("opacity", v >= 0.005 ? 0.85 : 1);
       svg.appendChild(bar);
     }
-    note.insertBefore(svg, note.firstChild);
+    note.appendChild(svg); note.appendChild(document.createTextNode("last 24 hours"));
   }
-  var dayBox = document.getElementById("daySvg"), dayHint = document.getElementById("dayHint"), dayView = null;
+  var dayBox = document.getElementById("daySvg"), dayHint = document.getElementById("dayHint"), dayView = null, dayDrawnW = 0;
   function userScrolled() { dayBox.__user = true; }
   ["pointerdown", "wheel", "touchstart"].forEach(function (k) { dayBox.addEventListener(k, userScrolled, { passive: true }); });
   dayBox.addEventListener("keydown", function (e) {
@@ -3110,7 +3160,7 @@ var BUILD = "2026-11-19 18:38 PT";
     parts.forEach(function (x, n) { var sp = document.createElement("span"); sp.className = "nb"; sp.textContent = x; if (n) wordsEl.appendChild(document.createTextNode(" · ")); wordsEl.appendChild(sp); });   // lines break only between the pieces
 
     // ---- the chart. Real pixels, not a stretched picture: daylight fills the box's width.
-    var inner = Math.max(240, box.clientWidth);
+    var inner = Math.max(240, box.clientWidth); dayDrawnW = box.clientWidth;
     var pxh = inner / ((visB - visA) / 36e5), pad = 8, Ht = 112, pt = 22, pb = Ht - 20, ph = pb - pt;
     var W = Math.round(pad * 2 + (T1 - T0) / 36e5 * pxh);
     function X(t) { return pad + (t - T0) / 36e5 * pxh; }
@@ -3239,16 +3289,17 @@ var BUILD = "2026-11-19 18:38 PT";
   function loadTides() {
     if (!CITY.tide_station) { fc.tides = null; castSoon(); return; }
     var c = store("fm_tide"), now = Date.now();
-    if (c && c.st === CITY.tide_station && now - c.at < 15 * 6e4 && c.highs && c.highs.length) { fc.tides = c; castSoon(); return; }
+    if (c && c.st === CITY.tide_station && now - c.at < 15 * 6e4 && c.highs && c.highs.length && c.hilo) { fc.tides = c; castSoon(); return; }
     function q(x) { return fetchSoon(COOPS + x, 10000); }
     function soft(x) { return q(x).catch(function () { return {}; }); }   // without these two there is no bay reading, but the tide table still shows
-    Promise.all([q("&product=predictions&interval=hilo&begin_date=" + encodeURIComponent(gmt(now - HOUR)) + "&range=50"),
+    Promise.all([q("&product=predictions&interval=hilo&begin_date=" + encodeURIComponent(gmt(now - 7 * HOUR)) + "&range=56"),
       soft("&product=predictions&interval=6&begin_date=" + encodeURIComponent(gmt(now - 3 * HOUR)) + "&range=4"),
       soft("&product=water_level&date=latest")]).then(function (r) {
       var highs = (r[0].predictions || []).filter(function (p) { return p.type === "H" && isFinite(+p.v); }).map(function (p) { return { t: coopsT(p.t), v: +p.v }; });
       if (!highs.length) throw new Error("no tides");
       var P = (r[1].predictions || []).map(function (p) { return { t: coopsT(p.t), v: +p.v }; });
-      fc.tides = { st: CITY.tide_station, at: Date.now(), highs: highs, surge: surgeOf(r[2].data, P, Date.now()) };
+      var hilo = (r[0].predictions || []).filter(function (p) { return isFinite(+p.v); }).map(function (p) { return { t: coopsT(p.t), v: +p.v, h: p.type === "H" }; });   // highs and lows: the chart's tide line
+      fc.tides = { st: CITY.tide_station, at: Date.now(), highs: highs, hilo: hilo, surge: surgeOf(r[2].data, P, Date.now()) };
       store("fm_tide", fc.tides);
     }).catch(function () { fc.tides = null; }).then(castSoon);
   }
@@ -3345,8 +3396,10 @@ var BUILD = "2026-11-19 18:38 PT";
   // but never "Improving" while a water alert is out or 0.1 in of rain is due in the next 6 hours.
   // o: { now, rain, past (hour maps or null), highs (graded high tides or null), alerts (list or null) }. Returns null when too little is known.
   function outlook(o) {
-    var now = o.now, R = o.rain, highs = o.highs || [], score = 0, first = null, why = [];
-    function vote(n, t) { score += n; if (n > 0 && first === null) first = t; }   // "when" comes from the first worse signal in this order: rain at high tide, warning, tide, rain
+    var now = o.now, R = o.rain, highs = o.highs || [], score = 0, first = null, why = [], chips = [];
+    function vote(n, t) { score += n; if (n > 0 && first === null) first = t; }
+    function because(sentence, chip, kind) { why.push(sentence); chips.push({ t: chip, c: kind || "" }); }   // each reason twice: a sentence (Flooding line, About) and a chip (Forecast)
+    function day(t) { return new Date(t).toDateString() === new Date(now).toDateString() ? "" : dayClock(t).split(" ")[0] + " "; }   // "" today, "Thu " after   // "when" comes from the first worse signal in this order: rain at high tide, warning, tide, rain
     var water = (o.alerts || []).filter(function (a) { return /flood|hydrologic|coastal|surge|rain|tsunami/i.test(a.event); });
     var warns = water.filter(function (a) { return /warning/i.test(a.event); });
     var risky = highs.filter(function (h) { return h.rank >= 1 && h.t > now - HOUR && h.t <= now + 48 * HOUR; });
@@ -3358,35 +3411,134 @@ var BUILD = "2026-11-19 18:38 PT";
     if (wins.length) {
       var w = wins[0], t = w.tide.t;
       if (w.a <= now + 12 * HOUR) vote(1, w.a);
-      why.push((w.top >= HEAVY ? "Heavy rain" : "Rain") + " around the " + whenAt(t) + " high tide.");
+      because((w.top >= HEAVY ? "Heavy rain" : "Rain") + " around the " + whenAt(t) + " high tide.", "🌧 " + (w.top >= HEAVY ? "Heavy rain " : "Rain ") + day(w.a) + span(w.a, w.b), "w");
     }
-    if (warns.length) { vote(1, now); why.push("The Weather Service has a " + warns[0].event + " out."); }
+    if (warns.length) { vote(1, now); because("The Weather Service has a " + warns[0].event + " out.", "⚠ " + warns[0].event, "a"); }
     if (risky.length) {
       var h = risky[0];
       if (h.t <= now + 12 * HOUR) vote(1, h.t);
-      why.push("High tide " + (h.rank === 1 ? "near flood level" : "at the " + FLAG[h.rank].toLowerCase()) + " at " + whenAt(h.t) + ".");
+      because("High tide " + (h.rank === 1 ? "near flood level" : "at the " + FLAG[h.rank].toLowerCase()) + " at " + whenAt(h.t) + ".", "🌊 High tide " + whenAt(h.t), h.rank >= 2 ? "a" : "w");
     }
     if (R) {
-      if (next6 >= 0.25 && next6 > last6 * 1.2) { vote(1, wetAt || now); why.push("Rain picking up: about " + inches(next6) + " in over the next 6 hours."); }
-      else if (last6 >= 0.1 && next6 < last6 * 0.5) { vote(-1); why.push("Rain easing: about " + inches(next6) + " in over the next 6 hours, down from " + inches(last6) + " in."); }
-      else if (next6 >= 0.1) why.push("Steady rain: about " + inches(next6) + " in over the next 6 hours.");
-      else why.push(total < 0.01 ? "No rain expected in the next 2 days." : "Little or no rain in the next 6 hours.");
+      if (next6 >= 0.25 && next6 > last6 * 1.2) { vote(1, wetAt || now); because("Rain picking up: about " + inches(next6) + " in over the next 6 hours.", "🌧 " + inches(next6) + " in next 6 hrs", "w"); }
+      else if (last6 >= 0.1 && next6 < last6 * 0.5) { vote(-1); because("Rain easing: about " + inches(next6) + " in over the next 6 hours, down from " + inches(last6) + " in.", "Rain easing", "b"); }
+      else if (next6 >= 0.1) because("Steady rain: about " + inches(next6) + " in over the next 6 hours.", "🌧 " + inches(next6) + " in next 6 hrs");
+      else because(total < 0.01 ? "No rain expected in the next 2 days." : "Little or no rain in the next 6 hours.", total < 0.01 ? "No rain next 2 days" : "Little rain next 6 hrs");
       if (heavy !== null && !wins.length) vote(1, heavy);
-      if (heavy !== null && !wins.length) why.push("Heavy rain around " + (new Date(heavy).toDateString() === new Date(now).toDateString() ? "" : dayClock(heavy).split(" ")[0] + " ") + hr(heavy) + ".");
+      if (heavy !== null && !wins.length) because("Heavy rain around " + day(heavy) + hr(heavy) + ".", "🌧 Heavy rain " + day(heavy) + hr(heavy), "w");
     }
-    if (water.length && !warns.length) why.push("The Weather Service has a " + water[0].event + " out.");
+    if (water.length && !warns.length) because("The Weather Service has a " + water[0].event + " out.", "⚠ " + water[0].event, "a");
     if (!R && score < 1 && !water.length) return null;
     var dir = score >= 2 ? "worse" : score <= -1 ? "better" : "steady";
     if (dir === "better" && (water.length || next6 >= 0.1)) dir = "steady";
     if (!R && dir !== "worse") dir = null;   // without the rain forecast, say what is known but don't call a direction
-    why = why.slice(0, 3);
-    if (!o.highs) { why = why.slice(0, 2); why.push("Tides didn't load, so they are left out."); }
-    return { dir: dir, when: dir === "worse" ? partOfDay(first || now, now) : "", reasons: why, windows: wins,
+    why = why.slice(0, 3); chips = chips.slice(0, 3);
+    if (!o.highs) { why = why.slice(0, 2); why.push("Tides didn't load, so they are left out."); chips = chips.slice(0, 2); chips.push({ t: "Tides didn't load", c: "" }); }
+    return { dir: dir, when: dir === "worse" ? partOfDay(first || now, now) : "", reasons: why, chips: chips, windows: wins,
       quiet: !!R && total < 0.01 && !water.length && !risky.length };
   }
   var OUTLOOK = { worse: "Getting worse", steady: "Holding steady", better: "Improving" };
 
   // -- drawing: the outlook line on Flooding, and the Forecast panel
+  // -- the Forecast pictures: the outlook's arrow, and the next 48 hours (rain bars under the tide line, the flood level, rain at high tide shaded)
+  var ICON = (function () {
+    function ic(col, d) { return '<svg width="44" height="44" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="' + col + '"/><path d="' + d + '" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+    return { worse: ic("#c0392b", "M15 33 33 15M20 15h13v13"), steady: ic("#53686f", "M12 24h23M27 16l8 8-8 8"), better: ic("#2f8a4a", "M15 15l18 18M33 20v13H20") };
+  })();
+  // The tide table between its highs and lows, as a smooth wave (half a cosine from one turn of the tide to the next).
+  function tideAt(hilo, t) {
+    for (var i = 1; i < hilo.length; i++) { var a = hilo[i - 1], b = hilo[i]; if (t >= a.t && t <= b.t) return a.v + (b.v - a.v) * (1 - Math.cos(Math.PI * (t - a.t) / ((b.t - a.t) || 1))) / 2; }
+    return null;
+  }
+  function drawCastChart(O, T, R, now, highs) {
+    var box = document.getElementById("fcChart"), W = box.clientWidth;
+    if (!W) return;   // Forecast isn't showing: drawn when it opens
+    box.textContent = "";
+    var hilo = T && T.hilo && T.hilo.length > 1 ? T.hilo : null;
+    if (!R && !hilo) {
+      var msg = document.createElement("p"); box.appendChild(msg);
+      msg.textContent = !wx || wx.rain === null || T === undefined ? "Loading…" : "The rain and tide forecasts didn't load. Try again in a few minutes.";
+      return;
+    }
+    var A = now - HOUR, Z = now + 48 * HOUR, pad = 8, Ht = 186, tT = 44, tB = 118, rT = 128, rB = 164;   // tide band on top, rain band under it
+    function X(t) { return pad + (t - A) / (Z - A) * (W - 2 * pad); }
+    var pxh = (W - 2 * pad) / 49, ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg"), said = [];
+    svg.setAttribute("width", W); svg.setAttribute("height", Ht); svg.setAttribute("viewBox", "0 0 " + W + " " + Ht); svg.setAttribute("role", "img");
+    function el(tag, at, txt) { var n = document.createElementNS(ns, tag); for (var q in at) n.setAttribute(q, at[q]); if (txt != null) n.textContent = txt; svg.appendChild(n); return n; }
+    var taken = [];   // labels never sit on top of each other
+    function label(x, y, text, cls, anchor) {
+      var w = text.length * 6, x0 = anchor === "end" ? x - w : anchor === "start" ? x : x - w / 2;
+      x0 = Math.max(2, Math.min(W - 2 - w, x0));
+      if (taken.some(function (r) { return Math.abs(r[2] - y) < 12 && x0 < r[1] + 4 && x0 + w > r[0] - 4; })) return false;
+      taken.push([x0, x0 + w, y]); el("text", { x: x0, y: y, class: cls }, text); return true;
+    }
+    // days: a faint line at each midnight, the day's name on top
+    for (var d = new Date(A); d.getTime() < Z; d.setHours(24, 0, 0, 0)) {
+      var m0 = new Date(d); m0.setHours(0, 0, 0, 0); var tm = m0.getTime();
+      if (tm <= A) continue;
+      el("line", { x1: X(tm), x2: X(tm), y1: 16, y2: rB, stroke: "#d3dde1" });
+      label(X(tm) + 3, 12, m0.toLocaleDateString("en-US", { weekday: "short" }), "dy", "start");
+    }
+    // rain at high tide: shaded right on the chart (named once, after the tides have their labels)
+    var winAt = null;
+    (O && O.windows || []).forEach(function (w) {
+      var a = Math.max(A, w.a), b = Math.min(Z, w.b); if (b <= a) return;
+      el("rect", { x: X(a), y: 18, width: Math.max(4, X(b) - X(a)), height: rB - 18, rx: 4, fill: "#e08a1e", opacity: 0.22 });
+      if (winAt === null) winAt = X(a);
+      said.push("Rain at high tide " + span(w.a, w.b));
+    });
+    // the tide: NOAA's table, moved by how far the bay is running from it now, with the flood level dashed
+    if (hilo) {
+      var s = T.surge != null && Math.abs(T.surge) >= 0.1 ? T.surge : 0, a0 = Math.max(A, hilo[0].t), z0 = Math.min(Z, hilo[hilo.length - 1].t);
+      var vs = hilo.map(function (h) { return h.v + s; }), fl = TFL && TFL.minor != null ? TFL.minor : null;
+      var top = Math.max.apply(null, vs.concat(fl != null ? [fl] : [])) + 0.3, bot = Math.min(0, Math.min.apply(null, vs));
+      var Y = function (v) { return tB - (v - bot) / (top - bot) * (tB - tT); }, pts = [];
+      for (var t = a0; t <= z0; t += 15 * 6e4) pts.push(X(t).toFixed(1) + "," + Y(tideAt(hilo, t) + s).toFixed(1));
+      if (pts.length > 1) {
+        el("path", { d: "M" + pts[0].split(",")[0] + "," + tB + "L" + pts.join("L") + "L" + pts[pts.length - 1].split(",")[0] + "," + tB + "Z", fill: "#00897b", opacity: 0.1 });
+        el("path", { d: "M" + pts.join("L"), fill: "none", stroke: "#00897b", "stroke-width": 2.5, "stroke-linejoin": "round" });
+      }
+      if (fl != null) el("line", { x1: pad, x2: W - pad, y1: Y(fl), y2: Y(fl), stroke: "#c0392b", "stroke-width": 1.5, "stroke-dasharray": "5 4" });
+      (highs || []).filter(function (h) { return h.t >= A && h.t <= Z; }).forEach(function (h) {
+        var x = X(h.t), y = Y(h.v + s), col = h.rank >= 2 ? "#c0392b" : h.rank === 1 ? "#e08a1e" : "#00897b";
+        el("circle", { cx: x, cy: y, r: h.rank >= 1 ? 4.5 : 3.5, fill: col, stroke: "#fff", "stroke-width": 1.5 });
+        label(x, Math.min(y, fl != null ? Y(fl) : y) - 8, clock(new Date(h.t)).replace(" ", ""), "hi" + (h.rank >= 1 ? " r" : ""));   // above the dot, and above the flood line
+        said.push("High tide " + dayClock(h.t) + ", " + (h.v + s).toFixed(1) + " ft");
+      });
+      if (fl != null) {   // named just under the line at a low tide, where the tide line is far below it
+        var lows = hilo.filter(function (h) { return !h.h && X(h.t) > X(now) + 40 && X(h.t) < W - 40; }).map(function (h) { return [X(h.t), Y(fl) + 13, ""]; });
+        lows.concat([[W - pad, Y(fl) - 4, "end"]]).some(function (q) { return label(q[0], q[1], "Flood level", "fl", q[2]); });
+      }
+    } else el("text", { x: W / 2, y: (tT + tB) / 2, "text-anchor": "middle" }, T === undefined ? "Loading tides…" : "Tides didn't load.");
+    if (winAt !== null) [12, 27].some(function (y) { return label(winAt, y, "Rain at high tide", "wn", "start"); });
+    // the rain: one bar an hour, the wettest hour named
+    el("line", { x1: pad, x2: W - pad, y1: rB + 0.5, y2: rB + 0.5, stroke: "#d3dde1" });
+    if (R) {
+      var k0 = Math.floor(A / HOUR), k1 = Math.ceil(Z / HOUR), max = 0.1, k, wet = null;
+      for (k = k0; k < k1; k++) max = Math.max(max, R[k] || 0);
+      var bw = Math.max(2, pxh * 0.7);
+      for (k = k0; k < k1; k++) {
+        var v = R[k] || 0; if (!(v >= 0.005)) continue;
+        var bh = Math.max(2, v / max * (rB - rT)), x = X(k * HOUR) + (pxh - bw) / 2;
+        el("rect", { x: x, y: rB - bh, width: bw, height: bh, rx: Math.min(1.5, bw / 2), fill: "#1565c0", opacity: (k + 1) * HOUR <= now ? 0.3 : 0.85 });
+        if ((k + 1) * HOUR > now && (!wet || v > wet.v)) wet = { v: v, x: x + bw / 2, y: rB - bh, k: k };
+      }
+      if (wet && wet.v >= 0.02) { label(wet.x, wet.y - 3, inches(wet.v) + " in", "rv"); said.unshift("Wettest hour " + dayClock(wet.k * HOUR) + ", " + inches(wet.v) + " in"); }
+      else { said.unshift("Little or no rain"); if (!wet) el("text", { x: X(now) + 8, y: rB - 6 }, "No rain expected"); }
+    } else el("text", { x: W / 2, y: rB - 6, "text-anchor": "middle" }, "The rain forecast didn't load.");
+    // now, and the time row: every 6 hours, kept clear of "Now"
+    var xn = X(now);
+    el("line", { x1: xn, x2: xn, y1: 16, y2: rB, stroke: "#16252d", "stroke-width": 1.5 });
+    label(xn, Ht - 6, "Now", "nw");
+    for (k = Math.ceil(A / HOUR); k * HOUR < Z; k++) {
+      var hh = new Date(k * HOUR).getHours(); if (hh % 6 || !hh) continue;
+      label(X(k * HOUR), Ht - 6, hh === 12 ? "noon" : hr(k * HOUR).replace(" ", ""), "");
+    }
+    svg.setAttribute("aria-label", "Next 48 hours. " + said.join(". ") + ".");
+    box.appendChild(svg);
+  }
+  window.addEventListener("resize", function () { castSoon(); });
+
   var castT = null;
   function castSoon() { clearTimeout(castT); castT = setTimeout(renderCast, 0); }
   function li(parent, text) { var x = document.createElement("li"); if (text) x.textContent = text; parent.appendChild(x); return x; }
@@ -3402,14 +3554,15 @@ var BUILD = "2026-11-19 18:38 PT";
     var ol = document.getElementById("outlookLine"), a = document.getElementById("outlookLink"), b = document.createElement("b");
     ol.hidden = !O; ol.className = "only-flood" + (O && O.dir === "worse" ? " worse" : ""); a.textContent = "";
     if (O) { a.appendChild(document.createTextNode(O.quiet ? "No rain expected in the next 2 days · " : label ? "Outlook: " + label.charAt(0).toLowerCase() + label.slice(1) + " · " : (O.reasons[0] || "").replace(/\.$/, "") + " · ")); b.textContent = O.quiet ? "Forecast →" : "See forecast →"; a.appendChild(b); }
-    // Forecast: 1. the outlook and up to three reasons
-    var box = document.getElementById("fcOutlook"), why = document.getElementById("fcWhy");
-    box.className = O && O.dir ? O.dir : ""; why.textContent = "";
+    // Forecast: 1. the outlook: a big arrow, a short headline and up to three chips (the full sentences wait in About this forecast)
+    var box = document.getElementById("fcOutlook"), why = document.getElementById("fcWhy"), full = document.getElementById("fcWhyFull");
+    box.className = O && O.dir ? O.dir : ""; why.textContent = ""; full.textContent = "";
     document.getElementById("fcHead").textContent = O ? label || "No outlook: the rain forecast didn't load." : loading ? "Loading the forecast…" : "The forecast didn't load. Try again in a few minutes.";
-    if (O) O.reasons.forEach(function (r) { li(why, r); });
+    document.getElementById("fcIcon").innerHTML = O && O.dir ? ICON[O.dir] : "";
+    if (O) { O.chips.forEach(function (c) { li(why, c.t).className = c.c; }); O.reasons.forEach(function (r) { li(full, r); }); }
     // 3. bay and tides
-    var cT = document.getElementById("cTide"), list = document.getElementById("fcTides"), note = document.getElementById("fcTideNote");
-    list.textContent = ""; note.hidden = true;
+    var cT = document.getElementById("cTide"), list = document.getElementById("fcTides"), note = document.getElementById("fcTideNote"), bay = document.getElementById("fcBay");
+    list.textContent = ""; note.hidden = true; bay.hidden = true;
     if (!CITY.tide_station) cT.textContent = "No tide gauge is set up for this city.";
     else if (T === undefined) cT.textContent = "Tide: loading…";
     else if (!T) cT.textContent = "Tides didn't load. Try again in a few minutes.";
@@ -3417,6 +3570,7 @@ var BUILD = "2026-11-19 18:38 PT";
       var s = T.surge, n = s == null ? 0 : Math.round(Math.abs(s) * 12), shift = s != null && Math.abs(s) >= 0.1;   // under about an inch: "close to the tide table"
       cT.textContent = s == null ? "No recent reading from the bay, so these are the tide table's heights." : !shift ? "Right now the bay is running close to the tide table."
         : "Right now the bay is running " + n + " in " + (s > 0 ? "higher" : "lower") + " than predicted.";
+      bay.hidden = !shift; bay.textContent = shift ? "Bay " + (s > 0 ? "+" : "−") + n + " in" : "";
       highs.filter(function (h) { return h.t > now - 30 * 6e4 && h.t <= now + 48 * HOUR; }).forEach(function (h) {
         var x = li(list), tt = document.createElement("span"), tv = document.createElement("span");
         tt.className = "tt"; tt.textContent = dayClock(h.t); x.appendChild(tt);
@@ -3434,48 +3588,96 @@ var BUILD = "2026-11-19 18:38 PT";
     else if (loading) li(wl, "Loading…");
     else if (!R || !T) li(wl, "Can't check this right now: the " + (!R ? "rain" : "tide") + " forecast didn't load.");
     else li(wl, "No times when heavy rain lines up with a high tide.");
-    // 5. weather alerts, in the Weather Service's own words
+    // 5. weather alerts: one row each ("⚠ Flood Advisory · until 11:00 pm"); tap the row for the Weather Service's own words
     var al = document.getElementById("fcAlerts"), am = document.getElementById("fcAlertMsg"), A = fc.alerts;
+    var opened = [].slice.call(al.querySelectorAll(".arow[aria-expanded=true]")).map(function (b) { return b.dataset.id; });   // a refresh keeps a row open
     al.textContent = ""; am.hidden = !!(A && A.length);
     am.textContent = A === undefined ? "Loading weather alerts…" : !A ? "Weather alerts didn't load. Try again in a few minutes." : "No weather alerts for " + CITY.name + " right now.";
     (A || []).forEach(function (x) {
-      var row = li(al), e = document.createElement("b"), u = document.createElement("span"), hd = document.createElement("span");
-      e.textContent = x.event; row.appendChild(e);
-      u.className = "small"; u.textContent = x.ends ? " until " + dayClock(Date.parse(x.ends)) : ""; row.appendChild(u);
-      hd.className = "ah"; hd.textContent = x.headline; row.appendChild(hd);
+      var row = li(al), b = document.createElement("button"), e = document.createElement("b"), hd = document.createElement("span"), open = opened.indexOf(x.id) >= 0;
+      b.type = "button"; b.className = "arow"; b.dataset.id = x.id; b.setAttribute("aria-expanded", open ? "true" : "false");
+      e.textContent = x.event; b.appendChild(document.createTextNode("⚠ ")); b.appendChild(e);
+      if (x.ends) b.appendChild(document.createTextNode(" · until " + whenAt(Date.parse(x.ends))));
+      hd.className = "ah"; hd.textContent = x.headline; hd.hidden = !open;
+      b.addEventListener("click", function () { var o = b.getAttribute("aria-expanded") !== "true"; b.setAttribute("aria-expanded", o ? "true" : "false"); hd.hidden = !o; });
+      row.appendChild(b);
       if (x.geom || x.zones.length) {
-        var btn = document.createElement("button"); btn.type = "button"; btn.className = "linkish"; btn.textContent = "Show on map";
+        var btn = document.createElement("button"); btn.type = "button"; btn.className = "linkish amap"; btn.textContent = "Show on map";
         btn.addEventListener("click", function () { showAlertOnMap(x, btn); }); row.appendChild(btn);
       }
+      row.appendChild(hd);
     });
+    // 2. the next 48 hours, as one picture
+    drawCastChart(O, T, R, now, highs);
+    radarYou();
   }
   document.getElementById("outlookLink").addEventListener("click", function (e) { e.preventDefault(); FL.setMode("forecast"); window.scrollTo(0, 0); });
   // Called on every tab change. Tides load the first time Flooding or Forecast opens, then every 10 minutes.
+  // The radar map is made the first time Forecast opens; its loop rests while another tab shows.
   function castMode(m) {
     if ((m === "flood" || m === "forecast") && !fc.on) { fc.on = true; loadTides(); setInterval(loadTides, 10 * 6e4); }
-    if (m !== "flood" && wx) drawDay();   // the chart may have moved, or been drawn while hidden: draw it at its width now
+    if (m === "forecast") radarStart(); else clearTimeout(rd.timer);
+    if (wx && dayBox.clientWidth && dayBox.clientWidth !== dayDrawnW) drawDay();   // the chart stays put on every tab; draw again only if its width changed
     castSoon();
   }
 
-  // ---------- rain radar: off until asked for, with a key, and a nudge to zoom out ----------
-  var radar = L.tileLayer("https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png", { opacity: 0.65, maxZoom: 19, maxNativeZoom: 10, crossOrigin: "anonymous", attribution: "Radar: NWS NEXRAD via Iowa Environmental Mesonet" });
-  var radarKey = L.control({ position: "bottomright" });
-  radarKey.onAdd = function () {
-    var d = L.DomUtil.create("div", "legend radarkey");
-    d.innerHTML = '<b>Rain radar, live</b><span class="ramp"></span><span class="rampw"><span>light</span><span>moderate</span><span>heavy</span></span><span class="radarnote" id="radarNote">Loading radar…</span>';
-    return d;
-  };
-  // An empty radar looks broken, so say what it shows: rain in view, none, or that it did not load.
-  var radarErr = 0;
-  radar.on("loading", function () { radarErr = 0; setRadarNote("Loading radar…"); });
-  radar.on("tileerror", function () { radarErr++; });
-  radar.on("load", function () {
-    if (radarErr) { setRadarNote("Radar didn't load. Try again in a few minutes."); return; }
-    var c = document.createElement("canvas"), g = c.getContext("2d"), wet = 0, seen = 0;
+  // ---------- rain radar, on Forecast: a small map of the city and the bay with the last hour on a loop ----------
+  // Iowa Environmental Mesonet's NEXRAD tiles: the latest picture, and the same picture 5, 10 … 55 minutes ago (layer names ending "-m05m" … "-m55m").
+  // The map is made the first time Forecast opens, never at page load. A finger on it scrolls the page: it doesn't pan or zoom.
+  var IEM = "https://mesonet.agron.iastate.edu/";
+  var rd = { map: null, frames: [], i: 11, timer: null, valid: null, err: 0, playing: false, you: null,
+    auto: !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) };   // plays by itself unless the phone asks for less motion
+  function radarFrame(m) {   // m minutes ago (0 = latest)
+    return L.tileLayer(IEM + "cache/tile.py/1.0.0/nexrad-n0q-900913" + (m ? "-m" + (m < 10 ? "0" : "") + m + "m" : "") + "/{z}/{x}/{y}.png",
+      { opacity: 0, maxZoom: 12, maxNativeZoom: 10, crossOrigin: "anonymous", attribution: "Radar: NWS NEXRAD via Iowa Environmental Mesonet" });
+  }
+  function radarStart() {
+    if (rd.map) { rd.map.invalidateSize(); radarYou(); if (rd.playing) radarStep(); return; }
+    rd.map = new L.Map(document.getElementById("fcRadar"), { zoomControl: false, dragging: false, touchZoom: false, doubleClickZoom: false, scrollWheelZoom: false, boxZoom: false, keyboard: false, zoomSnap: 0.25, fadeAnimation: false });   // no fade: the loop swaps pictures cleanly
+    rd.map.fitBounds([[37.66, -122.53], [37.86, -122.25]]);   // San Francisco and the bay
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, className: "basetile", attribution: "&copy; OpenStreetMap contributors" }).addTo(rd.map);
+    for (var m = 55; m >= 0; m -= 5) rd.frames.push(radarFrame(m));   // [0] 55 minutes ago … [11] latest
+    var cur = rd.frames[11];
+    cur.on("loading", function () { rd.err = 0; });
+    cur.on("tileerror", function () { rd.err++; });
+    cur.on("load", radarCheck);
+    cur.setOpacity(0.75).addTo(rd.map);
+    radarYou();
+    radarWhen();
+    var b = document.getElementById("fcRadarPlay"); b.hidden = false;
+    b.addEventListener("click", function () { rd.auto = false; radarPlay(!rd.playing); });
+    radarTime();
+    if (rd.auto) radarPlay(true);
+    setInterval(function () { if (FL.mode() !== "forecast") return; radarWhen(); rd.frames.forEach(function (f) { if (rd.map.hasLayer(f)) f.redraw(); }); }, 5 * 6e4);   // the pictures change every 5 minutes
+  }
+  function radarWhen() {   // the latest picture's time
+    fetchSoon(IEM + "data/gis/images/4326/USCOMP/n0q_0.json", 8000).then(function (j) { var t = Date.parse(j.meta.valid); rd.valid = isFinite(t) ? t : null; }).catch(function () { rd.valid = null; }).then(radarTime);
+  }
+  function radarYou() {   // the spot this visitor chose, as a dot: drawn here only, never sent anywhere. No spot chosen: no dot.
+    if (!rd.map) return;
+    if (!place || !wx) { if (rd.you) { rd.you.remove(); rd.you = null; } return; }
+    if (!rd.you) rd.you = L.circleMarker(wx.ll, { radius: 5, color: "#fff", weight: 2, fillColor: "#16252d", fillOpacity: 1, interactive: false }).addTo(rd.map);
+    else rd.you.setLatLng(wx.ll);
+  }
+  function radarShow(i) { rd.i = i; rd.frames.forEach(function (f, n) { if (rd.map.hasLayer(f)) f.setOpacity(n === i ? 0.75 : 0); }); radarTime(); }
+  function radarStep() { clearTimeout(rd.timer); radarShow(rd.i >= 11 ? 0 : rd.i + 1); rd.timer = setTimeout(radarStep, rd.i === 11 ? 1800 : 450); }
+  function radarPlay(on) {
+    rd.playing = on; clearTimeout(rd.timer);
+    var b = document.getElementById("fcRadarPlay"); b.setAttribute("aria-pressed", on ? "true" : "false"); b.textContent = on ? "Pause" : "Play last hour";
+    if (on) { rd.frames.forEach(function (f) { if (!rd.map.hasLayer(f)) f.addTo(rd.map); }); rd.i = 11; radarStep(); }
+    else radarShow(11);
+  }
+  function radarTime() {   // "Updated 3:40 pm" when still; each picture's own time while it plays
+    var t = rd.valid ? rd.valid - (11 - rd.i) * 5 * 6e4 : null, el = document.getElementById("fcRadarTime");
+    el.textContent = rd.playing ? (t ? clock(new Date(t)) : rd.i === 11 ? "Latest" : (11 - rd.i) * 5 + " min ago") : t ? "Updated " + clock(new Date(t)) : "";
+  }
+  // An empty radar looks broken, so say when it shows no rain, or did not load.
+  function radarCheck() {
+    if (rd.err) { setRadarNote("Radar didn't load. Try again in a few minutes."); return; }
+    var c = document.createElement("canvas"), g = c.getContext("2d"), wet = 0, seen = 0, f = rd.frames[11];
     c.width = c.height = 64;
-    for (var k in radar._tiles) {
-      var t = radar._tiles[k]; if (!t.loaded || !t.el || !t.el.naturalWidth || !t.current) continue;
-      if (radar._keyToBounds && !map.getBounds().intersects(radar._keyToBounds(k))) continue;
+    for (var k in f._tiles) {
+      var t = f._tiles[k]; if (!t.loaded || !t.el || !t.el.naturalWidth || !t.current) continue;
       seen++;
       try {
         g.clearRect(0, 0, 64, 64); g.drawImage(t.el, 0, 0, 64, 64);
@@ -3483,18 +3685,9 @@ var BUILD = "2026-11-19 18:38 PT";
         for (var i = 3; i < d.length; i += 4) if (d[i] > 20) { wet++; break; }
       } catch (x) { setRadarNote(""); return; }
     }
-    if (!seen) return;
-    setRadarNote(wet ? "Updated every 5 minutes." : "No rain showing on radar right now. Light drizzle and fog often don't show up.");
-  });
-  function setRadarNote(t) { var n = document.getElementById("radarNote"); if (n) { n.textContent = t; n.hidden = !t; } }
-  function syncRadar() {
-    var on = chk("tRadar");
-    layerOn(radar, on); on ? radarKey.addTo(map) : radarKey.remove();
-    document.getElementById("radarHint").hidden = !(on && map.getZoom() > 13);
+    if (seen) setRadarNote(wet ? "" : "No rain on radar right now. Light drizzle and fog often don't show up.");
   }
-  document.getElementById("tRadar").addEventListener("change", syncRadar);
-  document.getElementById("radarOut").addEventListener("click", function () { map.setZoom(11); });
-  map.on("zoomend", syncRadar);
+  function setRadarNote(t) { var n = document.getElementById("radarNote"); if (n) { n.textContent = t; n.hidden = !t; } }
 
   // The flood zone belongs to the flooding code; walks only ask it "how much of this route is inside?"
   var inZone = FL.inZone;
@@ -4323,7 +4516,6 @@ var BUILD = "2026-11-19 18:38 PT";
   clearWalk();
   if (location.hash === "#walk") { document.getElementById("map").scrollIntoView(); bPlan.click(); }
   syncNature();
-  syncRadar();
   return { sync: syncNature, cast: castMode, locate: locate, plan: planJson, say: say, locHelp: openLocHelp, locBlocked: locBlocked,
     place: function () { return place; }, geocode: geocode, fetchSoon: fetchSoon, decode6: decode6 };
   } // end nature

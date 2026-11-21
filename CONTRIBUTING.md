@@ -1,6 +1,6 @@
 # How to help with My Neighborhood Map
 
-My Neighborhood Map is a free, open-source map made by neighbors in San Francisco. It has three tabs: **Nature** (trees in season, wildlife sightings, the weather and a walk planner), **Flooding** (storm drains, flood reports, past flooding and the city's flood zone) and **Forecast** (the outlook, rain, high tides and Weather Service alerts, with no map).
+My Neighborhood Map is a free, open-source map made by neighbors in San Francisco. It has three tabs: **Nature** (trees in season, wildlife sightings, the weather and a walk planner), **Flooding** (storm drains, flood reports, past flooding and the city's flood zone) and **Forecast** (the outlook, a live rain radar, the next 48 hours of rain and tides, and Weather Service alerts).
 
 The map is in **public beta**. You do not need permission to help, and you do not need to be a programmer. First-time contributors are very welcome, including people who code with AI tools like Claude Code or Cursor.
 
