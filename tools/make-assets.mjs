@@ -60,7 +60,7 @@ svg.bg{position:absolute;inset:0}
 .beta{font-size:34px;font-weight:700;color:#fff;background:#2a6f9e;border-radius:99px;padding:8px 26px}
 h1{margin:22px 0 0;font-size:92px;line-height:1.02;color:#10293b;letter-spacing:-2px;white-space:nowrap}
 p{margin:22px 0 0;font-size:43px;line-height:1.24;color:#1d3f57;font-weight:700}
-p.by{margin-top:18px;font-weight:400;color:#10293b}
+p.by{margin-top:18px;font-weight:400;color:#10293b;font-size:33px;white-space:nowrap}
 </style></head><body>
 <svg class="bg" width="1200" height="630" viewBox="0 0 1200 630">
   <g stroke="#a9cbe6" stroke-width="7" stroke-linecap="round" opacity=".7">
@@ -81,7 +81,7 @@ p.by{margin-top:18px;font-weight:400;color:#10293b}
 <div class="txt"><div class="top"><img class="mark" src="data:image/svg+xml;base64,${Buffer.from(drop).toString("base64")}"><span class="beta">Beta</span></div>
 <h1>SF Flood Map</h1>
 <p>Storm drains, flood spots<br>and a way to drive<br>around them</p>
-<p class="by">By neighbors, not the city</p></div>
+<p class="by">Inspired by SF's Adopt a Drain program,<br>built by neighbors</p></div>
 </body></html>`;
 
 const b = await chromium.launch();
