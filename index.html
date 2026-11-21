@@ -782,7 +782,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-20 22:10 PT";
+var BUILD = "2026-11-20 22:15 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -2269,8 +2269,8 @@ var BUILD = "2026-11-20 22:10 PT";
     });
     avoidSpots().forEach(function (ll) {
       avoidAt.push(ll);
-      var mk = L.marker(ll, { pane: "avoid", interactive: false, keyboard: false, icon: L.divIcon({ className: "avoidmk", html: AVOID_SVG, iconSize: [20, 18], iconAnchor: [10, 12] }) }).addTo(driveLayer);
-      mk.getElement().setAttribute("data-avoid", "1");
+      // Drawn even while another tab is open (the layer is off the map then), so nothing here may need the element itself.
+      L.marker(ll, { pane: "avoid", interactive: false, keyboard: false, icon: L.divIcon({ className: "avoidmk", html: '<span data-avoid="1">' + AVOID_SVG + "</span>", iconSize: [20, 18], iconAnchor: [10, 12] }) }).addTo(driveLayer);
     });
     if (drive.open && drive.start) { pin(drive.start, "start"); ends.push(drive.start.ll); }
     if (drive.open && drive.dest) { pin(drive.dest, "dest"); ends.push(drive.dest.ll); }
@@ -2282,8 +2282,15 @@ var BUILD = "2026-11-20 22:10 PT";
     var live = !drive.edit && !dm.on && !!drive.start && !!drive.dest, label = which === "start" ? "Start" : "End";
     var mk = L.marker(p.ll, { pane: "dpin", draggable: live, interactive: live, keyboard: false, autoPan: true,
       icon: L.divIcon({ className: "dpin", html: "<span></span>", iconSize: [26, 26], iconAnchor: [13, 13] }) });
-    mk.bindTooltip(live ? esc(label) + ' <span class="pchg">' + (drive.pick === which ? "Cancel" : "Change") + "</span>" : label,
-      { permanent: true, direction: "top", offset: [0, -12], className: "pin-tip", interactive: live });
+    var tip = label;
+    if (live) {      // the label is its own element with its own tap, so it works even when it was drawn while another tab was open
+      tip = document.createElement("span"); tip.setAttribute("role", "button");
+      tip.setAttribute("aria-label", (drive.pick === which ? "Cancel: " : "Change ") + (which === "start" ? "the start" : "the end"));
+      tip.innerHTML = esc(label) + ' <span class="pchg">' + (drive.pick === which ? "Cancel" : "Change") + "</span>";
+      L.DomEvent.disableClickPropagation(tip);
+      L.DomEvent.on(tip, "click", function (e) { L.DomEvent.stop(e); drive.pick === which ? driveStopPick() : drivePick(which, true); });
+    }
+    mk.bindTooltip(tip, { permanent: true, direction: "top", offset: [0, -12], className: "pin-tip", interactive: live });
     mk.addTo(driveLayer);
     if (!live) return;
     mk.on("dragend", function () {
@@ -2291,10 +2298,6 @@ var BUILD = "2026-11-20 22:10 PT";
       if (which === "start") drive.start = np; else drive.dest = np;
       driveStopPick(); driveRoute(); driveName(np);
     });
-    var tip = mk.getTooltip().getElement();
-    if (tip) { tip.setAttribute("role", "button"); tip.setAttribute("aria-label", (drive.pick === which ? "Cancel: " : "Change ") + (which === "start" ? "the start" : "the end"));
-      L.DomEvent.disableClickPropagation(tip);
-      L.DomEvent.on(tip, "click", function (e) { L.DomEvent.stop(e); drive.pick === which ? driveStopPick() : drivePick(which, true); }); }
   }
   function drawRoad(r, on, bl) {
     if (on) {
