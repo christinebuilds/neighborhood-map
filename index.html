@@ -45,6 +45,7 @@ h2 { font-size: 18px; margin: 0 0 6px; }
 .card ul { margin: 6px 0 0; padding-left: 20px; }
 details.fold { border-left: 1px solid var(--line); }
 details.fold > summary { font-size: 16px; }
+details.fold > h3 { font-size: 14px; margin: 14px 0 0; }   /* "How to read this for 1 to 2 inches of rain", inside "What the colors mean" */
 #stat { max-width: 900px; margin: 0 auto; padding: 8px 16px 0; display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 13px; color: var(--muted); }
 #stat .msg { max-width: none; margin: 0; padding: 0; }
 #stat .msg:empty { display: none; }
@@ -192,6 +193,7 @@ button.act[aria-pressed="true"] { background: #1d6a4f; border-color: #1d6a4f; co
 /* Beta chip and feedback link beside the brand line: both open the feedback sheet. */
 .brand .betatag, .brand .fbtop { font: inherit; letter-spacing: normal; text-transform: none; cursor: pointer; vertical-align: baseline; }
 .brand .betatag { margin-left: 6px; padding: 1px 8px; border-radius: 99px; border: 0; background: #2a6f9e; color: #fff; font-size: 11px; font-weight: 700; }
+.brand .betatag[hidden] { display: none; }   /* "Beta" and "Feedback" opened the same sheet, so only Feedback shows. The pill stays in the page, hidden. */
 .brand .fbtop { margin-left: 8px; padding: 0; border: 0; background: none; color: var(--link); font-size: 12px; font-weight: 600; text-decoration: underline; }
 #safety { margin: 6px 0 0; }
 #newVer { display: block; width: 100%; border: 0; background: #1d6a4f; color: #fff; font: inherit; font-weight: 700; padding: 10px 16px; cursor: pointer; }
@@ -267,8 +269,9 @@ button.act[aria-pressed="true"] { background: #1d6a4f; border-color: #1d6a4f; co
 /* ---- layout: header, tabs, one weather block, one action, layers, map ---- */
 header { padding: 10px 16px 6px; }
 h1 { font-size: 21px; margin: 0 0 2px; }
-.sub { font-size: 13px; display: flex; flex-wrap: wrap; gap: 0 10px; align-items: baseline; }
+.sub { font-size: 13px; display: flex; flex-wrap: wrap; gap: 0 10px; align-items: baseline; min-height: 1.5em; }   /* one line tall even when empty, so the tabs don't jump when the sunrise line leaves */
 .sub #sun { white-space: nowrap; }
+body:not(.mode-nature) #sun { display: none; }   /* the date and sunrise line is for planning a walk: Nature only. The span keeps its words (the day chart reads them). */
 #find { padding: 8px 0 0; }
 #tabs { position: sticky; top: 0; z-index: 1100; background: var(--bg); border-bottom: 1px solid var(--line); }
 #modes { max-width: 900px; margin: 0 auto; padding: 0 16px; display: flex; gap: 4px; }
@@ -388,6 +391,14 @@ h1 { font-size: 21px; margin: 0 0 2px; }
 #fcAbout ul { margin: 6px 0 0; padding: 0; list-style: none; }
 #fcAbout p { margin: 6px 0 0; }
 #fcWhyFull li { font-size: 14px; margin: 0 0 2px; }
+#fcTidePlain li { font-size: 15px; line-height: 1.35; padding: 5px 0; border-top: 1px solid var(--line); margin: 0; color: var(--ink); }
+#fcTidePlain li:first-child { border-top: 0; }
+#fcTidePlain li.hi b { color: #8a3b00; }
+#fcTideHedge[hidden] { display: none; }
+#fcTideMore { background: none; border: 0; border-radius: 0; padding: 0; margin-top: 8px; }
+#fcTideMore > summary { font-size: 14px; min-height: 36px; display: flex; align-items: center; gap: 6px; }
+#fcTideMore > summary::before { content: "▸"; font-size: 12px; }
+#fcTideMore[open] > summary::before { content: "▾"; }
 #fcTides li, #fcWin li { font-size: 14px; line-height: 1.35; padding: 4px 0; border-top: 1px solid var(--line); margin: 0; }
 #fcTides li:first-child, #fcWin li:first-child { border-top: 0; }
 #fcTides .tt { font-weight: 700; }
@@ -522,14 +533,14 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
 <body>
 <button type="button" id="newVer" hidden>A newer version of this map is available. Tap to update.</button>
 <header>
-  <p class="brand">My Neighborhood Map<button type="button" class="betatag" id="betaTag" aria-label="Beta: tell us what you think">Beta</button><button type="button" class="fbtop" id="fbTop"><span aria-hidden="true">💬</span> Feedback</button></p>
+  <p class="brand">My Neighborhood Map<button type="button" class="betatag" id="betaTag" aria-label="Beta: tell us what you think" hidden>Beta</button><button type="button" class="fbtop" id="fbTop"><span aria-hidden="true">💬</span> Feedback</button></p>
   <h1 id="title">Your neighborhood today</h1>
   <p class="sub"><span id="sun"></span> <button type="button" class="linkish" id="changePlace" hidden>Change place</button></p>
   <form id="find" autocomplete="off">
     <input type="text" id="addr" placeholder="Your address or cross streets" aria-label="Your address or cross streets" maxlength="120">
     <button type="submit">Go</button>
     <button type="button" class="alt" id="useLoc">Use my location</button>
-    <p id="findMsg" role="status">Start by finding your block. The page remembers it in this browser only.</p>
+    <p id="findMsg" role="status">Find your block. Only this phone remembers it.</p>
   </form>
 </header>
 <div id="tabs">
@@ -560,8 +571,12 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
   <div class="fcsec" id="fcSoFar"><h2>Rain so far</h2><div id="fcRsfSlot"><div id="rainSoFar" hidden><p id="rsfLine"></p><p id="rsfSay"></p><p id="rsfNote"></p></div></div></div>
   <details id="fcAbout"><summary>About this forecast</summary>
     <ul id="fcWhyFull"></ul>
-    <h3>High tides</h3><div id="fcTideSlot"><p id="live"><span id="cTide">Tide: loading…</span></p></div><ul id="fcTides"></ul><p class="small" id="fcTideNote" hidden></p>
-    <h3>Rain at high tide</h3><ul id="fcWin"></ul>
+    <h3>High tides</h3><div id="fcTideSlot"><p id="live"><span id="cTide">Tide: loading…</span></p></div>
+    <ul id="fcTidePlain"></ul><p class="small" id="fcTideHedge" hidden>A rough estimate, not an official forecast.</p>
+    <details id="fcTideMore"><summary>Tide details</summary>
+      <ul id="fcTides"></ul><p class="small" id="fcTideNote" hidden></p>
+      <h3>Rain at high tide</h3><ul id="fcWin"></ul>
+    </details>
     <p class="small">The chart's tide line is NOAA's tide table for San Francisco, raised or lowered by how far the bay is running from it right now. Rain so far and the rain bars are estimates from weather models, not a rain gauge. The radar shows the last hour in 5-minute steps; light drizzle and fog often don't show up.</p>
     <p class="small">Rain: NWS and Open-Meteo. Tides: NOAA. Alerts: National Weather Service. Radar: NWS NEXRAD via Iowa Environmental Mesonet.</p>
   </details>
@@ -720,7 +735,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
     <section class="card" id="walkCard" hidden>
       <h2 id="walkTitle">Your walk</h2>
       <ol id="stopList"></ol>
-      <button class="act alt" type="button" id="bOpt" hidden style="margin:2px 0 8px">Optimise order</button>
+      <button class="act alt" type="button" id="bOpt" hidden style="margin:2px 0 8px">Shortest order</button>
       <ul class="facts" id="walkFacts"></ul>
       <button class="act alt" type="button" id="bestColor" hidden style="margin-top:8px">Add the best color nearby</button>
     </section>
@@ -748,20 +763,14 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
     <summary>What the colors mean</summary>
     <ul>
       <li><b>City flood zone (purple):</b> <span id="zoneNote"></span></li>
-      <li><b>Past storms (dashed):</b> places news reports say flooded before. Red is a repeat hotspot, orange was reported once or twice. An estimate, not a record of this week.</li>
-      <li><b>311 reports (solid dots):</b> blue is flooding, teal a blocked or broken storm drain, brown a sewage backup. Only open cases from the last day show; closed ones are left off. "311: last" in Layers reaches further back. When there are too many dots to read, the map shows one number for each neighborhood instead; tap it or zoom in to see each report. While a route is showing, these dots and numbers are drawn faint so the route is easy to see. <span id="r311Note"></span></li>
+      <li><b>Past storms (dashed):</b> places news reports say flooded before. Red is a repeat hotspot, orange was reported once or twice. An estimate, not a record of this week. How far the water spread along each street is a guess, and a street with no shading can still flood.</li>
+      <li><b>311 reports (solid dots):</b> blue is flooding, teal a blocked or broken storm drain, brown a sewage backup. Only open cases from the last day show. "311: last" in Layers reaches further back. A number means that many reports in one neighborhood: tap it or zoom in. While a route is showing, these dots and numbers are drawn faint so the route is easy to see. <span id="r311Note"></span></li>
       <li><b>Storm drains:</b> pink means check now (a neighbor flagged it, or an open 311 case is within 60 m). Amber means check first (in the flood zone or a past-flood area). Green was cleared by a neighbor in the last 14 days. This is the map's own rule of thumb, not a city assessment. Tap a drain to mark it cleared or flag it. To adopt one officially: <a id="adoptLink" href="#">the city's adopt-a-drain program</a>.</li>
       <li><b>Neighbor reports (cyan):</b> "water here" posts from the last 24 hours, fainter once they are more than 12 hours old. A brown edge means the neighbor said it looks or smells like sewage. Unverified: this map cannot test the water.</li>
-      <li><b>Plan a route:</b> finds a way to drive, a way to walk and one direct Muni or BART ride at the same time. The driving and walking routes go around places that flooded in past storms, water neighbors reported in the last 24 hours, and open 311 sewage backup reports, and try to stay out of the city flood zone when that adds little time. Your route is the bold line; the other two are faded. Tap a button under the map, or a line on the map, to choose. A small label on each line says what it is: a car, a walker, or a bus or train with the line's name. A yellow warning sign marks each flood spot your route goes around. This map can't see water on the road right now. Never drive through water. Turn around.</li>
-      <li><b>Weather alert areas (navy, off at first):</b> where a National Weather Service alert for San Francisco applies. Turn it on in Layers, or tap Show on map in Forecast.</li>
-      <li><b>Weather at the top (every tab):</b> the hour-by-hour rain (Open-Meteo forecast), the temperature and the best two hours for a walk.</li>
-      <li><b>Outlook line and Forecast:</b> National Weather Service alerts and the high tides (NOAA), with the rain. Heavy rain near high tide drains slowest.</li>
-      <li>Dashed lines follow the city's own street lines for the streets named in news reports. Circles are a rough area around a corner. How far the water spread along each street is an estimate. No shading does not mean a street is safe.</li>
-      <li><b>Plan a route, Transit (blue line):</b> one Muni or BART ride with no transfer (a bus, Muni Metro, a streetcar, a cable car or BART) between your start and end: the suggested ride (solid blue) and the walk to and from the stop or station (dotted blue). It picks the ride that passes the fewest places that flooded in past storms, spots where neighbors reported water recently and open 311 sewage backup reports, then the one with the least walking. Parts of a ride that run underground aren't checked, and this map only knows flooding in San Francisco. Its time (with "~") is a rough guess: the walks, plus the ride at a usual speed for that bus or train, without the wait. "Times in Google Maps" has the real times. This map can't see water on the road right now.</li>
+      <li><b>Plan a route:</b> finds a way to drive, a way to walk and one direct Muni or BART ride. The driving and walking routes go around places that flooded in past storms, water neighbors reported in the last 24 hours and open 311 sewage backup reports. A yellow warning sign marks each flood spot your route goes around. Tap Details on the route card to see how each way was picked. This map can't see water on the road right now. Never drive or walk through water. Turn around.</li>
+      <li><b>Weather and Forecast:</b> the strip at the top of every tab shows the rain hour by hour (Open-Meteo forecast), the temperature and the best two hours for a walk. The outlook line and the Forecast tab add National Weather Service alerts and the high tides (NOAA). Heavy rain near high tide drains slowest. Weather alert areas (navy) are off at first: turn them on in Layers, or tap Show on map in Forecast.</li>
     </ul>
-  </details>
-  <details class="fold">
-    <summary id="rainTitle">Reading the rain</summary>
+    <h3 id="rainTitle">Reading the rain</h3>
     <ul id="rainNotes"></ul>
   </details>
   <details class="fold">
@@ -771,10 +780,8 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
   </details>
   </div>
   <p class="small only-flood" id="cityLinks" style="margin:0"></p>
-  <p class="credit">Made with <span role="img" aria-label="love">💚</span> by <a href="https://github.com/christinebuilds/neighborhood-map">christinebuilds</a></p>
-  <p class="small" style="margin:0"><b>Free and open source. Built by a neighbor for the community.</b> Ideas, fixes and new cities are welcome — <a href="https://github.com/christinebuilds/neighborhood-map/blob/main/CONTRIBUTING.md">contribute on GitHub</a>.</p>
-  <p class="small" style="margin:0">Built by neighbors to support the City's storm work, inspired by the SFPUC's <a href="https://adoptadrain.sfwater.org/about">Adopt a Drain</a> program. <button type="button" class="linkish fbbtn" id="fbOpen"><span aria-hidden="true">💬</span> Report a problem or share an idea</button>. The page remembers your spot in this browser only.</p>
-  <p class="small" style="margin:0">My Neighborhood Map. Version: <span id="ver"></span>. <a href="flood.html">About the flood map</a>.</p>
+  <p class="small" id="madeBy" style="margin:0">Made with <span role="img" aria-label="love">💚</span> by <a href="https://github.com/christinebuilds/neighborhood-map">christinebuilds</a>. <b>Free and open source.</b> Built by neighbors to support the City's storm work, inspired by the SFPUC's <a href="https://adoptadrain.sfwater.org/about">Adopt a Drain</a> program. Ideas, fixes and new cities are welcome — <a href="https://github.com/christinebuilds/neighborhood-map/blob/main/CONTRIBUTING.md">contribute on GitHub</a>. <button type="button" class="linkish fbbtn" id="fbOpen"><span aria-hidden="true">💬</span> Report a problem or share an idea</button>.</p>
+  <p class="small" style="margin:0">My Neighborhood Map. Version: <span id="ver"></span>. <a href="flood.html">About the flood map</a>. The page remembers your spot in this browser only.</p>
   <p class="small" style="margin:0">Not an official service. Emergency: 9-1-1. Weather: National Weather Service and Open-Meteo. Radar: NWS via Iowa Environmental Mesonet. Sightings and photos: <a href="https://www.inaturalist.org">iNaturalist</a>, with credit to each photographer. Trees, drains, 311 reports and the flood zone come from the City's open data (DataSF, SF311, San Francisco Public Works and the SFPUC), with thanks. Walking and driving directions: Valhalla on OpenStreetMap data. Address search: OpenStreetMap.</p>
   <div class="small" id="dataNotice" style="margin:0">
     <details><summary>Transit data notice (SFMTA, BART)</summary>
@@ -814,7 +821,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-21 02:43 PT";
+var BUILD = "2026-11-21 04:44 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -1039,8 +1046,9 @@ var BUILD = "2026-11-21 02:43 PT";
       if (k.role === "sewage" && !showSew) return;   // still counted in the line below
       items311.push({ la: la, lo: lo, k: k, open: open, r: r });   // drawn later, as dots or as neighborhood counts
     });
-    nEl.textContent = R.name + ", last " + days + (days === 1 ? " day" : " days") + ": " + counts.flooding + " open flooding, " + counts.other + (counts.other === 1 ? " open storm drain problem, " : " open storm drain problems, ") + counts.sewage + (counts.sewage === 1 ? " open sewage backup." : " open sewage backups.") +
-      (counts.closed ? " " + counts.closed + " closed " + (counts.closed === 1 ? "is" : "are") + (showClosed ? " shown in a paler color." : " not shown.") : "") + (asOf ? " Updated " + fmt(asOf) + "." : "");
+    // One short line: open cases only, for the window picked under "311: last" in Layers, and when the city's list was last updated.
+    nEl.textContent = "Open 311 reports, last " + (days === 1 ? "day" : days + " days") + ": " + counts.flooding + " flooding, " + counts.other + " storm drain, " + counts.sewage + " sewage." +
+      (counts.closed && showClosed ? " " + counts.closed + " closed " + (counts.closed === 1 ? "is" : "are") + " shown in a paler color." : "") + (asOf ? " Updated " + fmt(asOf) + "." : "");
     sync311();
   }
   // ---- Too many dots to read? Show one count per neighborhood instead.
@@ -2633,8 +2641,8 @@ var BUILD = "2026-11-21 02:43 PT";
       if (wait) { e[0].removeAttribute("href"); e[0].setAttribute("aria-disabled", "true"); } else e[0].href = e[1];
     });
     dEl("MapsNote").textContent = wait ? "Getting the Google Maps and Apple Maps links ready…"
-      : (k.stops ? "Opens the other app and shares these points with Google or Apple. The points are added as stops so the app stays on this route. That app still picks its own roads between stops."
-        : "Opens the other app and shares your destination with Google or Apple. That app picks its own roads.") +
+      : (k.stops ? "Opens in the other app, which gets these stops. It may choose different streets between them."
+        : "Opens in the other app, which gets your destination. It may choose different streets.") +
       (r.pin === "unsure" ? " With these stops it may still pass a flood spot." : k.cut ? " Google Maps takes 3 stops, so there it may still pass a flood spot." : "") + (k.own ? " It starts from where your phone is." : "");
   }
 
@@ -2719,7 +2727,7 @@ var BUILD = "2026-11-21 02:43 PT";
     driveRoute(drive.by);
   });
 
-  // ---- "Water here" on the map, on both tabs: one tap reports water where the phone is.
+  // ---- "Water here" on the Flooding map: one tap reports water where the phone is. (Not on Nature: see whSync.)
   // Privacy: this posts the phone's position at that moment as the water's spot, publicly, as a neighbor report dot (the same as
   // the follow bar's button). Because this button is on the first screen, a tap at home would put a dot at home. So: the very
   // first tap on a device only explains and sends nothing; every report is held for 5 seconds with the spot named and marked on
@@ -2730,7 +2738,7 @@ var BUILD = "2026-11-21 02:43 PT";
   var whCtl = L.control({ position: "bottomright" });
   whCtl.onAdd = function () {
     var b = L.DomUtil.create("button");
-    b.type = "button"; b.id = "bWaterHere"; b.title = "Report water where you are";
+    b.type = "button"; b.id = "bWaterHere"; b.title = "Report water where you are"; b.hidden = true;   // whSync shows it on Flooding
     b.innerHTML = '<svg viewBox="0 0 15 20" aria-hidden="true"><path d="M7.5 1C7.5 1 1.5 8.6 1.5 13a6 6 0 0 0 12 0C13.5 8.6 7.5 1 7.5 1z" fill="#00323b"/></svg>Water here';
     L.DomEvent.disableClickPropagation(b);
     L.DomEvent.on(b, "click", function (e) { L.DomEvent.stop(e); whTap(); });
@@ -2763,9 +2771,11 @@ var BUILD = "2026-11-21 02:43 PT";
     if (!r.height || r.top < document.getElementById("tabs").getBoundingClientRect().bottom + 4 || r.bottom > window.innerHeight) { whTipSay(""); whSay(t, ms); wh.ask = true; }
   }
   // The button steps aside while the follow bar shows (it has its own big button) and while a tap on the map is picking a spot.
+  // It is on the Flooding map only: on Nature a stray tap would post a public water report, and nobody looks for it there.
+  // A report already in its 5-second wait keeps its Undo bar on any tab.
   function whSync() {
     if (!wh || !wh.btn) return;
-    var off = dm.on || picking || !!drive.pick;
+    var off = MODE !== "flood" || dm.on || picking || !!drive.pick;
     wh.btn.hidden = off;
     if (off && wh.wait) { wh.n++; wh.wait = false; whSay(""); }                // a location answer that comes late is dropped
     if (off) { whTipSay(""); if (wh.ask) whSay(""); }                          // words about a button that is not there go with it
@@ -2853,7 +2863,7 @@ var BUILD = "2026-11-21 02:43 PT";
       if (wh.mark) wh.mark.setStyle({ dashArray: null });
       clearTimeout(wh.markT); wh.markT = setTimeout(whMarkOff, 8000);
       whSay("Sent. Thank you.");
-    }).catch(function () { waterLast = null; whMarkOff(); whByButton("Couldn't send. Tap Water here to try again."); });
+    }).catch(function () { waterLast = null; whMarkOff(); whByButton(MODE === "flood" ? "Couldn't send. Tap Water here to try again." : "Couldn't send. Go to Flooding and tap Water here to try again."); });   // the button is on Flooding only
   }
   document.getElementById("whUndo").addEventListener("click", function () {
     if (!wh.pend) return;
@@ -2904,6 +2914,7 @@ var BUILD = "2026-11-21 02:43 PT";
     if (NAT) NAT.sync();
     nearSync();
     map.invalidateSize();
+    whSync();                                            // "Water here" shows on Flooding only
     placeBadges();                                       // the map's buttons differ by tab
     if (NAT) NAT.cast(m);
   }
@@ -3890,22 +3901,36 @@ var BUILD = "2026-11-21 02:43 PT";
     if (O) { O.chips.forEach(function (c) { li(why, c.t).className = c.c; }); O.reasons.forEach(function (r) { li(full, r); }); }
     // 3. bay and tides
     var cT = document.getElementById("cTide"), list = document.getElementById("fcTides"), note = document.getElementById("fcTideNote"), bay = document.getElementById("fcBay");
+    // One plain line for each high tide ("Wed 7:20 pm: very high tide, near flood level. Drains near the bay may back up 6–9 pm."),
+    // and under "Tide details" the same tides in feet, the note on how they are worked out, and the rain at high tide list.
+    // Same numbers and grades as before; only how they are said. "Very high" is said only of a tide graded near flood level or above.
+    var plain = document.getElementById("fcTidePlain"), hedge = document.getElementById("fcTideHedge"), wins = O && O.windows || [];
+    plain.textContent = ""; hedge.hidden = true;
     list.textContent = ""; note.hidden = true; bay.hidden = true;
     if (!CITY.tide_station) cT.textContent = "No tide gauge is set up for this city.";
     else if (T === undefined) cT.textContent = "Tide: loading…";
     else if (!T) cT.textContent = "Tides didn't load. Try again in a few minutes.";
     else {
       var s = T.surge, n = s == null ? 0 : Math.round(Math.abs(s) * 12), shift = s != null && Math.abs(s) >= 0.1;   // under about an inch: "close to the tide table"
-      cT.textContent = s == null ? "No recent reading from the bay, so these are the tide table's heights." : !shift ? "Right now the bay is running close to the tide table."
-        : "Right now the bay is running " + n + " in " + (s > 0 ? "higher" : "lower") + " than predicted.";
+      cT.textContent = s == null ? "No recent reading from the bay, so these are the tide table's heights." : !shift ? "The bay is close to its expected level right now."
+        : "The bay is " + n + (n === 1 ? " inch " : " inches ") + (s > 0 ? "higher" : "lower") + " than expected right now.";
       bay.hidden = !shift; bay.textContent = shift ? "Bay " + (s > 0 ? "+" : "−") + n + " in" : "";
-      highs.filter(function (h) { return h.t > now - 30 * 6e4 && h.t <= now + 48 * HOUR; }).forEach(function (h) {
+      var shown = highs.filter(function (h) { return h.t > now - 30 * 6e4 && h.t <= now + 48 * HOUR; });
+      // A back-up time whose high tide has just passed has no tide line of its own, so it gets a line to itself first.
+      wins.filter(function (w) { return !shown.some(function (h) { return h.t === w.tide.t; }); }).forEach(function (w) { li(plain, dayClock(w.a).split(" ")[0] + " " + span(w.a, w.b) + ": drains near the bay may back up."); });
+      shown.forEach(function (h) {
+        var pl = li(plain), pt = document.createElement("b"), w = wins.filter(function (w) { return w.tide.t === h.t; })[0];
+        pt.textContent = dayClock(h.t); pl.appendChild(pt); if (h.rank >= 1) pl.className = "hi";
+        pl.appendChild(document.createTextNode(": " + (h.rank >= 2 ? "very high tide, about where " + ["", "", "minor", "moderate", "major"][h.rank] + " flooding starts" : h.rank === 1 ? "very high tide, near flood level" : "high tide") + "."
+          + (w ? " Drains near the bay may back up " + span(w.a, w.b) + "." : "")));
         var x = li(list), tt = document.createElement("span"), tv = document.createElement("span");
         tt.className = "tt"; tt.textContent = dayClock(h.t); x.appendChild(tt);
         if (h.rank >= 1) { var f = document.createElement("span"); f.className = "tflag f" + h.rank; f.textContent = FLAG[h.rank]; x.appendChild(f); }
         tv.className = "tv"; tv.textContent = "Predicted " + h.v.toFixed(1) + " ft" + (shift ? " · estimate " + h.proj.toFixed(1) + " ft" : "");
         x.appendChild(document.createElement("br")); x.appendChild(tv);
       });
+      if (!R && !loading) li(plain, "The rain forecast didn't load, so rain at high tide can't be checked right now.");
+      hedge.hidden = !plain.firstChild;
       note.hidden = false;
       note.textContent = (shift ? "Assumes the bay stays this much " + (s > 0 ? "above" : "below") + " the tide table. A rough estimate, not an official forecast. " : "")
         + "Feet above the average low tide, at NOAA's " + CITY.name + " tide gauge." + (TFL && TFL.minor != null ? " Minor flooding starts near " + TFL.minor.toFixed(1) + " ft there." : "");
@@ -4460,7 +4485,7 @@ var BUILD = "2026-11-21 02:43 PT";
     if (!on) { statusEl.textContent = ""; return; }
     if (!walk.line) statusEl.textContent = z < 14 ? "Darker green means more street trees. Zoom in, or find your block, for single trees and wildlife."
       : z < 16 ? "Darker green means more street trees. Small colored dots are wildlife seen in the last 30 days. Zoom in for single trees and wildlife icons."
-      : "Green squares are street trees (darker ones are California natives). Round icons are wildlife sightings: open Key to see which is which. Tap one.";
+      : "Tap a tree or animal to learn more.";
     if (chk("tTree")) fetchCells();
     clearTimeout(natureTimer);
     natureTimer = setTimeout(function () {
