@@ -226,7 +226,7 @@ if (pages.includes("index.html")) {
     keep(`storm drain "${k}" dot color in the Legend`, !!c && legend.includes(c));
   }
   keep("Your place in the Legend", /lrow\("you",[^\n]*Your place/.test(html));
-  keep("Your place in the Nature Key", /<b>You<\/b>[^\n]*Your place/.test(html));
+  keep("Your place in the Nature Key", /natKeyEl\.innerHTML = [\s\S]{0,700}?<span class="lyou">[^\n]*Your place/.test(html));
   // 2. The main buttons and switches, each present and not hidden in the page as written.
   for (const id of ["bReport", "bDrive", "bLayers", "fbTop", "changePlace", "safety", "t311", "tDrain", "tRep", "tZone", "tHist", "tAlertArea", "days", "mapStyle", "tWild", "tTree", "mNature", "mFlood", "mCast"]) {
     keep(`#${id}`, id === "changePlace" ? !!tagOf(id) : shown(id));   // Change place starts hidden until a place is chosen
