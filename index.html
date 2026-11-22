@@ -422,6 +422,10 @@ body:not(.mode-nature) #sun { display: none; }   /* the date and sunrise line is
 #layerPanel[hidden] { display: none; }
 #layerPanel label { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; cursor: pointer; }
 #layerPanel label[hidden] { display: none; }
+/* What each dot color means, right under its switch in Layers: 311 reports and storm drains each come in three colors. */
+#layerPanel .lkey { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: -7px 0 7px 29px; font-size: 12.5px; color: var(--muted); }
+#layerPanel .lkey > span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+#layerPanel .lkey .dt, #layerPanel .lkey .ddot { width: 9px; height: 9px; flex: none; }
 #layerPanel input[type=checkbox] { width: 20px; height: 20px; }
 #layerPanel select { font-size: 16px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); }
 #ctl, #bar { display: flex; flex-direction: column; }
@@ -460,6 +464,12 @@ body:not(.mode-nature) #sun { display: none; }   /* the date and sunrise line is
 .leaflet-tooltip.pin-tip.leaflet-interactive { padding: 4px 8px; }
 .avoidmk svg, .lavoid svg { display: block; width: 20px; height: 18px; }
 .lavoid { display: inline-block; vertical-align: -4px; margin-right: 6px; }
+/* "Your place": a small person in a dark circle, on the map and in the Legend and Key. A shape of its own, so it is not read as a report dot. */
+.youmk { pointer-events: none; }
+.youmk svg { display: block; width: 26px; height: 26px; }
+.youmk-s svg { width: 20px; height: 20px; }
+.lyou { display: inline-block; vertical-align: -4px; margin-right: 6px; }
+.lyou svg { display: block; width: 18px; height: 18px; }
 #driveMaps .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0; }
 #driveMaps .row[hidden] { display: none; }
 #driveMaps a { flex: 1 1 0; text-align: center; font-size: 14px; font-weight: 600; padding: 9px 6px; border-radius: 8px; border: 1px solid var(--ink); background: #fff; color: var(--ink); text-decoration: none; white-space: nowrap; }
@@ -621,9 +631,11 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
       <label><input type="checkbox" id="tZone" checked><span class="sw" style="border:2px solid #5e35b1;background:rgba(94,53,177,.2)"></span>City flood zone</label>
       <label><input type="checkbox" id="tHist" checked><span class="sw"></span>Past storms (news)</label>
       <label><input type="checkbox" id="t311" checked><span class="dt"></span>311 reports</label>
+      <div class="lkey" id="key311"><span><span class="dt"></span>flooding</span><span><span class="dt" style="background:#00796b"></span>blocked drain</span><span><span class="dt" style="background:#6d4c41"></span>sewage</span></div>
       <label hidden><input type="checkbox" id="t311Sew" checked><span class="dt" style="background:#6d4c41"></span>Sewage backups (311)</label>
       <label hidden><input type="checkbox" id="t311Closed"><span class="dt" style="background:#90caf9"></span>Show closed 311 cases</label>
       <label><input type="checkbox" id="tDrain" checked><span class="ddot" style="background:#d81b60"></span>Storm drains</label>
+      <div class="lkey" id="keyDrain"><span><span class="ddot" style="background:#d81b60"></span>check now</span><span><span class="ddot" style="background:#f9a825"></span>check first</span><span><span class="ddot" style="background:#2e7d32"></span>cleared</span></div>
       <label><input type="checkbox" id="tRep" checked><span class="ddot" style="background:#00bcd4"></span>Neighbor reports</label>
       <label><input type="checkbox" id="tAlertArea"><span class="sw asw"></span>Weather alert areas</label>
       <label>311: last <select id="days"><option value="1" selected>1 day</option><option value="3">3 days</option><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label>
@@ -740,7 +752,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
       <button class="act alt" type="button" id="bestColor" hidden style="margin-top:8px">Add the best color nearby</button>
     </section>
     <section id="onWay" hidden>
-      <h2>Seen along your way <span class="small">(last 30 days)</span></h2>
+      <h2>Seen along your way <span class="small">(last 14 days)</span></h2>
       <div class="grid" id="onWayGrid"></div>
     </section>
     <section id="detours" hidden>
@@ -821,7 +833,7 @@ body.mode-nature .leaflet-bus-pane, body.mode-nature .leaflet-badge-pane, body.m
 // Phones: keep pop-ups inside the map (scroll inside them if long) instead of running off the screen.
 L.Popup.mergeOptions({ maxHeight: Math.max(160, Math.round(window.innerHeight * 0.38)), autoPanPadding: [8, 8], keepInView: false });
 // The time this copy of the page was built. The footer shows it, and the page checks version.txt for a newer one.
-var BUILD = "2026-11-21 04:44 PT";
+var BUILD = "2026-11-22 10:38 PT";
 (function () {
   var v = document.getElementById("ver"); if (v) v.textContent = BUILD;
   fetch("version.txt?ts=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
@@ -1633,6 +1645,7 @@ var BUILD = "2026-11-21 04:44 PT";
 
   // ---- Legend, locate, tile warning
   // The small warning sign Plan a route puts on each flood spot the chosen route goes around (and in the Legend).
+  var YOU_SVG = '<svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11.5" fill="#18261d" stroke="#fff" stroke-width="2"/><circle cx="13" cy="10" r="3.4" fill="#fff"/><path d="M6.4 19.6c1-3.3 3.5-5 6.6-5s5.6 1.7 6.6 5a10.4 10.4 0 0 1-13.2 0z" fill="#fff"/></svg>';   // "your place"
   var AVOID_SVG = '<svg viewBox="0 0 20 18" aria-hidden="true"><path d="M10 1.2 19 16.8H1z" fill="#ffca28" stroke="#3e2b00" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 6.5v5" stroke="#3e2b00" stroke-width="2.2" stroke-linecap="round"/><circle cx="10" cy="14.2" r="1.25" fill="#3e2b00"/></svg>';
   // The Legend lists only what is drawn on the map right now: the layer is switched on in Layers and something of that kind is on
   // the part of the map in view. Each row keeps its heading, which says where it comes from: the city (official), an estimate from
@@ -1664,6 +1677,7 @@ var BUILD = "2026-11-21 04:44 PT";
       '<b data-g="water wsew" hidden>Neighbor reports</b>' +
       lrow("water", '<span class="ldot" style="background:#00bcd4;border-color:#004d5a"></span>Water here (unverified)') +
       lrow("wsew", '<span class="ldot" style="background:#00bcd4;border-color:#6d4c41"></span>Neighbor says it looks or smells like sewage') +
+      lrow("you", '<span class="lyou">' + YOU_SVG + '</span>Your place') +
       lrow("none", "Nothing is drawn on this part of the map. Move the map, or check Layers.") + '</details>';
     legendEl = d; legendSync();
     return d;
@@ -1684,6 +1698,8 @@ var BUILD = "2026-11-21 04:44 PT";
     [drainsPri, drainsAll].forEach(function (g) { if (has(g)) mark(g, function (m) { return m.dk === "ok" ? "" : m.dk; }); });
     if (has(repLayer)) mark(repLayer, function (m) { return m.options.sewage ? "wsew" : "water"; });
     if (has(driveLayer)) on.avoid = avoidAt.some(function (ll) { return v.contains(ll); });
+    // The small person: the place this person chose. Not named while a route's warning signs are in the Legend, so that list stays short.
+    if (FL && FL.you && has(FL.you) && !on.avoid) on.you = v.contains(FL.you.getLatLng());
     var any = false;
     legendEl.querySelectorAll(".lr").forEach(function (r) { var k = r.getAttribute("data-k"), show = !!on[k]; if (k !== "none") { r.hidden = !show; any = any || show; } });
     legendEl.querySelectorAll("b[data-g]").forEach(function (b) { b.hidden = !b.getAttribute("data-g").split(" ").some(function (k) { return on[k]; }); });
@@ -2930,7 +2946,7 @@ var BUILD = "2026-11-21 04:44 PT";
   var bLayers = document.getElementById("bLayers"), layerPanel = document.getElementById("layerPanel");
   bLayers.addEventListener("click", function () { var open = layerPanel.hidden; layerPanel.hidden = !open; bLayers.setAttribute("aria-expanded", open ? "true" : "false"); });
   var FL = {
-    mode: function () { return MODE; }, setMode: setMode, inZone: inZone,
+    mode: function () { return MODE; }, setMode: setMode, inZone: inZone, you: null, youSvg: YOU_SVG, legendSoon: legendSoon,
     zoneReady: function () { return zoneReady; },
     ensureZone: function (then) { if (zoneReady) { then(); return; } zoneWaiters.push(then); loadZone(); }
   };
@@ -4009,7 +4025,7 @@ var BUILD = "2026-11-21 04:44 PT";
   function radarYou() {   // the spot this visitor chose, as a dot: drawn here only, never sent anywhere. No spot chosen: no dot.
     if (!rd.map) return;
     if (!place || !wx) { if (rd.you) { rd.you.remove(); rd.you = null; } return; }
-    if (!rd.you) rd.you = L.circleMarker(wx.ll, { radius: 5, color: "#fff", weight: 2, fillColor: "#16252d", fillOpacity: 1, interactive: false }).addTo(rd.map);
+    if (!rd.you) rd.you = L.marker(wx.ll, { interactive: false, keyboard: false, icon: L.divIcon({ className: "youmk youmk-s", html: FL.youSvg, iconSize: [20, 20], iconAnchor: [10, 10] }) }).addTo(rd.map);   // the same small person as on the main map
     else rd.you.setLatLng(wx.ll);
   }
   function radarShow(i) { rd.i = i; rd.frames.forEach(function (f, n) { if (rd.map.hasLayer(f)) f.setOpacity(n === i ? 0.75 : 0); }); radarTime(); }
@@ -4245,8 +4261,9 @@ var BUILD = "2026-11-21 04:44 PT";
     o.marker = m; m.addTo(wildLayer);
   }
   map.on("zoomend", function () { Object.keys(wild).forEach(function (id) { showMark(wild[id]); }); });
+  var WILD_DAYS = 14;   // how far back wildlife sightings go on the map. The Key, the hint under the map and the walk card say the same number.
   function fetchObs(b) {
-    var d1 = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+    var d1 = new Date(Date.now() - WILD_DAYS * 864e5).toISOString().slice(0, 10);   // older sightings drop off the map, so it does not fill up
     var q = "nelat=" + b.getNorth().toFixed(4) + "&nelng=" + b.getEast().toFixed(4) + "&swlat=" + b.getSouth().toFixed(4) + "&swlng=" + b.getWest().toFixed(4) +
       "&d1=" + d1 + "&photos=true&photo_license=" + OPEN_LIC.join(",") + "&geoprivacy=open&order_by=observed_on&per_page=200";
     return fetchJson(INAT + "/observations?" + q).then(function (j) { (j.results || []).forEach(addObs); restack(); });
@@ -4472,9 +4489,10 @@ var BUILD = "2026-11-21 04:44 PT";
   var natKeyEl = L.DomUtil.create("div", "legend");
   natKeyEl.id = "natKey";
   L.DomEvent.disableClickPropagation(natKeyEl); L.DomEvent.disableScrollPropagation(natKeyEl);
-  natKeyEl.innerHTML = '<details><summary>Key</summary><b>Wildlife seen in the last 30 days</b>' +
+  natKeyEl.innerHTML = '<details><summary>Key</summary><b>Wildlife seen in the last 14 days</b>' +
     KEYROWS.map(function (k) { return '<span class="kb" style="border-color:' + k[1] + '">' + k[0] + "</span>" + k[2] + "<br>"; }).join("") +
     'Zoomed out: small dots, same colors<b>Trees</b><span class="ksq"></span>Green square: street tree (darker: California native)' +
+    '<b>You</b><span class="lyou">' + FL.youSvg + '</span>Your place' +
     '<div id="natKeySeason" hidden></div></details>';
   natKey.onAdd = function () { return natKeyEl; };
   function syncNature() {
@@ -4484,7 +4502,7 @@ var BUILD = "2026-11-21 04:44 PT";
     if (on !== natKeyOn) { natKeyOn = on; on ? natKey.addTo(map) : natKey.remove(); }
     if (!on) { statusEl.textContent = ""; return; }
     if (!walk.line) statusEl.textContent = z < 14 ? "Darker green means more street trees. Zoom in, or find your block, for single trees and wildlife."
-      : z < 16 ? "Darker green means more street trees. Small colored dots are wildlife seen in the last 30 days. Zoom in for single trees and wildlife icons."
+      : z < 16 ? "Darker green means more street trees. Small colored dots are wildlife seen in the last 14 days. Zoom in for single trees and wildlife icons."
       : "Tap a tree or animal to learn more.";
     if (chk("tTree")) fetchCells();
     clearTimeout(natureTimer);
@@ -4767,7 +4785,10 @@ var BUILD = "2026-11-21 04:44 PT";
     place = { lat: Math.round(ll[0] * 1000) / 1000, lon: Math.round(ll[1] * 1000) / 1000, name: name || "" };
     store("fm_place", place);
     if (you) map.removeLayer(you);
-    you = L.circleMarker(ll, { radius: 7, color: "#fff", weight: 2, fillColor: "#18261d", fillOpacity: 1, interactive: false }).addTo(map);
+    // A small person in a dark circle, not a plain dot: among the report dots a black dot read as one more kind of report.
+    // It sits in the same layer as before (under the report dots) and takes no taps.
+    you = L.marker(ll, { pane: "overlayPane", interactive: false, keyboard: false, icon: L.divIcon({ className: "youmk", html: FL.youSvg, iconSize: [26, 26], iconAnchor: [13, 13] }) }).addTo(map);
+    FL.you = you; FL.legendSoon();                       // the Flooding Legend names it ("Your place")
     map.setView(ll, zoom || (FL.mode() === "flood" ? 17 : 16));
     findMsg.textContent = "";
     document.getElementById("find").hidden = true; document.getElementById("changePlace").hidden = false;
