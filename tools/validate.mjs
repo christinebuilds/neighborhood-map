@@ -208,7 +208,13 @@ if (pages.includes("index.html")) {
   const html = readFileSync(new URL("index.html", root), "utf8");
   const keep = (what, ok) => { kept++; if (!ok) fail("index.html", `"${what}" is missing or hidden. If that is on purpose, say "Removed: ${what}" at the top of the pull request and update the keep list in tools/validate.mjs.`); };
   const tagOf = (id) => (new RegExp(`<[a-z0-9]+\\b[^>]*\\bid="${id}"[^>]*>`, "i").exec(html) || [""])[0];
-  const shown = (id) => { const tg = tagOf(id); return !!tg && !/\shidden(?=[\s>=])/.test(tg); };
+  const isHidden = (tg) => /\shidden(?=[\s>=])/.test(tg);
+  // Present, and neither it nor the <label> wrapped around it is hidden (a switch is hidden by hiding its label).
+  const shown = (id) => {
+    const tg = tagOf(id); if (!tg || isHidden(tg)) return false;
+    const before = html.slice(0, html.indexOf(tg)), open = before.lastIndexOf("<label"), close = before.lastIndexOf("</label>");
+    return !(open > close && isHidden(before.slice(open, before.indexOf(">", open) + 1)));
+  };
   const block = (id) => (new RegExp(`<div[^>]*\\bid="${id}"[^>]*>([\\s\\S]*?)</div>`, "i").exec(html) || ["", ""])[1].toLowerCase();
   const legend = (html.match(/lrow\("[a-z0-9]+",[^\n]*/g) || []).join("\n").toLowerCase();
   // 1. Every dot color drawn on the Flooding map has a sample in Layers (under its switch) and a row in the Legend.
@@ -225,6 +231,12 @@ if (pages.includes("index.html")) {
     keep(`storm drain "${k}" dot color in Layers`, !!c && block("keyDrain").includes(c));
     keep(`storm drain "${k}" dot color in the Legend`, !!c && legend.includes(c));
   }
+  // Past storms and neighbor reports: both colors of each, in Layers and in the Legend.
+  keep("past storms: repeat hotspot and once or twice in Layers", /repeat hotspot/.test(block("keyHist")) && block("keyHist").includes("#e08a1e"));
+  keep("past storms: both colors in the Legend", legend.includes("#c0392b") && legend.includes("#e08a1e"));
+  keep("neighbor reports: water here and the sewage edge in Layers", block("keyRep").includes("#00bcd4") && block("keyRep").includes("#6d4c41"));
+  keep("neighbor reports: both kinds in the Legend", /lrow\("water"/.test(html) && /lrow\("wsew"/.test(html));
+  for (const id of ["key311", "keyDrain", "keyHist", "keyRep"]) keep(`the color key #${id} in Layers`, shown(id));
   keep("Your place in the Legend", /lrow\("you",[^\n]*Your place/.test(html));
   keep("Your place in the Nature Key", /natKeyEl\.innerHTML = [\s\S]{0,700}?<span class="lyou">[^\n]*Your place/.test(html));
   // 2. The main buttons and switches, each present and not hidden in the page as written.
