@@ -43,6 +43,7 @@ node tools/validate.mjs          # must pass before every PR
 7. **One feature per pull request**, with **before and after phone screenshots** and a few lines on how you tested. Say `Closes #<issue>`.
 8. **No secrets in the repo.** No API keys, tokens or passwords in code, commits or issues. The Supabase publishable (anon) key already in the page is meant to be public; row-level security protects the data. Anything else secret belongs in a Supabase function's settings, which only Christine manages.
 9. **Database changes** go in a new file in `supabase/migrations/` and are applied by Christine. Never apply them yourself.
+10. **Don't lose what neighbors already have.** Do not remove or hide a button, a switch, a layer, a Legend or Key row, or the explainer for a color on the map as a side effect of another change, even to tidy up. If a change does take one away on purpose, the pull request must start with a line "Removed: ..." for each one, and the keep list in `tools/validate.mjs` must be edited in the same change. Every color or icon that marks data on the map (reports, drains, flood areas, wildlife, your place) needs an explainer where people look for it: in Layers under its switch when a switch draws more than one color, and in the Legend or Key.
 
 ## Privacy
 
@@ -59,6 +60,7 @@ node tools/validate.mjs          # must pass before every PR
 - [ ] Tested at iPhone 13 size with real taps, all three tabs.
 - [ ] Supabase calls were mocked; no real rows were posted.
 - [ ] No element IDs renamed or removed.
+- [ ] Nothing neighbors could see or tap was removed or hidden (or it is listed as "Removed: ..." at the top of the PR).
 - [ ] Safety wording unchanged; new text is plain language.
 - [ ] Pop-ups still compact.
 - [ ] `version.txt` updated if a page changed.

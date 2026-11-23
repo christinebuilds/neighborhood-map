@@ -199,9 +199,59 @@ for (const page of pages) {
   if (page === "index.html" && !found) fail(page, "no script found inside the page");
 }
 
+// ---- Things neighbors can see or tap that must not quietly go missing.
+// In November 2026 a tidy-up folded "Sewage backups" into "311 reports" and the brown dot lost its explainer in Layers; nobody
+// noticed until a neighbor asked what the brown dots were. This list is the tripwire: if a change takes one of these away, this
+// check fails. To remove one on purpose, say so at the top of the pull request ("Removed: ...") and edit this list in the same change.
+let kept = 0;
+if (pages.includes("index.html")) {
+  const html = readFileSync(new URL("index.html", root), "utf8");
+  const keep = (what, ok) => { kept++; if (!ok) fail("index.html", `"${what}" is missing or hidden. If that is on purpose, say "Removed: ${what}" at the top of the pull request and update the keep list in tools/validate.mjs.`); };
+  const tagOf = (id) => (new RegExp(`<[a-z0-9]+\\b[^>]*\\bid="${id}"[^>]*>`, "i").exec(html) || [""])[0];
+  const isHidden = (tg) => /\shidden(?=[\s>=])/.test(tg);
+  // Present, and neither it nor the <label> wrapped around it is hidden (a switch is hidden by hiding its label).
+  const shown = (id) => {
+    const tg = tagOf(id); if (!tg || isHidden(tg)) return false;
+    const before = html.slice(0, html.indexOf(tg)), open = before.lastIndexOf("<label"), close = before.lastIndexOf("</label>");
+    return !(open > close && isHidden(before.slice(open, before.indexOf(">", open) + 1)));
+  };
+  const block = (id) => (new RegExp(`<div[^>]*\\bid="${id}"[^>]*>([\\s\\S]*?)</div>`, "i").exec(html) || ["", ""])[1].toLowerCase();
+  const legend = (html.match(/lrow\("[a-z0-9]+",[^\n]*/g) || []).join("\n").toLowerCase();
+  // 1. Every dot color drawn on the Flooding map has a sample in Layers (under its switch) and a row in the Legend.
+  const colors = (name) => { const m = new RegExp(`var ${name} = \\{([\\s\\S]*?)\\};`).exec(html); return m ? m[1] : ""; };
+  const c311 = (/--c311:\s*(#[0-9a-f]{6})/i.exec(html) || [])[1] || "";
+  const role = colors("ROLE"), dcol = colors("DCOL");
+  for (const k of ["flooding", "drain", "sewage"]) {
+    const c = ((new RegExp(`${k}: \\{ fill: "(#[0-9a-f]{6})"`, "i").exec(role) || [])[1] || "").toLowerCase();
+    keep(`311 ${k} dot color in Layers`, !!c && (block("key311").includes(c) || (k === "flooding" && c === c311.toLowerCase() && /<span class="dt"><\/span>flooding/.test(block("key311")))));
+    keep(`311 ${k} dot color in the Legend`, !!c && legend.includes(c));
+  }
+  for (const k of ["urgent", "check", "clear"]) {
+    const c = ((new RegExp(`${k}: "(#[0-9a-f]{6})"`, "i").exec(dcol) || [])[1] || "").toLowerCase();
+    keep(`storm drain "${k}" dot color in Layers`, !!c && block("keyDrain").includes(c));
+    keep(`storm drain "${k}" dot color in the Legend`, !!c && legend.includes(c));
+  }
+  // Past storms and neighbor reports: both colors of each, in Layers and in the Legend.
+  keep("past storms: repeat hotspot and once or twice in Layers", /repeat hotspot/.test(block("keyHist")) && block("keyHist").includes("#e08a1e"));
+  keep("past storms: both colors in the Legend", legend.includes("#c0392b") && legend.includes("#e08a1e"));
+  keep("neighbor reports: water here and the sewage edge in Layers", block("keyRep").includes("#00bcd4") && block("keyRep").includes("#6d4c41"));
+  keep("neighbor reports: both kinds in the Legend", /lrow\("water"/.test(html) && /lrow\("wsew"/.test(html));
+  for (const id of ["key311", "keyDrain", "keyHist", "keyRep"]) keep(`the color key #${id} in Layers`, shown(id));
+  keep("Your place in the Legend", /lrow\("you",[^\n]*Your place/.test(html));
+  keep("Your place in the Nature Key", /natKeyEl\.innerHTML = [\s\S]{0,700}?<span class="lyou">[^\n]*Your place/.test(html));
+  // 2. The main buttons and switches, each present and not hidden in the page as written.
+  for (const id of ["bReport", "bDrive", "bLayers", "fbTop", "changePlace", "safety", "t311", "tDrain", "tRep", "tZone", "tHist", "tAlertArea", "days", "mapStyle", "tWild", "tTree", "mNature", "mFlood", "mCast"]) {
+    keep(`#${id}`, id === "changePlace" ? !!tagOf(id) : shown(id));   // Change place starts hidden until a place is chosen
+  }
+  keep("the Water here button", /b\.id = "bWaterHere"/.test(html));
+  keep("the Legend on the Flooding map", /<summary>Legend<\/summary>/.test(html));
+  keep("the Key on the Nature map", /<summary>Key<\/summary>/.test(html));
+}
+
 if (errors.length) {
   console.error("Problems found:\n- " + errors.join("\n- "));
   process.exit(1);
 }
 console.log(`OK: ${total} past-storm areas checked.`);
 console.log(`OK: ${scripts} page scripts in ${pages.length} pages have no syntax error.`);
+console.log(`OK: ${kept} things neighbors see or tap are all still on the page.`);
