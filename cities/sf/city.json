@@ -1,0 +1,154 @@
+{
+  "id": "sf",
+  "name": "San Francisco",
+  "title": "My Neighborhood Map: San Francisco",
+  "maintainers": [
+    "christinebuilds"
+  ],
+  "bounds": [
+    [
+      37.708,
+      -122.515
+    ],
+    [
+      37.81,
+      -122.357
+    ]
+  ],
+  "weather_point": [
+    37.765,
+    -122.41
+  ],
+  "tide_station": "9414290",
+  "tide_flood_levels": {
+    "units": "feet above MLLW at the tide station",
+    "action": null,
+    "minor": 7.0,
+    "moderate": null,
+    "major": null,
+    "source_url": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/9414290/floodlevels.json",
+    "as_of": "not yet checked",
+    "note": "NOT YET CHECKED against NOAA: the computer that built the Forecast tab could not reach NOAA's station pages. 7.0 ft = about 1.2 ft (0.366 m) above mean higher high water, which a web search summary gave as the Weather Service's minor flood level for this gauge, citing a 2025 paper (Piecuch and others, Earth's Future, doi 10.1029/2024EF005850) that was not itself read, plus mean higher high water of about 5.8 ft above MLLW, which the Weather Service's own Coastal Flood Advisory of Nov 19, 2026 implies (6.9 ft MLLW described as 1.1 ft above normal). To check: nws_minor (or nos_minor) from source_url minus the MLLW value in datums.json at the same address. Fill in moderate and major the same way. A level left null is not graded."
+  },
+  "alerts": {
+    "area": "CA",
+    "county_fips": "006075",
+    "note": "Weather Service alerts are asked for the whole state (no location is sent) and kept on the phone only when they list this county code (SAME/FIPS 006075 is San Francisco County)."
+  },
+  "open_data_hosts": [
+    "https://data.sf.gov",
+    "https://data.sfgov.org"
+  ],
+  "reports_311": {
+    "name": "SF311",
+    "source": "SF311 open data (DataSF)",
+    "dataset": "vw6y-z8j6",
+    "where": "service_name = 'Sewer'",
+    "fields": {
+      "id": "service_request_id",
+      "date": "requested_datetime",
+      "status": "status_description",
+      "kind": "service_subtype",
+      "details": "service_details",
+      "address": "address",
+      "neighborhood": "analysis_neighborhood",
+      "lat": "lat",
+      "lon": "long",
+      "as_of": "data_as_of"
+    },
+    "kinds": {
+      "flooding": {
+        "label": "Flooding",
+        "role": "flooding"
+      },
+      "catch_basin": {
+        "label": "Blocked or broken storm drain",
+        "role": "drain"
+      },
+      "sewage_back-up_discharge": {
+        "label": "Sewage backup",
+        "role": "sewage"
+      }
+    },
+    "track_url": "https://sf311.org/track-case",
+    "report_sewage_url": "https://www.sf.gov/report-flooding-water-leaks-sewer-backup-or-odor-issues",
+    "note": "These come from SF311's open dataset on DataSF, which updates nightly around 6 am, so today's reports appear the next morning."
+  },
+  "drains": {
+    "dataset": "jtgq-b7c5",
+    "id_field": "dpw_node_id",
+    "type_field": "drain_type",
+    "location_field": "location",
+    "adopt_url": "https://adoptadrain.sfwater.org/about",
+    "adopt_label": "Adopt a Drain SF"
+  },
+  "flood_zone": {
+    "dataset": "jzu3-4yxp",
+    "geom_field": "the_geom",
+    "title": "100-year storm flood risk zone",
+    "note": "the SFPUC's official 100-year storm flood risk zone, from DataSF. It models a very rare storm and covers storm runoff only, not bay or ocean flooding. Use it to see which blocks sit low.",
+    "popup": "The SFPUC says areas inside this boundary are highly likely to see deep, connected flooding in a 100-year storm. It covers storm runoff only, not bay or ocean flooding, and a normal storm is far smaller.",
+    "url": "https://www.sfpuc.gov/learning/emergency-preparedness/flood-maps",
+    "url_label": "SFPUC flood maps"
+  },
+  "past_storms_note": "Coverage started in the Mission and is thinner elsewhere. Know a spot that floods? Use Report water during a storm.",
+  "rain_notes_title": "How to read this for 1 to 2 inches of rain",
+  "rain_notes": [
+    {
+      "text": "The Dec 31, 2022 flood on 14th St came on a day with 5.46 inches, the second-wettest day on record in San Francisco. That is roughly three to five times a 1 to 2 inch storm.",
+      "src": "SF Chronicle",
+      "url": "https://preview-prod.w.sfchronicle.com/sf/article/storm-damage-weather-cost-17726925.php"
+    },
+    {
+      "text": "Rain per hour matters more than the total. In December 2019, much of the rain came down in about an hour.",
+      "src": "ABC7",
+      "url": "https://abc7news.com/weather/san-francisco-streets-flooded-during-heavy-rainstorm/5742118/"
+    },
+    {
+      "text": "Smaller storms have mostly meant ponding. After a storm that gave many areas an inch or more, public works dealt with about 15 flooded areas, mainly intersections.",
+      "src": "NBC Bay Area",
+      "url": "https://nbcbayarea.com/news/local/storm-downs-trees-san-francisco/3094059"
+    },
+    {
+      "text": "The map makers' reading, not a forecast: steady rain over many hours means ponding in the red areas. A burst of an inch or more in an hour, or clogged drains, is when the New Year's Eve 2022 pattern repeats."
+    }
+  ],
+  "rain_so_far": {
+    "hour_heavy_in": 0.3,
+    "hour_very_heavy_in": 1,
+    "day_soaking_in": 1,
+    "day_big_in": 2,
+    "compare": {
+      "label": "Dec 31, 2022",
+      "inches": 5.46
+    }
+  },
+  "flood_water_note": {
+    "short": "Avoid flood water.",
+    "text": "Flood water can carry bacteria and other contaminants washed off the street. Stay out of it, keep children and pets away, and wash with soap and water if you touch it.",
+    "source": "SFPUC",
+    "url": "https://www.sfpuc.gov/learning/emergency-preparedness/resources-get-you-rain-ready"
+  },
+  "links": [
+    {
+      "label": "SFPUC flood map for your block",
+      "url": "https://gis.sfpuc.org/portal/apps/instant/basic/index.html?appid=5dbe439cb71f42c89de0e2af110ae1f0"
+    },
+    {
+      "label": "Report flooding to SF311 (or call 3-1-1)",
+      "url": "https://www.sf.gov/report-flooding-water-leaks-sewer-backup-or-odor-issues"
+    },
+    {
+      "label": "Browse all 311 cases",
+      "url": "https://sf.connect.socrata.com/"
+    }
+  ],
+  "street_names": {
+    "dataset": "3psu-pn9h",
+    "note": "City street list, block by block (DataSF, Streets - Active and Retired). Plan a drive uses it to name a tapped spot by its cross streets. Needs fields streetname, f_st, t_st, line, layer, active."
+  },
+  "street_trees": {
+    "dataset": "tkzw-k3nq",
+    "note": "SF street tree list (DataSF). Needs fields treeid, species ('Scientific :: Common'), onstreet, latitude, longitude."
+  }
+}
